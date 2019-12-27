@@ -58,35 +58,36 @@ while true
   #UV-Index:
    UV_INDEX=$(echo ${DATA}|cut -d'&' -f19 | cut -d"=" -f2)
   #Zeitstempel:
-   ZEITSTEMPEL=$(echo ${DATA}|cut -d'&' -f20 | cut -d"=" -f2 | sed -e 's/%20/#/)
+   ZEITSTEMPEL=$(echo ${DATA}|cut -d'&' -f20 | cut -d"=" -f2 | sed -e 's/%20/_/')
+   ZEITSTEMPEL=$(echo ${ZEITSTEMPEL}|awk -F'-|_' '{printf "%02s.%02s.%s %s\n", $3, $2, $1, $4}')
   #Datum und Zeit abfragen
    #DAT_ZEIT=`timedatectl |grep Local`
    #DATUM=$(echo ${DAT_ZEIT}|cut -d' ' -f4)
    #UHRZEIT=$(echo ${DAT_ZEIT}|cut -d' ' -f5)
  
   #Daten an ioB schicken
-   #curl --data "${DP_TEMP_INNEN}=$TEMP_INNEN&${DP_TEMP_AUSSEN}=$TEMP_AUSSEN&${DP_TAUPUNKT}=$TAUPUNKT&${DP_CHILL}=$CHILL&${DP_FEUCHTE_INNEN}=$FEUCHTE_INNEN&${DP_FEUCHTE_AUSSEN}=$FEUCHTE_AUSSEN&${DP_WIND}=$WIND&${DP_WIND_MAX}=$WIND_MAX&${DP_WIND_DIR}=$WIND_DIR&${DP_DRUCK_ABS}=$DRUCK_ABS&${DP_DRUCK_REL}=$DRUCK_REL&${DP_REGEN_AKT}=$REGEN_AKT&${DP_REGEN_TAG}=$REGEN_TAG&${DP_REGEN_WOCHE}=$REGEN_WOCHE&${DP_REGEN_MONAT}=$REGEN_MONAT&${DP_SONNE}=$SONNE&${DP_UV_INDEX}=$UV_INDEX&${DP_DATUM}=$DATUM&${DP_ZEIT}=$UHRZEIT&prettyPrint" http://${IPP}/setBulk
+   curl --data "${DP_TEMP_INNEN}=$TEMP_INNEN&${DP_TEMP_AUSSEN}=$TEMP_AUSSEN&${DP_TAUPUNKT}=$TAUPUNKT&${DP_CHILL}=$CHILL&${DP_FEUCHTE_INNEN}=$FEUCHTE_INNEN&${DP_FEUCHTE_AUSSEN}=$FEUCHTE_AUSSEN&${DP_WIND}=$WIND&${DP_WIND_MAX}=$WIND_MAX&${DP_WIND_DIR}=$WIND_DIR&${DP_DRUCK_ABS}=$DRUCK_ABS&${DP_DRUCK_REL}=$DRUCK_REL&${DP_REGEN_AKT}=$REGEN_AKT&${DP_REGEN_TAG}=$REGEN_TAG&${DP_REGEN_WOCHE}=$REGEN_WOCHE&${DP_REGEN_MONAT}=$REGEN_MONAT&${DP_SONNE}=$SONNE&${DP_UV_INDEX}=$UV_INDEX&${DP_DATUM}=$DATUM&${DP_ZEIT}=$UHRZEIT&prettyPrint" http://${IPP}/setBulk
  
   if [ $debug == "true" ]; then
    # Datenfelder ausgeben
-   echo Temperatur Innen: $TEMP_INNEN °C
-   echo Temperatur Aussen: $TEMP_AUSSEN °C
-   echo Taupunkt: $TAUPUNKT °C
-   echo Chill-Faktor: $CHILL °C
-   echo Luftfeuchte Innen: $FEUCHTE_INNEN %
-   echo Luftfeuchte Aussen: $FEUCHTE_AUSSEN %
-   echo Windgeschwindkeit: $WIND km/h
-   echo max. Windgeschwindkeit: $WIND_MAX km/h
-   echo Windrichtung: $WIND_DIR °
-   echo Luftdruck absolut: $DRUCK_ABS hPa
-   echo Luftdruck relativ: $DRUCK_REL hPa
-   echo Regen aktuell: $REGEN_AKT mm
-   echo Regen Tag: $REGEN_TAG mm
-   echo Regen Woche: $REGEN_WOCHE mm
-   echo Regen Monat: $REGEN_MONAT mm
-   echo Sonnenstrahlung: $SONNE W/m²
-   echo UV-Index: $UV_INDEX
-   echo Zeitstempel: $ZEITSTEMPEL
+   echo -e "Temperatur Innen\t: $TEMP_INNEN °C"
+   echo -e "Temperatur Aussen\t: $TEMP_AUSSEN °C"
+   echo -e "Taupunkt\t\t: $TAUPUNKT °C"
+   echo -e "Chill-Faktor\t\t: $CHILL °C"
+   echo -e "Luftfeuchte Innen\t: $FEUCHTE_INNEN %"
+   echo -e "Luftfeuchte Aussen\t: $FEUCHTE_AUSSEN %"
+   echo -e "Windgeschwindkeit\t: $WIND km/h"
+   echo -e "max. Windgeschwindkeit\t: $WIND_MAX km/h"
+   echo -e "Windrichtung\t\t: $WIND_DIR °"
+   echo -e "Luftdruck absolut\t: $DRUCK_ABS hPa"
+   echo -e "Luftdruck relativ\t: $DRUCK_REL hPa"
+   echo -e "Regen aktuell\t\t: $REGEN_AKT mm"
+   echo -e "Regen Tag\t\t: $REGEN_TAG mm"
+   echo -e "Regen Woche\t\t: $REGEN_WOCHE mm"
+   echo -e "Regen Monat\t\t: $REGEN_MONAT mm"
+   echo -e "Sonnenstrahlung\t\t: $SONNE W/m²"
+   echo -e "UV-Index\t\t: $UV_INDEX"
+   echo -e "Zeitstempel\t\t: $ZEITSTEMPEL"
   fi
  
  done

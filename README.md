@@ -1,10 +1,10 @@
 # WLAN-Wetterstation
  schafft eine Verbindung von einer WLAN-Wetterstation zum ioBroker (__nur für Linux__)
  
- Install: bc (apt install -y bc)
- DP Broker --> JS-Skript
- conf + sh in ein Verzeichnis
- chmod +x wetterstation.sh
+ Install: bc (apt install -y bc)<br>
+ DP Broker --> JS-Skript<br>
+ conf + sh in ein Verzeichnis<br>
+ chmod +x wetterstation.sh<br>
  
  
 <br><br><br>

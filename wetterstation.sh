@@ -16,20 +16,15 @@ while true
 
   #DATA zerlegen (Messwerte Block #3-#21)
    ii=2
-   for ((i=0; i<9; i++))
+   for ((i=0; i<11; i++))
     do
      let "ii++"
      MESSWERTE[$i]=$(echo ${DATA}|cut -d'&' -f${ii} | cut -d"=" -f2)
       if [ "$i" -ge "0" ] && [ "$i" -lt "4" ]; then convertFtoC; fi
       if [ "$i" -eq "6" ] || [ "$i" -eq "7" ]; then convertMPHtoKMH; fi
+      if [ "$i" -eq "9" ] || [ "$i" -eq "10" ]; then convertLuftdruck; fi
     done
 
-  #Luftdruck absolut:
-   DRUCK_ABS=$(echo ${DATA}|cut -d'&' -f12 | cut -d"=" -f2)
-   DRUCK_ABS=`echo "scale=2;${DRUCK_ABS}*33864/1000"|bc -l`
-  #Luftdruck relativ:
-   DRUCK_REL=$(echo ${DATA}|cut -d'&' -f13 | cut -d"=" -f2)
-   DRUCK_REL=`echo "scale=2;${DRUCK_REL}*33864/1000"|bc -l`
   #Regen aktuell:
    REGEN_AKT=$(echo ${DATA}|cut -d'&' -f14 | cut -d"=" -f2)
    REGEN_AKT=`echo "scale=1;${REGEN_AKT}*254/10"|bc -l`
@@ -52,7 +47,7 @@ while true
 
 
   #Daten an ioB schicken
-   #&${DP_DRUCK_ABS}=$DRUCK_ABS&${DP_DRUCK_REL}=$DRUCK_REL&${DP_REGEN_AKT}=$REGEN_AKT&${DP_REGEN_TAG}=$REGEN_TAG&${DP_REGEN_WOCHE}=$REGEN_WOCHE&${DP_REGEN_MONAT}=$REGEN_MONAT&${DP_SONNE}=$SONNE&${DP_UV_INDEX}=$UV_INDEX&${DP_DATUM}=$DATUM&${DP_ZEITSTEMPEL}=$ZEITSTEMPEL
+   #&${DP_REGEN_AKT}=$REGEN_AKT&${DP_REGEN_TAG}=$REGEN_TAG&${DP_REGEN_WOCHE}=$REGEN_WOCHE&${DP_REGEN_MONAT}=$REGEN_MONAT&${DP_SONNE}=$SONNE&${DP_UV_INDEX}=$UV_INDEX&${DP_DATUM}=$DATUM&${DP_ZEITSTEMPEL}=$ZEITSTEMPEL
    iob_send
 
 

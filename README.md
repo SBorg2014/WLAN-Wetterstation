@@ -7,6 +7,7 @@
  chmod +x wetterstation.sh<br>
  Simple-Restful Adapter installieren<br>
  crontab -e (root) erweitern <br>
+ Zeitstempel im UTC-Format <br>
  
 <br><br><br>
 ## License ## 

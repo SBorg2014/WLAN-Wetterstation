@@ -16,7 +16,14 @@ ins Wiki
  crontab -e (root) erweitern @reboot /home/iobroker/wetterstation.sh &<br>
  Zeitstempel im UTC-Format <br>
 ```
- 
+
+## Versionen ##
+    
+**V0.1.0 - erstes Release (29.12.2019)**
+```
+    + erstes Release
+``` 
+
 <br><br><br>
 ## License ## 
  MIT License

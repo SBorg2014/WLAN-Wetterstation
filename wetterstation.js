@@ -12,3 +12,10 @@
   createState(DP+"Windrichtung"      ,"", {name: "Windrichtung",                type: "number", role: "state", unit: "°" });
   createState(DP+"Druck_absolut"     ,"", {name: "Luftdruck absolut",           type: "number", role: "state", unit: "hPa" });
   createState(DP+"Druck_relativ"     ,"", {name: "Luftdruck relativ",           type: "number", role: "state", unit: "hPa" });
+  createState(DP+"Regen_aktuell"     ,"", {name: "aktuelle Regenmenge",         type: "number", role: "state", unit: "mm" });
+  createState(DP+"Regen_Tag"         ,"", {name: "Regenmenge Heute",            type: "number", role: "state", unit: "mm" });
+  createState(DP+"Regen_Woche"       ,"", {name: "Regenmenge Woche",            type: "number", role: "state", unit: "mm" });
+  createState(DP+"Regen_Monat"       ,"", {name: "Regenmenge Monat",            type: "number", role: "state", unit: "mm" });
+  createState(DP+"Sonnenstrahlung"   ,"", {name: "Sonnenstrahlung",             type: "number", role: "state", unit: "W/m²" });
+  createState(DP+"UV_Index"          ,"", {name: "UV_Index",                    type: "number", role: "state" });
+  createState(DP+"Zeitstempel"       ,"", {name: "von wann ist die Messung",    type: "number", role: "state" });

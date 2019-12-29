@@ -1,13 +1,21 @@
 # WLAN-Wetterstation
- schafft eine Verbindung von einer WLAN-Wetterstation zum ioBroker (__nur für Linux__)
+ schafft eine Verbindung von einer WLAN-Wetterstation zum ioBroker (__nur für Linux__)<br>
  
+ Die Wetterstation muss dazu in der Lage sein ihre Daten im "Wunderground"-Format zu senden.<br><br>
+ Bisher getestete Stationen:
+ -xxx
+ -yyy
+ 
+ins Wiki
+ ```
  Install: bc (apt install -y bc)<br>
  DP Broker --> JS-Skript<br>
  conf + sh in ein Verzeichnis<br>
  chmod +x wetterstation.sh<br>
  Simple-Restful Adapter installieren<br>
- crontab -e (root) erweitern <br>
+ crontab -e (root) erweitern @reboot /home/iobroker/wetterstation.sh &<br>
  Zeitstempel im UTC-Format <br>
+```
  
 <br><br><br>
 ## License ## 

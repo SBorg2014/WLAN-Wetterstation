@@ -11,8 +11,12 @@
 #
 
 
+ #Installationsverzeichnis feststellen
+ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
  ###Konfiguration lesen
- . ./wetterstation.conf
+ . ${DIR}/wetterstation.conf
+
 
  declare -a MESSWERTE
 

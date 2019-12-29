@@ -24,7 +24,7 @@
 while true
  do
   #auf Daten der Wetterstation warten und nach GET filtern
-   DATA=`nc -lv ${WS_PORT}|grep GET`
+   DATA=$(nc -lv ${WS_PORT}|grep GET)
 
   #DATA zerlegen (Messwerte Block #3-#21)
    ii=2

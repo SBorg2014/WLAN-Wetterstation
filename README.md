@@ -3,8 +3,8 @@
  
  Die Wetterstation muss dazu in der Lage sein ihre Daten im "Wunderground"-Format zu senden.<br><br>
  Bisher getestete Stationen:
- -xxx
- -yyy
+-xxx
+-yyy
  
 ins Wiki
  ```

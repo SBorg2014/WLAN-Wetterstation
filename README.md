@@ -5,7 +5,8 @@
  DP Broker --> JS-Skript<br>
  conf + sh in ein Verzeichnis<br>
  chmod +x wetterstation.sh<br>
- 
+ Simple-Restful Adapter installieren<br>
+ crontab -e (root) erweitern <br>
  
 <br><br><br>
 ## License ## 

@@ -4,19 +4,9 @@
  Die Wetterstation muss dazu in der Lage sein ihre Daten im "Wunderground"-Format zu senden.<br><br>
  Bisher getestete Stationen:
 - Eurochron EFWS2900 (baugleich zu Sainlogic 10in1 Wifi, Froggit WH3000 SE, Ambient Weather WS-2902, Chilitec CTW-902 Wifi, Ventus W830)
-- yyy
+
  
-ins Wiki
- ```
- Install: bc (apt install -y bc)<br>
- DP Broker --> JS-Skript<br>
- conf + sh in ein Verzeichnis<br>
- chmod +x wetterstation.sh<br>
- Simple-Restful Adapter installieren<br>
- crontab -e (root) erweitern @reboot /home/iobroker/wetterstation.sh &<br>
- Einstellungen in WS View vornehmen <br>
- Zeitstempel im UTC-Format <br>
-```
+
 
 ## Versionen ##
     

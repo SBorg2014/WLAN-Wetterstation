@@ -14,6 +14,7 @@ ins Wiki
  chmod +x wetterstation.sh<br>
  Simple-Restful Adapter installieren<br>
  crontab -e (root) erweitern @reboot /home/iobroker/wetterstation.sh &<br>
+ Einstellungen in WS View vornehmen <br>
  Zeitstempel im UTC-Format <br>
 ```
 

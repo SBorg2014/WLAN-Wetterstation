@@ -1,24 +1,56 @@
 #!/bin/bash
 
-# V0.1.0 - 29.12.2019 (c) 2019 SBorg
+# V0.1.1 - 01.01.2020 (c) 2019-2020 SBorg
 #
 # wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-Format aus, konvertiert diese und überträgt
 # die Daten an den ioBroker
 #
 # benötigt den 'Simple RESTful API'-Adapter im ioBroker und 'bc' unter Linux
 #
+# V0.1.1 / 01.01.2020 - + UTC-Korrektur
+#			+ Config-Versionscheck
+#			+ Shell-Parameter -v/-h/--debug
 # V0.1.0 / 29.12.2019 - erstes Release
 #
+#
+ SH_VER="V0.1.1"
+ CONF_V="V0.1.1"
 
 
  #Installationsverzeichnis feststellen
- DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+  DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
- ###Konfiguration lesen
- . ${DIR}/wetterstation.conf
+ #Config-Version prüfen
+  VER_CONFIG=$(cat ${DIR}/wetterstation.conf|grep '### Setting'|cut -d" " -f3)
+  if [ $CONF_V != $VER_CONFIG ]; then
+	echo -e "wetterstation: \e[31mERROR #000 - Config-Version mismatch!\n"
+	echo -e "benutzt: $VER_CONFIG\t benötigt wird: $CONF_V$WE"
+	exit 1
+  fi
+
+ #Konfiguration lesen
+  . ${DIR}/wetterstation.conf
+
+ #gibt es Parameter?
+  while [ "$1" != "" ]; do
+    case $1 in
+	--debug	)		debug=true   #override
+				;;
+	-v | --version )	version
+				exit
+				;;
+        -h | --help )		usage
+				exit
+                                ;;
+        * )			usage
+                                exit 1
+    esac
+    shift
+  done
 
 
  declare -a MESSWERTE
+ declare -a MESSWERTERAW
 
  #Check ob Pollintervall größer 10 Sekunden
   if [ ${WS_POLL} -lt "10" ]; then WS_POLL=10; fi
@@ -27,15 +59,16 @@
 #Endlosschleife
 while true
  do
-  #auf Daten der Wetterstation warten und Ausgabe filtern
+  #auf Daten der Wetterstation warten und nach GET filtern
    DATA=$(nc -lv ${WS_PORT}|sed '3 p')
-
+   
   #DATA zerlegen (Messwerte Block #3-#21)
    ii=2
    for ((i=0; i<18; i++))
     do
      let "ii++"
-     MESSWERTE[$i]=$(echo ${DATA}|cut -d'&' -f${ii} | cut -d"=" -f2)
+     MESSWERTERAW[$i]=$(echo ${DATA}|cut -d'&' -f${ii} | cut -d"=" -f2)
+     MESSWERTE[$i]=${MESSWERTERAW[$i]}
       if [ "$i" -ge "0" ] && [ "$i" -lt "4" ]; then convertFtoC; fi
       if [ "$i" -eq "6" ] || [ "$i" -eq "7" ]; then convertMPHtoKMH; fi
       if [ "$i" -eq "9" ] || [ "$i" -eq "10" ]; then convertLuftdruck; fi

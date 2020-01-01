@@ -10,7 +10,7 @@
 
 <br><br>
 ## Versionen ##
-**V0.1.1 - 01.01.2020)**
+**V0.1.1 - 01.01.2020**
 ```
 	+ UTC-Korrektur
 	+ Config-Versionscheck

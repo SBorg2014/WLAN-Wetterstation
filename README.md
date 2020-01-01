@@ -12,9 +12,9 @@
 ## Versionen ##
 **V0.1.1 - 01.01.2020)**
 ```
-	+ UTC-Korrektur
-	+ Config-Versionscheck
-	+ Shell-Parameter -v/-h/--debug
+    + UTC-Korrektur
+    + Config-Versionscheck
+    + Shell-Parameter -v/-h/--debug
 ``` 
     
 **V0.1.0 - erstes Release (29.12.2019)**

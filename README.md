@@ -3,7 +3,8 @@
  
  Die Wetterstation muss dazu in der Lage sein ihre Daten im "Wunderground"-Format zu senden.<br><br>
  Bisher getestete Stationen:
-- Eurochron EFWS2900 (baugleich zu Sainlogic 10in1 Wifi, Froggit WH3000 SE, Ambient Weather WS-2902, Chilitec CTW-902 Wifi, Ventus W830)
+- Eurochron EFWS2900 (baugleich zu Sainlogic 10in1 Wifi, Ambient Weather WS-2902, Chilitec CTW-902 Wifi, Ventus W830)
+- Froggit WH3000SE
 <br><br>
 ## Installation ## 
 ***[siehe WiKi](https://github.com/SBorg2014/WLAN-Wetterstation/wiki)***

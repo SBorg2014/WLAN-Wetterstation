@@ -5,6 +5,7 @@
  Bisher getestete Stationen:
 - Eurochron EFWS2900 (baugleich zu Sainlogic 10in1 Wifi, Ambient Weather WS-2902, Chilitec CTW-902 Wifi, Ventus W830)
 - Froggit WH3000SE
+- Ventus W830
 <br><br>
 ## Installation ## 
 ***[siehe WiKi](https://github.com/SBorg2014/WLAN-Wetterstation/wiki)***

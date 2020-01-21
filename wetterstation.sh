@@ -52,8 +52,8 @@
  declare -a MESSWERTE
  declare -a MESSWERTERAW
 
- #Check ob Pollintervall größer 10 Sekunden
-  if [ ${WS_POLL} -lt "10" ]; then WS_POLL=10; fi
+ #Check ob Pollintervall größer 30 Sekunden
+  if [ ${WS_POLL} -lt "30" ]; then WS_POLL=30; fi
 
 
 #Endlosschleife

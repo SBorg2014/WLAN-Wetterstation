@@ -1,20 +1,22 @@
 #!/bin/bash
 
-# V0.1.1 - 01.01.2020 (c) 2019-2020 SBorg
+# V0.1.2 - 24.01.2020 (c) 2019-2020 SBorg
 #
 # wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-Format aus, konvertiert diese und überträgt
 # die Daten an den ioBroker
 #
 # benötigt den 'Simple RESTful API'-Adapter im ioBroker und 'bc' unter Linux
 #
+# V0.1.2 / 24.01.2020 - + Prüfung auf Datenintegrität
+#                       + neuer Datenpunkt bei Kommunikationsfehler
 # V0.1.1 / 01.01.2020 - + UTC-Korrektur
-#			+ Config-Versionscheck
-#			+ Shell-Parameter -v/-h/--debug
+#                       + Config-Versionscheck
+#                       + Shell-Parameter -v/-h/--debug
 # V0.1.0 / 29.12.2019 - erstes Release
-#
-#
- SH_VER="V0.1.1"
- CONF_V="V0.1.1"
+
+
+ SH_VER="V0.1.2"
+ CONF_V="V0.1.2"
 
 
  #Installationsverzeichnis feststellen
@@ -60,8 +62,10 @@
 while true
  do
   #auf Daten der Wetterstation warten und nach GET filtern
-   DATA=$(nc -lv -p ${WS_PORT}|sed '3 p')
-   
+   DATA=$(timeout 10 nc -lv -p ${WS_PORT}|sed '3 p')
+   STRLEN=$(echo -n $DATA | wc -m)
+   echo Länge: $STRLEN
+  
   #DATA zerlegen (Messwerte Block #3-#21)
    ii=2
    for ((i=0; i<18; i++))

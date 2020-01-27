@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# V0.1.2 - 24.01.2020 (c) 2019-2020 SBorg
+# V0.1.3 - 24.01.2020 (c) 2019-2020 SBorg
 #
 # wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-Format aus, konvertiert diese und überträgt
 # die Daten an den ioBroker

@@ -9,9 +9,10 @@
 #
 # V0.1.2 / 24.01.2020 - + Prüfung auf Datenintegrität
 #                       + neuer Datenpunkt bei Kommunikationsfehler
+#                       + Ausgabe Datenpaket der Wetterstation bei Debug
 # V0.1.1 / 01.01.2020 - + UTC-Korrektur
-#                       + Config-Versionscheck
-#                       + Shell-Parameter -v/-h/--debug
+#						+ Config-Versionscheck
+#						+ Shell-Parameter -v/-h/--debug
 # V0.1.0 / 29.12.2019 - erstes Release
 
 
@@ -57,16 +58,21 @@
  #Check ob Pollintervall größer 30 Sekunden
   if [ ${WS_POLL} -lt "30" ]; then WS_POLL=30; fi
 
+ #Fehlermeldungen resetten
+  curl http://${IPP}/set/${DP_KOMFEHLER}?value=false >/dev/null 2>&1
+
 
 #Endlosschleife
 while true
  do
-  #auf Daten der Wetterstation warten und nach GET filtern
-   DATA=$(timeout 10 nc -lv -p ${WS_PORT}|sed '3 p')
-   STRLEN=$(echo -n $DATA | wc -m)
-   echo Länge: $STRLEN
-  
-  #DATA zerlegen (Messwerte Block #3-#21)
+
+  #Kommunikation herstellen und Daten empfangen
+   get_DATA
+
+  #KOM-Fehler?
+  if [ "$?" -eq "0" ]; then
+
+   #DATA zerlegen (Messwerte Block #3-#21)
    ii=2
    for ((i=0; i<18; i++))
     do
@@ -80,9 +86,15 @@ while true
       if [ "$i" -eq "17" ]; then convertTime; fi
     done
 
+   #Daten an ioB schicken
+    iob_send
 
-  #Daten an ioB schicken
-   iob_send
+
+  else
+   let "KOMFEHLER++"
+   if [ "$KOMFEHLER" -eq "5" ]; then curl http://${IPP}/set/${DP_KOMFEHLER}?value=true&prettyPrint&ack=true >/dev/null 2>&1;fi
+  fi
+
 
   #Debug eingeschaltet?
    if [ $debug == "true" ]; then debuging; fi

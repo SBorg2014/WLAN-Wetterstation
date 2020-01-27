@@ -7,6 +7,7 @@
 #
 # benötigt den 'Simple RESTful API'-Adapter im ioBroker und 'bc' unter Linux
 #
+# V0.1.3 / 24.01.2020 - + Unterstützung für Datenpunkt "Wetter_Jahr", ohne Weiche für Stationen ohnen diesen Datenpunkt
 # V0.1.2 / 24.01.2020 - + Prüfung auf Datenintegrität
 #                       + neuer Datenpunkt bei Kommunikationsfehler
 #                       + Ausgabe Datenpaket der Wetterstation bei Debug
@@ -16,8 +17,8 @@
 # V0.1.0 / 29.12.2019 - erstes Release
 
 
- SH_VER="V0.1.2"
- CONF_V="V0.1.2"
+ SH_VER="V0.1.3"
+ CONF_V="V0.1.3"
 
 
  #Installationsverzeichnis feststellen
@@ -74,7 +75,7 @@ while true
 
    #DATA zerlegen (Messwerte Block #3-#21)
    ii=2
-   for ((i=0; i<18; i++))
+   for ((i=0; i<19; i++))
     do
      let "ii++"
      MESSWERTERAW[$i]=$(echo ${DATA}|cut -d'&' -f${ii} | cut -d"=" -f2)
@@ -82,8 +83,8 @@ while true
       if [ "$i" -ge "0" ] && [ "$i" -lt "4" ]; then convertFtoC; fi
       if [ "$i" -eq "6" ] || [ "$i" -eq "7" ]; then convertMPHtoKMH; fi
       if [ "$i" -eq "9" ] || [ "$i" -eq "10" ]; then convertLuftdruck; fi
-      if [ "$i" -ge "11" ] && [ "$i" -lt "15" ]; then convertInchtoMM; fi
-      if [ "$i" -eq "17" ]; then convertTime; fi
+      if [ "$i" -ge "11" ] && [ "$i" -lt "16" ]; then convertInchtoMM; fi
+      if [ "$i" -eq "18" ]; then convertTime; fi
     done
 
    #Daten an ioB schicken

@@ -11,8 +11,8 @@
 #                       + neuer Datenpunkt bei Kommunikationsfehler
 #                       + Ausgabe Datenpaket der Wetterstation bei Debug
 # V0.1.1 / 01.01.2020 - + UTC-Korrektur
-#						+ Config-Versionscheck
-#						+ Shell-Parameter -v/-h/--debug
+#			+ Config-Versionscheck
+#			+ Shell-Parameter -v/-h/--debug
 # V0.1.0 / 29.12.2019 - erstes Release
 
 

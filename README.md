@@ -1,4 +1,4 @@
-# :cloud: WLAN-Wetterstation
+# :partly_sunny: WLAN-Wetterstation
 <br/><br/>
 [![Current Release](https://img.shields.io/github/v/release/SBorg2014/WLAN-Wetterstation.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/SBorg2014/WLAN-Wetterstation/latest/total.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/releases/latest)

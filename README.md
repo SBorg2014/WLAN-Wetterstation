@@ -25,6 +25,14 @@
 
 <br><br>
 ## Versionen ##
+
+**V0.1.2 - 24.01.2020**
+```
+    + Prüfung auf Datenintegrität
+    + neuer Datenpunkt bei Kommunikationsfehler
+    + Ausgabe Datenpaket der Wetterstation bei Debug
+```
+
 **V0.1.1 - 01.01.2020**
 ```
     + UTC-Korrektur

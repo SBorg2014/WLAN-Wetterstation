@@ -16,6 +16,7 @@
   createState(DP+"Regen_Tag"            ,"", {name: "Regenmenge Heute",            type: "number", role: "state", unit: "mm" });
   createState(DP+"Regen_Woche"          ,"", {name: "Regenmenge Woche",            type: "number", role: "state", unit: "mm" });
   createState(DP+"Regen_Monat"          ,"", {name: "Regenmenge Monat",            type: "number", role: "state", unit: "mm" });
+  createState(DP+"Regen_Jahr"           ,"", {name: "Regenmenge Jahr",             type: "number", role: "state", unit: "mm" });
   createState(DP+"Sonnenstrahlung"      ,"", {name: "Sonnenstrahlung",             type: "number", role: "state", unit: "W/m²" });
   createState(DP+"UV_Index"             ,"", {name: "UV Index",                    type: "number", role: "state" });
   createState(DP+"Zeitstempel"          ,"", {name: "von wann ist die Messung",    type: "string", role: "state" });

@@ -1,20 +1,23 @@
 #!/bin/bash
 
-# V0.1.1 - 01.01.2020 (c) 2019-2020 SBorg
+# V0.1.2 - 24.01.2020 (c) 2019-2020 SBorg
 #
 # wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-Format aus, konvertiert diese und überträgt
 # die Daten an den ioBroker
 #
 # benötigt den 'Simple RESTful API'-Adapter im ioBroker und 'bc' unter Linux
 #
+# V0.1.2 / 24.01.2020 - + Prüfung auf Datenintegrität
+#                       + neuer Datenpunkt bei Kommunikationsfehler
+#                       + Ausgabe Datenpaket der Wetterstation bei Debug
 # V0.1.1 / 01.01.2020 - + UTC-Korrektur
 #			+ Config-Versionscheck
 #			+ Shell-Parameter -v/-h/--debug
 # V0.1.0 / 29.12.2019 - erstes Release
-#
-#
- SH_VER="V0.1.1"
- CONF_V="V0.1.1"
+
+
+ SH_VER="V0.1.2"
+ CONF_V="V0.1.2"
 
 
  #Installationsverzeichnis feststellen
@@ -55,14 +58,21 @@
  #Check ob Pollintervall größer 30 Sekunden
   if [ ${WS_POLL} -lt "30" ]; then WS_POLL=30; fi
 
+ #Fehlermeldungen resetten
+  curl http://${IPP}/set/${DP_KOMFEHLER}?value=false >/dev/null 2>&1
+
 
 #Endlosschleife
 while true
  do
-  #auf Daten der Wetterstation warten und nach GET filtern
-   DATA=$(nc -lv -p ${WS_PORT}|sed '3 p')
-   
-  #DATA zerlegen (Messwerte Block #3-#21)
+
+  #Kommunikation herstellen und Daten empfangen
+   get_DATA
+
+  #KOM-Fehler?
+  if [ "$?" -eq "0" ]; then
+
+   #DATA zerlegen (Messwerte Block #3-#21)
    ii=2
    for ((i=0; i<18; i++))
     do
@@ -76,9 +86,15 @@ while true
       if [ "$i" -eq "17" ]; then convertTime; fi
     done
 
+   #Daten an ioB schicken
+    iob_send
 
-  #Daten an ioB schicken
-   iob_send
+
+  else
+   let "KOMFEHLER++"
+   if [ "$KOMFEHLER" -eq "5" ]; then curl http://${IPP}/set/${DP_KOMFEHLER}?value=true&prettyPrint&ack=true >/dev/null 2>&1;fi
+  fi
+
 
   #Debug eingeschaltet?
    if [ $debug == "true" ]; then debuging; fi

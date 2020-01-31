@@ -73,7 +73,7 @@ while true
   #KOM-Fehler?
   if [ "$?" -eq "0" ]; then
 
-   #DATA zerlegen (Messwerte Block #3-#21)
+   #DATA zerlegen (Messwerte Block #3-#22)
    ii=2
    for ((i=0; i<19; i++))
     do

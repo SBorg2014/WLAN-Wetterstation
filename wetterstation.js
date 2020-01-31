@@ -1,4 +1,3 @@
-
 //Wetterstation Datenpunkte anlegen
  let DP="javascript.0.Wetterstation."
   createState(DP+"Innentemperatur"      ,"", {name: "Temperatur im Haus",          type: "number", role: "state", unit: "°C" });

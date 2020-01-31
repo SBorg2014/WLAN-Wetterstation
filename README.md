@@ -26,7 +26,7 @@
 <br><br>
 ## Versionen ##
 
-**V0.1.2 - 24.01.2020**
+**V0.1.2 - 31.01.2020**
 ```
     + Prüfung auf Datenintegrität
     + neuer Datenpunkt bei Kommunikationsfehler

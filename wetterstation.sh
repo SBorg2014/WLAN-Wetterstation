@@ -7,7 +7,7 @@
 #
 # benötigt den 'Simple RESTful API'-Adapter im ioBroker und 'bc' unter Linux
 #
-# V0.1.3 / 31.01.2020 - + Unterstützung für Datenpunkt "Wetter_Jahr", zB. für Froggit WH4000SE
+# V0.1.3 / 31.01.2020 - + Unterstützung für Datenpunkt "Regenmenge Jahr", zB. für Froggit WH4000SE
 # V0.1.2 / 31.01.2020 - + Prüfung auf Datenintegrität
 #                       + neuer Datenpunkt bei Kommunikationsfehler
 #                       + Ausgabe Datenpaket der Wetterstation bei Debug

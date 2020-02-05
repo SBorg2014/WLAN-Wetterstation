@@ -1,14 +1,15 @@
 #!/bin/bash
 
-# V0.1.3 - 01.02.2020 (c) 2019-2020 SBorg
+# V0.1.3 - 05.02.2020 (c) 2019-2020 SBorg
 #
 # wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-Format aus, konvertiert diese und überträgt
 # die Daten an den ioBroker
 #
 # benötigt den 'Simple RESTful API'-Adapter im ioBroker und 'bc' unter Linux
 #
-# V0.1.3 / 01.02.2020 - + Unterstützung für Datenpunkt "Regenmenge Jahr", zB. für Froggit WH4000SE
+# V0.1.3 / 05.02.2020 - + Unterstützung für Datenpunkt "Regenmenge Jahr", zB. für Froggit WH4000SE
 #                       + Shell-Parameter -s (Klartextanzeige Passwort + Station-ID)
+#			+ Shell-Parameter --data (zeigt nur das gesendete Datenpaket der Wetterstation an)
 # V0.1.2 / 31.01.2020 - + Prüfung auf Datenintegrität
 #                       + neuer Datenpunkt bei Kommunikationsfehler
 #                       + Ausgabe Datenpaket der Wetterstation bei Debug
@@ -39,18 +40,21 @@
  #gibt es Parameter?
   while [ "$1" != "" ]; do
     case $1 in
-	--debug	)			debug=true	#override
-						;;
+	--debug	)		debug=true   #override
+				;;
 	-s | --show )		show_pwid=true
-						;;
+				;;
+	-d | --data )		ws_data
+				exit
+				;;
 	-v | --version )	version
-						exit
-						;;
-	-h | --help )		usage
-						exit
-						;;
-	* )					usage
-						exit 1
+				exit
+				;;
+        -h | --help )		usage
+				exit
+                                ;;
+        * )			usage
+                                exit 1
     esac
     shift
   done

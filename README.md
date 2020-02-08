@@ -15,7 +15,6 @@
 - Eurochron EFWS2900 (baugleich zu Sainlogic 10in1 Wifi, Ambient Weather WS-2902, Chilitec CTW-902 Wifi)
 - Froggit 
   * WH3000 SE
-  * WH3500 SE
   * WH4000 SE<sup>(\*)</sup>
 - Sainlogic 7in1 WiFi WS3500
 - Ventus W830

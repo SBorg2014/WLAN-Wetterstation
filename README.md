@@ -15,17 +15,23 @@
 - Eurochron EFWS2900 (baugleich zu Sainlogic 10in1 Wifi, Ambient Weather WS-2902, Chilitec CTW-902 Wifi)
 - Froggit 
   * WH3000 SE
-  * WH4000 SE<sup>(\*)</sup>
+  * WH4000 SE
 - Sainlogic 7in1 WiFi WS3500
 - Ventus W830
 
-<sup>(\*)</sup>noch in Arbeit, voraussichtlich in V0.1.3 unterstützt
 <br><br>
 ## Installation ## 
 ***[siehe WiKi](https://github.com/SBorg2014/WLAN-Wetterstation/wiki)***
 
 <br><br>
 ## Versionen ##
+
+**V0.1.3 - 08.02.2020**
+```
+    + Unterstützung für Datenpunkt "Regenmenge Jahr", zB. für Froggit WH4000SE
+    + Shell-Parameter -s (Klartextanzeige Passwort + Station-ID)
+    + Shell-Parameter --data (zeigt nur das gesendete Datenpaket der Wetterstation an)
+```
 
 **V0.1.2 - 31.01.2020**
 ```

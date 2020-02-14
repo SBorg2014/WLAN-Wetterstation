@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# V0.1.4 - 12.02.2020 (c) 2019-2020 SBorg
+# V0.1.4 - 14.02.2020 (c) 2019-2020 SBorg
 #
 # wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-Format aus, konvertiert diese und überträgt
 # die Daten an den ioBroker
 #
 # benötigt den 'Simple RESTful API'-Adapter im ioBroker und 'bc' unter Linux
 #
-# V0.1.4 / 12.02.2020 - + Berechnung Jahresregenmenge
+# V0.1.4 / 14.02.2020 - + Berechnung Jahresregenmenge
 # V0.1.3 / 08.02.2020 - + Unterstützung für Datenpunkt "Regenmenge Jahr", zB. für Froggit WH4000 SE
 #                       + Shell-Parameter -s (Klartextanzeige Passwort + Station-ID)
 #                       + Shell-Parameter --data (zeigt nur das gesendete Datenpaket der Wetterstation an)
@@ -37,6 +37,7 @@
 
  #Konfiguration lesen
   . ${DIR}/wetterstation.conf
+  let "WARTE=WS_POLL*2+5"    #2x Poll + Zuschlag warten
 
  #gibt es Parameter?
   while [ "$1" != "" ]; do
@@ -47,8 +48,6 @@
                                 ;;
         -d | --data )           ws_data
                                 exit
-                                ;;
-        --rain )                rain=true
                                 ;;
         -v | --version )        version
                                 exit
@@ -66,8 +65,8 @@
  declare -a MESSWERTE
  declare -a MESSWERTERAW
 
- #Check ob Pollintervall größer 30 Sekunden
-  if [ ${WS_POLL} -lt "30" ]; then WS_POLL=30; fi
+ #Check ob Pollintervall größer 16 Sekunden
+  if [ ${WS_POLL} -lt "16" ]; then WS_POLL=16; fi
 
  #Fehlermeldungen resetten
   curl http://${IPP}/set/${DP_KOMFEHLER}?value=false >/dev/null 2>&1
@@ -111,11 +110,7 @@ while true
    if [ $debug == "true" ]; then debuging; fi
 
   #Jahresregenmenge?
-   if [ $rain == "true" ]; then rain; fi
-
-  #...und schlafen gehen
-   let "schlafe=WS_POLL-5"
-   sleep $schlafe
+   if [ `date +%H` -eq "23" ] && [ `date +%M` -ge "50" ]; then rain; fi
 
  done
 

@@ -9,6 +9,7 @@
   createState(DP+"Wind"                 ,"", {name: "Windgeschwindigkeit",         type: "number", role: "state", unit: "km/h" });
   createState(DP+"Wind_max"             ,"", {name: "Windgeschwindigkeit maximal", type: "number", role: "state", unit: "km/h" });
   createState(DP+"Windrichtung"         ,"", {name: "Windrichtung",                type: "number", role: "state", unit: "°" });
+  createState(DP+"Windrichtung_Text"    ,"", {name: "Windrichtung als Text",       type: "string", role: "state" });
   createState(DP+"Druck_absolut"        ,"", {name: "Luftdruck absolut",           type: "number", role: "state", unit: "hPa" });
   createState(DP+"Druck_relativ"        ,"", {name: "Luftdruck relativ",           type: "number", role: "state", unit: "hPa" });
   createState(DP+"Regen_aktuell"        ,"", {name: "aktuelle Regenmenge",         type: "number", role: "state", unit: "mm" });

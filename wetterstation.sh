@@ -1,13 +1,14 @@
 #!/bin/bash
 
-# V0.1.4 - 14.02.2020 (c) 2019-2020 SBorg
+# V0.1.4 - 21.02.2020 (c) 2019-2020 SBorg
 #
 # wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-Format aus, konvertiert diese und überträgt
 # die Daten an den ioBroker
 #
 # benötigt den 'Simple RESTful API'-Adapter im ioBroker und 'bc' unter Linux
 #
-# V0.1.4 / 14.02.2020 - + Berechnung Jahresregenmenge
+# V0.1.4 / 21.02.2020 - + Berechnung Jahresregenmenge
+#                       + Windrichtung zusätzlich als Text
 # V0.1.3 / 08.02.2020 - + Unterstützung für Datenpunkt "Regenmenge Jahr", zB. für Froggit WH4000 SE
 #                       + Shell-Parameter -s (Klartextanzeige Passwort + Station-ID)
 #                       + Shell-Parameter --data (zeigt nur das gesendete Datenpaket der Wetterstation an)
@@ -64,6 +65,7 @@
 
  declare -a MESSWERTE
  declare -a MESSWERTERAW
+ WINDDIRS=(N NNE NE ENE E ESE SE SSE S SSW SW WSW w WNW NW NNW)
 
  #Check ob Pollintervall größer 16 Sekunden
   if [ ${WS_POLL} -lt "16" ]; then WS_POLL=16; fi
@@ -91,6 +93,7 @@ while true
      MESSWERTE[$i]=${MESSWERTERAW[$i]}
       if [ "$i" -ge "0" ] && [ "$i" -lt "4" ]; then convertFtoC; fi
       if [ "$i" -eq "6" ] || [ "$i" -eq "7" ]; then convertMPHtoKMH; fi
+      if [ "$i" -eq "8" ]; then winddir; fi
       if [ "$i" -eq "9" ] || [ "$i" -eq "10" ]; then convertLuftdruck; fi
       if [ "$i" -ge "11" ] && [ "$i" -lt "16" ]; then convertInchtoMM; fi
       if [ "$i" -eq "18" ]; then convertTime; fi

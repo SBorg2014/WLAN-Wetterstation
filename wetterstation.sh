@@ -65,7 +65,7 @@
 
  declare -a MESSWERTE
  declare -a MESSWERTERAW
- WINDDIRS=(N NNO NO ONO O OSO SO SSO S SSW SW WSW W WNW NW NNW)
+ WINDDIRS=(N NNO NO ONO O OSO SO SSO S SSW SW WSW W WNW NW NNW N)
 
  #Check ob Pollintervall größer 16 Sekunden
   if [ ${WS_POLL} -lt "16" ]; then WS_POLL=16; fi

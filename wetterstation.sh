@@ -1,14 +1,15 @@
 #!/bin/bash
 
-# V0.1.4 - 24.02.2020 (c) 2019-2020 SBorg
+# V0.1.4 - 26.02.2020 (c) 2019-2020 SBorg
 #
 # wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-Format aus, konvertiert diese und überträgt
 # die Daten an den ioBroker
 #
 # benötigt den 'Simple RESTful API'-Adapter im ioBroker und 'bc' unter Linux
 #
-# V0.1.4 / 24.02.2020 - + Berechnung Jahresregenmenge
+# V0.1.4 / 26.02.2020 - + Berechnung Jahresregenmenge
 #                       + Windrichtung zusätzlich als Text
+#                       ~ Änderung "Regen Aktuell" in "Regenrate"
 # V0.1.3 / 08.02.2020 - + Unterstützung für Datenpunkt "Regenmenge Jahr", zB. für Froggit WH4000 SE
 #                       + Shell-Parameter -s (Klartextanzeige Passwort + Station-ID)
 #                       + Shell-Parameter --data (zeigt nur das gesendete Datenpaket der Wetterstation an)
@@ -38,7 +39,7 @@
 
  #Konfiguration lesen
   . ${DIR}/wetterstation.conf
-  let "WARTE=WS_POLL+5"    #Poll + Zuschlag warten
+  let "WARTE=WS_POLL+10"    #Poll + Zuschlag warten
 
  #gibt es Parameter?
   while [ "$1" != "" ]; do
@@ -113,7 +114,7 @@ while true
    if [ $debug == "true" ]; then debuging; fi
 
   #Jahresregenmenge?
-   if [ `date +%H` -ge "21" ] && [ `date +%M` -ge "50" ]; then rain; fi
+   if [ `date +%H` -ge "23" ] || [ `date +%H` -le "3" ] && [ `date +%M` -ge "50" ]; then rain; fi
 
  done
 

@@ -1,15 +1,16 @@
 #!/bin/bash
 
-# V0.1.4 - 26.02.2020 (c) 2019-2020 SBorg
+# V1.0.0 - 12.03.2020 (c) 2019-2020 SBorg
 #
 # wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-Format aus, konvertiert diese und überträgt
 # die Daten an den ioBroker
 #
 # benötigt den 'Simple RESTful API'-Adapter im ioBroker und 'bc' unter Linux
 #
-# V0.1.4 / 26.02.2020 - + Berechnung Jahresregenmenge
+# V1.0.0 / 12.03.2020 - + Berechnung Jahresregenmenge
 #                       + Windrichtung zusätzlich als Text
 #                       ~ Änderung "Regen Aktuell" in "Regenrate"
+#                       ~ Splitt in conf- + sub-Datei
 # V0.1.3 / 08.02.2020 - + Unterstützung für Datenpunkt "Regenmenge Jahr", zB. für Froggit WH4000 SE
 #                       + Shell-Parameter -s (Klartextanzeige Passwort + Station-ID)
 #                       + Shell-Parameter --data (zeigt nur das gesendete Datenpaket der Wetterstation an)
@@ -22,8 +23,9 @@
 # V0.1.0 / 29.12.2019 - erstes Release
 
 
- SH_VER="V0.1.4"
- CONF_V="V0.1.4"
+ SH_VER="V1.0.0"
+ CONF_V="V1.0.0"
+ SUBVER="V1.0.0"
 
 
  #Installationsverzeichnis feststellen
@@ -37,9 +39,19 @@
 	exit 1
   fi
 
- #Konfiguration lesen
+ #Sub-Version prüfen
+  SUB_CONFIG=$(cat ${DIR}/wetterstation.sub|grep '### Subroutinen'|cut -d" " -f3)
+  if [ $SUBVER != $SUB_CONFIG ]; then
+	echo -e "wetterstation: \e[31mERROR #001 - Subroutinen-Version mismatch!\n"
+	echo -e "benutzt: $SUB_CONFIG\t benötigt wird: $SUBVER$WE"
+	exit 1
+  fi
+
+
+ #Konfiguration lesen + Subroutinen laden
   . ${DIR}/wetterstation.conf
-  let "WARTE=WS_POLL+10"    #Poll + Zuschlag warten
+  . ${DIR}/wetterstation.sub
+  let "WARTE=WS_POLL*2+6"    #2x Poll + Zuschlag warten
 
  #gibt es Parameter?
   while [ "$1" != "" ]; do
@@ -72,7 +84,7 @@
   if [ ${WS_POLL} -lt "16" ]; then WS_POLL=16; fi
 
  #Fehlermeldungen resetten
-  curl http://${IPP}/set/${DP_KOMFEHLER}?value=false >/dev/null 2>&1
+  curl "http://${IPP}/set/${DP_KOMFEHLER}?value=false&ack=true" >/dev/null 2>&1
 
 
 #Endlosschleife
@@ -114,7 +126,7 @@ while true
    if [ $debug == "true" ]; then debuging; fi
 
   #Jahresregenmenge?
-   if [ `date +%H` -ge "23" ] || [ `date +%H` -le "3" ] && [ `date +%M` -ge "50" ]; then rain; fi
+   if [ `date +%H` -ge "23" ] && [ `date +%M` -ge "58" ]; then rain; fi
 
  done
 

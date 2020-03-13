@@ -1,0 +1,204 @@
+### Subroutinen V1.0.0 --------------------------------------------------------
+
+###-------------------------------------------------------------------------###
+###  Subroutinen - KEINE ÄNDERUNGEN NÖTIG !                                 ###
+###-------------------------------------------------------------------------###
+
+
+###  Farbdefinition
+      GR='\e[1;32m'
+      GE='\e[1;33m'
+      WE='\e[1;37m'
+      BL='\e[1;36m'
+      RE='\e[1;31m'
+
+
+###  Debugging
+debuging() {
+  #Messwerteblock
+   echo -e "\n\n${WE}Messwerteblock: $GR${MESSWERTERAW[*]}$WE"
+
+  #Datenfelder ausgeben
+   echo -e "\n\nTemperatur Innen\t: $GR${MESSWERTE[0]}$WE °C"
+   echo -e "Temperatur Aussen\t: $GR${MESSWERTE[1]}$WE °C"
+   echo -e "Taupunkt\t\t: $GR${MESSWERTE[2]}$WE °C"
+   echo -e "Chill-Faktor\t\t: $GR${MESSWERTE[3]}$WE °C"
+   echo -e "Luftfeuchte Innen\t: $GR${MESSWERTE[4]}$WE %"
+   echo -e "Luftfeuchte Aussen\t: $GR${MESSWERTE[5]}$WE %"
+   echo -e "Windgeschwindkeit\t: $GR${MESSWERTE[6]}$WE km/h"
+   echo -e "max. Windgeschwindkeit\t: $GR${MESSWERTE[7]}$WE km/h"
+   echo -e "Windrichtung\t\t: $GR${MESSWERTE[8]}$WE °"
+   echo -e "Windrichtung\t\t: $GR${WINDRICHTUNG}$WE"
+   echo -e "Luftdruck absolut\t: $GR${MESSWERTE[9]}$WE hPa"
+   echo -e "Luftdruck relativ\t: $GR${MESSWERTE[10]}$WE hPa"
+   echo -e "Regenrate\t\t: $GR${MESSWERTE[11]}$WE mm/h"
+   echo -e "Regen Tag\t\t: $GR${MESSWERTE[12]}$WE mm"
+   echo -e "Regen Woche\t\t: $GR${MESSWERTE[13]}$WE mm"
+   echo -e "Regen Monat\t\t: $GR${MESSWERTE[14]}$WE mm"
+   echo -e "Regen Jahr\t\t: $GR${MESSWERTE[15]}$WE mm"
+   echo -e "Sonnenstrahlung\t\t: $GR${MESSWERTE[16]}$WE W/m²"
+   echo -e "UV-Index\t\t: $GR${MESSWERTE[17]}$WE"
+   echo -e "Zeitstempel\t\t: $GR${MESSWERTE[18]}$WE"
+   
+   echo -e "\n\nDatenstring für ioBroker:\n$GR$IOB_DATA$WE\n"
+   if [ "$show_pwid" = "true" ]; then
+      DAT=$DATA
+    else
+      DAT=$(echo $DATA| sed -e 's/PASSWORD=.*[^&]*&indoort/PASSWORD=*****\&indoort/; s/\?ID=.*[^&]*&PASS/\?ID=*****\&PASS/') 
+   fi
+   echo -e "\nDATA von Wetterstation:\n$GR${DAT}$WE\n"
+
+   echo -e "\nDebug VAR:"
+   echo -e "Installationsverzeichnis: $GE$DIR$WE"
+   echo -e "IPP: $GE${IPP}$WE\tWS_PORT: $GE${WS_PORT}$WE\t\tWS_POLL: $GE${WS_POLL}$WE\t\tPRE_DP: $GE${PRE_DP}$WE"
+   echo -e "Script-Version: $GE$SH_VER$WE\tConfig-Version: $GE${CONF_V}$WE\tSub-Version: $GE${SUBVER}$WE"
+
+  #Shell-Skript mit Fehler beenden
+    exit 1
+}
+
+
+### ioB-Daten senden
+iob_send() {
+   #build Data-String
+    IOB_DATA=$(cat <<-EOD
+	${DP_TEMP_INNEN}=${MESSWERTE[0]}
+	&${DP_TEMP_AUSSEN}=${MESSWERTE[1]}
+	&${DP_TAUPUNKT}=${MESSWERTE[2]}
+	&${DP_CHILL}=${MESSWERTE[3]}
+	&${DP_FEUCHTE_INNEN}=${MESSWERTE[4]}
+	&${DP_FEUCHTE_AUSSEN}=${MESSWERTE[5]}
+	&${DP_WIND}=${MESSWERTE[6]}
+	&${DP_WIND_MAX}=${MESSWERTE[7]}
+	&${DP_WIND_DIR}=${MESSWERTE[8]}
+	&${DP_WIND_DIR_TXT}=${WINDRICHTUNG}
+	&${DP_DRUCK_ABS}=${MESSWERTE[9]}
+	&${DP_DRUCK_REL}=${MESSWERTE[10]}
+	&${DP_REGENRATE}=${MESSWERTE[11]}
+	&${DP_REGEN_TAG}=${MESSWERTE[12]}
+	&${DP_REGEN_WOCHE}=${MESSWERTE[13]}
+	&${DP_REGEN_MONAT}=${MESSWERTE[14]}
+	&${DP_REGEN_JAHR}=${MESSWERTE[15]}
+	&${DP_SONNE}=${MESSWERTE[16]}
+	&${DP_UV_INDEX}=${MESSWERTE[17]}
+	EOD
+     )
+   
+   #Leerzeichen entfernen + Zeitstempel wg. Leerzeichen erst hier anhängen
+    IOB_DATA=$(echo $IOB_DATA|tr -d " ")
+    IOB_DATA=${IOB_DATA}\&${DP_ZEITSTEMPEL}="${MESSWERTE[18]}&ack=true"
+
+
+   #Daten an den ioB schicken
+    if [ $debug == "true" ]; then 
+	curl --data "$IOB_DATA&prettyPrint" http://${IPP}/setBulk
+      else
+	curl --data "$IOB_DATA" http://${IPP}/setBulk >/dev/null 2>&1
+    fi
+}
+
+
+
+### Daten holen und Integritätscheck
+function get_DATA() {
+  #auf Daten der Wetterstation warten
+   DATA=$(timeout ${WARTE} nc -lvw 1 -p ${WS_PORT}|sed -n '1 p')
+   STRLEN=$(echo -n $DATA | wc -m)
+
+  #haben wir eine Jahresregenmenge?
+   if [[ ! "$DATA" =~ "yearlyrainin" ]]; then DATA=$(echo $DATA| sed -e 's/solarradiation/yearlyrainin=0\&solarradiation/' ); fi
+  #check auf Datenintigrität
+   if [ "$STRLEN" -gt "400" ] && [[ "$DATA" =~ "/weatherstation/updateweatherstation.php?ID=${WS_ID}" ]]; then return 0; else return 1; fi
+}
+
+
+
+### Datenpaket der Wetterstation anzeigen
+ws_data() {
+   echo -e "\n\nWarte maximal ${WARTE} Sekunden auf Datenpaket der Wetterstation...\n" && timeout ${WARTE} nc -lvw 1 -p ${WS_PORT} | sed -n '1 p'
+}
+
+
+
+### Datenkonvertierungen
+convertFtoC() { 
+	MESSWERTE[$i]=`echo "scale=2;(${MESSWERTE[$i]}-32)*5/9" | bc -l`
+}
+
+convertMPHtoKMH() {
+	MESSWERTE[$i]=`echo "scale=2;(${MESSWERTE[$i]}*16094/10000)" | bc -l`
+}
+
+convertLuftdruck() {
+	MESSWERTE[$i]=`echo "scale=2;${MESSWERTE[$i]}*33864/1000" | bc -l`
+}
+
+convertInchtoMM() { 
+	MESSWERTE[$i]=`echo "scale=1;${MESSWERTE[$i]}*254/10" | bc -l`
+}
+
+convertTime() {
+	MESSWERTE[$i]=$(echo ${MESSWERTE[$i]}|sed -e 's/%20/ /')
+	MESSWERTE[$i]=$(date --date="${MESSWERTE[$i]} UTC" +'%d.%m.%Y %H:%M:%S')
+	#MESSWERTE[$i]=$(echo ${MESSWERTE[$i]}|awk -F'-|%20' '{printf "%02s.%02s.%s %s", $3, $2, $1, $4}')
+}
+
+
+
+###Jahresregenmenge
+rain() {
+	   LC=$(curl -s http://${IPP}/get/${DP_REGEN_JAHR_KUM}?prettyPrint | grep '"lc":' | tr -d [:alpha:]:\ ,\")
+	   LC=`echo "scale=0;${LC}/1000" | bc -l`
+	   TS_AKT=$(date +%s)
+	   TS_DIFF=`echo "${TS_AKT}-${LC}-3600" | bc` #mind. 1 Stunde Differenz
+
+	  if [ ${TS_DIFF} -ge "0" ]; then
+	   REGENMENGE=$(curl -s http://${IPP}/getPlainValue/${DP_REGEN_JAHR_KUM})
+	   REGENMENGE=$(echo "scale=2;$REGENMENGE+${MESSWERTE[12]}" | bc -l)
+	   curl http://${IPP}/set/${DP_REGEN_JAHR_KUM}?value="${REGENMENGE}" >/dev/null 2>&1
+	  fi
+}
+
+
+
+###Windrichtung als Text
+winddir() {
+   WINDRICHTUNG=${WINDDIRS[$(round ${MESSWERTE[8]}/22.5 0)]}
+}
+
+
+###Hilfsfunktionen
+round() {
+    bc -l <<END_BC
+        define round(number,r_scale)
+        {
+            auto o_scale
+            o_scale = scale
+            scale = r_scale+1
+            number += 5 / (10 ^ scale)
+            scale = r_scale
+            number /= 1
+            scale = o_scale
+            return number
+        }
+        round ($1,$2)
+END_BC
+}
+
+###Befehlszeilenparameter
+usage() {
+	echo -e "\nusage: wetterstation [[--debug] | [-s|--show] | [-d|--data] | [-v|--version] | [-h|--help]]\n"
+	echo -e " --debug\teinmaliger Testdurchlauf mit Ausgabe"
+	echo -e " -s | --show\tzeigt bei der Debug-Ausgabe Passwort und Station-ID im Klartext an"
+	echo -e " -d | --data\tzeigt nur das gesendete Datenpaket der Wetterstation an"
+	echo -e " -v | --version\tAusgabe der Versionsnummer"
+	echo -e " -h | --help\tdieses Hilfemenue\n"
+}
+
+version() {
+	echo -e "\n$BL ${SH_VER} - (c) 2019-2020 SBorg"
+	echo -e " Config-Version: ${CONF_V}"
+	echo -e " Sub-Version   : ${SUBVER}\n"
+}
+
+###EoF

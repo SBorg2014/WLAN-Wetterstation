@@ -28,6 +28,15 @@
 
 **V0.1.3 - 08.02.2020**
 ```
+   + Berechnung der Jahresregenmenge
+   + Windrichtung zusätzlich als Text
+   ~ Änderung "Regen Aktuell" in "Regenrate"
+   ~ Splitt in conf- + sub-Datei
+```
+
+
+**V0.1.3 - 08.02.2020**
+```
     + Unterstützung für Datenpunkt "Regenmenge Jahr", zB. für Froggit WH4000SE
     + Shell-Parameter -s (Klartextanzeige Passwort + Station-ID)
     + Shell-Parameter --data (zeigt nur das gesendete Datenpaket der Wetterstation an)

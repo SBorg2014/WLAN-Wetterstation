@@ -26,7 +26,7 @@
 <br><br>
 ## Versionen ##
 
-**V0.1.3 - 08.02.2020**
+**V1.0.0 - 08.02.2020**
 ```
    + Berechnung der Jahresregenmenge
    + Windrichtung zusätzlich als Text

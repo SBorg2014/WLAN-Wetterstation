@@ -1,4 +1,4 @@
-### Subroutinen V1.0.0 --------------------------------------------------------
+### Subroutinen V1.0.1 --------------------------------------------------------
 
 ###-------------------------------------------------------------------------###
 ###  Subroutinen - KEINE ÄNDERUNGEN NÖTIG !                                 ###
@@ -32,6 +32,7 @@ debuging() {
    echo -e "Luftdruck absolut\t: $GR${MESSWERTE[9]}$WE hPa"
    echo -e "Luftdruck relativ\t: $GR${MESSWERTE[10]}$WE hPa"
    echo -e "Regenrate\t\t: $GR${MESSWERTE[11]}$WE mm/h"
+   echo -e "Regenstatus\t\t: $GR${REGENSTATUS}$WE"
    echo -e "Regen Tag\t\t: $GR${MESSWERTE[12]}$WE mm"
    echo -e "Regen Woche\t\t: $GR${MESSWERTE[13]}$WE mm"
    echo -e "Regen Monat\t\t: $GR${MESSWERTE[14]}$WE mm"
@@ -75,6 +76,7 @@ iob_send() {
 	&${DP_DRUCK_ABS}=${MESSWERTE[9]}
 	&${DP_DRUCK_REL}=${MESSWERTE[10]}
 	&${DP_REGENRATE}=${MESSWERTE[11]}
+	&${DP_REGENSTATUS}=${REGENSTATUS}
 	&${DP_REGEN_TAG}=${MESSWERTE[12]}
 	&${DP_REGEN_WOCHE}=${MESSWERTE[13]}
 	&${DP_REGEN_MONAT}=${MESSWERTE[14]}
@@ -114,7 +116,7 @@ function get_DATA() {
 
 
 ### Datenpaket der Wetterstation anzeigen
-ws_data() {
+function ws_data() {
    echo -e "\n\nWarte maximal ${WARTE} Sekunden auf Datenpaket der Wetterstation...\n" && timeout ${WARTE} nc -lvw 1 -p ${WS_PORT} | sed -n '1 p'
 }
 
@@ -135,6 +137,15 @@ convertLuftdruck() {
 
 convertInchtoMM() { 
 	MESSWERTE[$i]=`echo "scale=1;${MESSWERTE[$i]}*254/10" | bc -l`
+	#Regenstatus bestimmen (#11)
+	if [ $i -eq "11" ]; then
+	 REGEN=$(round ${MESSWERTE[11]} 0)
+	 if [ $REGEN -ge "10" ]; then REGENSTATUS="Starkregen" ;fi
+	 if [ $REGEN -lt "10" ]; then REGENSTATUS="starker Regen" ;fi
+	 if [ $REGEN -lt "4" ]; then REGENSTATUS="mäßiger Regen" ;fi
+	 if [ $REGEN -lt "1" ]; then REGENSTATUS="leichter Regen" ;fi
+	 if [ $REGEN -eq "0" ]; then REGENSTATUS="--" ;fi
+	fi
 }
 
 convertTime() {

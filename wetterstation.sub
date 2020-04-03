@@ -143,7 +143,7 @@ convertInchtoMM() {
 	 if [ $REGEN -ge "10" ]; then REGENSTATUS="Starkregen" ;fi
 	 if [ $REGEN -lt "10" ]; then REGENSTATUS="starker Regen" ;fi
 	 if [ $REGEN -lt "4" ]; then REGENSTATUS="mäßiger Regen" ;fi
-	 if [ $REGEN -lt "1" ]; then REGENSTATUS="leichter Regen" ;fi
+	 if [ $REGEN -eq "1" ]; then REGENSTATUS="leichter Regen" ;fi
 	 if [ $REGEN -eq "0" ]; then REGENSTATUS="--" ;fi
 	fi
 }

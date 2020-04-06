@@ -1,4 +1,4 @@
-### Subroutinen V1.0.1 --------------------------------------------------------
+### Subroutinen V1.1.0 --------------------------------------------------------
 
 ###-------------------------------------------------------------------------###
 ###  Subroutinen - KEINE ÄNDERUNGEN NÖTIG !                                 ###
@@ -88,7 +88,7 @@ iob_send() {
    
    #Leerzeichen entfernen + Zeitstempel wg. Leerzeichen erst hier anhängen
     IOB_DATA=$(echo $IOB_DATA|tr -d " ")
-    IOB_DATA=${IOB_DATA}\&${DP_ZEITSTEMPEL}="${MESSWERTE[18]}&ack=true"
+    IOB_DATA=${IOB_DATA}\&${DP_ZEITSTEMPEL}=${MESSWERTE[18]}
 
 
    #Daten an den ioB schicken
@@ -138,13 +138,13 @@ convertLuftdruck() {
 convertInchtoMM() { 
 	MESSWERTE[$i]=`echo "scale=1;${MESSWERTE[$i]}*254/10" | bc -l`
 	#Regenstatus bestimmen (#11)
-	if [ $i -eq "11" ]; then
+	if [ "$i" -eq "11" ]; then
 	 REGEN=$(round ${MESSWERTE[11]} 0)
-	 if [ $REGEN -ge "10" ]; then REGENSTATUS="Starkregen" ;fi
-	 if [ $REGEN -lt "10" ]; then REGENSTATUS="starker Regen" ;fi
-	 if [ $REGEN -lt "4" ]; then REGENSTATUS="mäßiger Regen" ;fi
-	 if [ $REGEN -lt "1" ]; then REGENSTATUS="leichter Regen" ;fi
-	 if [ $REGEN -eq "0" ]; then REGENSTATUS="--" ;fi
+	 if [ "$REGEN" -ge "10" ]; then REGENSTATUS="Starkregen"; fi
+	 if [ "$REGEN" -lt "10" ]; then REGENSTATUS="starker Regen"; fi
+	 if [ "$REGEN" -lt "4" ]; then REGENSTATUS="mäßiger Regen"; fi
+	 if [ "$REGEN" -eq "1" ]; then REGENSTATUS="leichter Regen"; fi
+	 if [ "$REGEN" -eq "0" ]; then REGENSTATUS="--"; fi
 	fi
 }
 
@@ -178,6 +178,58 @@ winddir() {
 }
 
 
+
+###Wetterprognose
+wetterprognose() {
+	let TIMER_SET=$(date +%s)+65
+	LUFTDRUCK=$(round ${MESSWERTE[10]} 0)
+
+	#Array bilden
+	DRUCKWERTE=("${DRUCKWERTE[@]:1}")
+	DRUCKWERTE[11]=$LUFTDRUCK		
+
+    #Tendenz berechnen
+	if [ "${DRUCKWERTE[0]}" -gt "20" ]; then
+	 let PNOW=($LUFTDRUCK-${DRUCKWERTE[0]})*10
+	 if [ "$PNOW" -le "-80" ]; then WETTER_TREND="Sturm mit Hagel"; fi 
+	 if [ "$PNOW" -le "-50" ] && [ "$PNOW" -gt "-80" ]; then WETTER_TREND="Regen/Unwetter"; fi 
+	 if [ "$PNOW" -le "-30" ] && [ "$PNOW" -gt "-50" ]; then WETTER_TREND="Regnerisch"; fi 
+	 if [ "$PNOW" -le "-5" ] && [ "$PNOW" -gt "-30" ]; then WETTER_TREND="baldiger Regen"; fi
+	 if [ "$PNOW" -le "5" ] && [ "$PNOW" -gt "-5" ]; then WETTER_TREND="gleichbleibend"; fi 
+	 if [ "$PNOW" -le "30" ] && [ "$PNOW" -ge "5" ]; then WETTER_TREND="lange Schön"; fi
+	 if [ "$PNOW" -le "50" ] && [ "$PNOW" -ge "30" ]; then WETTER_TREND="Schön & labil"; fi
+	 if [ "$PNOW" -gt "50" ]; then WETTER_TREND="Sturmwarnung"; fi
+	 let PNOW=$PNOW/10
+ 
+ 	#Wetter erfassen und bestimmen
+	 if [ "$LUFTDRUCK" -le "980" ]; then $WETTER_AKTUELL="Stürmisch, Regen"; fi
+	 if [ "$LUFTDRUCK" -gt "980" ] && [ "$LUFTDRUCK" -le "1000" ]; then WETTER_AKTUELL="Regnerisch"; fi
+	 if [ "$LUFTDRUCK" -gt "1000" ] && [ "$LUFTDRUCK" -le "1020" ]; then WETTER_AKTUELL="Wechselhaft"; fi 
+	 if [ "$LUFTDRUCK" -gt "1020" ] && [ "$LUFTDRUCK" -le "1040" ]; then WETTER_AKTUELL="Sonnig"; fi 
+	 if [ "$LUFTDRUCK" -gt "1040" ]; then WETTER_AKTUELL="Trocken, Gewitter"; fi
+
+    fi
+
+    #falls Initialisierung
+     if [[ "$WETTER_TREND" =~ "Minuten" ]]; then
+         let RESTZEIT=15*${DRUCKWERTE[0]}
+         WETTER_TREND="dauert noch ${RESTZEIT} Minuten"
+     fi
+
+   #build Data-String
+    IOB_WDATA=$(cat <<-EOD
+	${DP_WETTER_TREND}=${WETTER_TREND}
+	&${DP_DRUCK_TENDENZ}=${PNOW}
+	&${DP_WETTER_AKTUELL}=${WETTER_AKTUELL}
+	EOD
+     ) 
+
+    curl --data "$IOB_WDATA" http://${IPP}/setBulk >/dev/null 2>&1
+
+}
+
+
+
 ###Hilfsfunktionen
 round() {
     bc -l <<END_BC
@@ -195,6 +247,29 @@ round() {
         round ($1,$2)
 END_BC
 }
+
+setup() {
+  let "WARTE=WS_POLL*2+6"    #2x Poll + Zuschlag warten
+  TIMER_SET=$(date +%s)      #Initial Set
+  #Anzeige bis Daten komplett
+   WETTER_TREND="dauert noch 180 Minuten"
+
+  declare -a MESSWERTE
+  declare -a MESSWERTERAW
+  DRUCKWERTE=(12 11 10 9 8 7 6 5 4 3 2 1)
+  WINDDIRS=(N NNO NO ONO O OSO SO SSO S SSW SW WSW W WNW NW NNW N)
+
+ #Check ob Pollintervall größer 16 Sekunden
+  if [ ${WS_POLL} -lt "16" ]; then WS_POLL=16; fi
+
+ #Fehlermeldungen resetten
+  curl "http://${IPP}/set/${DP_KOMFEHLER}?value=false&ack=true" >/dev/null 2>&1
+
+ #Startwerte setzen
+  curl --data "${DP_WETTER_TREND}=${WETTER_TREND}" http://${IPP}/setBulk >/dev/null 2>&1
+
+}
+
 
 ###Befehlszeilenparameter
 usage() {

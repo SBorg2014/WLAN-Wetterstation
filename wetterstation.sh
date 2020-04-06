@@ -1,13 +1,14 @@
 #!/bin/bash
 
-# V1.0.1 - 24.03.2020 (c) 2019-2020 SBorg
+# V1.1.0 - 03.04.2020 (c) 2019-2020 SBorg
 #
 # wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-Format aus, konvertiert dieses und überträgt
 # die Daten an den ioBroker
 #
 # benötigt den 'Simple RESTful API'-Adapter im ioBroker und 'bc' unter Linux
 #
-# V1.0.1 / 24.03.2020 - + aktueller Regenstatus
+# V1.1.0 / 03.04.2020 - + aktueller Regenstatus
+#                       + Luftdrucktendenz, Wettertrend und aktuelles Wetter
 # V1.0.0 / 12.03.2020 - + Berechnung Jahresregenmenge
 #                       + Windrichtung zusätzlich als Text
 #                       ~ Änderung "Regen Aktuell" in "Regenrate"
@@ -24,9 +25,9 @@
 # V0.1.0 / 29.12.2019 - erstes Release
 
 
- SH_VER="V1.0.1"
- CONF_V="V1.0.1"
- SUBVER="V1.0.1"
+ SH_VER="V1.1.0"
+ CONF_V="V1.1.0"
+ SUBVER="V1.1.0"
 
 
  #Installationsverzeichnis feststellen
@@ -52,7 +53,9 @@
  #Konfiguration lesen + Subroutinen laden
   . ${DIR}/wetterstation.conf
   . ${DIR}/wetterstation.sub
-  let "WARTE=WS_POLL*2+6"    #2x Poll + Zuschlag warten
+ #Setup ausführen
+  setup
+
 
  #gibt es Parameter?
   while [ "$1" != "" ]; do
@@ -77,15 +80,6 @@
   done
 
 
- declare -a MESSWERTE
- declare -a MESSWERTERAW
- WINDDIRS=(N NNO NO ONO O OSO SO SSO S SSW SW WSW W WNW NW NNW N)
-
- #Check ob Pollintervall größer 16 Sekunden
-  if [ ${WS_POLL} -lt "16" ]; then WS_POLL=16; fi
-
- #Fehlermeldungen resetten
-  curl "http://${IPP}/set/${DP_KOMFEHLER}?value=false&ack=true" >/dev/null 2>&1
 
 
 #Endlosschleife
@@ -128,6 +122,11 @@ while true
 
   #Jahresregenmenge?
    if [ `date +%H` -ge "23" ] && [ `date +%M` -ge "58" ]; then rain; fi
+
+  #Wetterprognose
+   DO_IT=`date +%M`
+   DO_IT=${DO_IT#0}
+   if [ $(( $DO_IT % 15 )) -eq "0" ] && [ `date +%s` -ge "$TIMER_SET" ]; then wetterprognose; fi
 
  done
 

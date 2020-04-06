@@ -1,4 +1,4 @@
-//Wetterstation Datenpunkte anlegen V1.0.1
+//Wetterstation Datenpunkte anlegen V1.1.0
  let DP="javascript.0.Wetterstation."
   createState(DP+"Innentemperatur"      ,"",   {name: "Temperatur im Haus",          type: "number", role: "state", unit: "°C" });
   createState(DP+"Aussentemperatur"     ,"",   {name: "Temperatur Außen",            type: "number", role: "state", unit: "°C" });
@@ -12,6 +12,9 @@
   createState(DP+"Windrichtung_Text"    ,"",   {name: "Windrichtung als Text",       type: "string", role: "state" });
   createState(DP+"Druck_absolut"        ,"",   {name: "Luftdruck absolut",           type: "number", role: "state", unit: "hPa" });
   createState(DP+"Druck_relativ"        ,"",   {name: "Luftdruck relativ",           type: "number", role: "state", unit: "hPa" });
+  createState(DP+"Druck_Tendenz"        ,"",   {name: "Luftdrucktendenz",            type: "number", role: "state" });
+  createState(DP+"Wetter_Trend"         ,"",   {name: "Wettertrend",                 type: "string", role: "state" });
+  createState(DP+"Wetter_aktuell"       ,"",   {name: "aktuelles Wetter",            type: "string", role: "state" });
   createState(DP+"Regenrate"            ,"",   {name: "Regenrate",                   type: "number", role: "state", unit: "mm/h" });
   createState(DP+"Regenstatus"          ,"--", {name: "aktueller Regenstatus",       type: "string", role: "state" });
   createState(DP+"Regen_Tag"            ,"",   {name: "Regenmenge Heute",            type: "number", role: "state", unit: "mm" });

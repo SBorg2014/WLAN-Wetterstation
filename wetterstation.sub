@@ -201,7 +201,7 @@ wetterprognose() {
 	 if [ "$PNOW" -le "50" ] && [ "$PNOW" -ge "30" ]; then WETTER_TREND="Schön & labil"; fi
 	 if [ "$PNOW" -gt "50" ]; then WETTER_TREND="Sturmwarnung"; fi
 	 PNOW=`echo "scale=1;$PNOW/10" | bc -l`
-
+	fi
  
 	#Wetter erfassen und bestimmen
 	 if [ "$LUFTDRUCK" -le "980" ]; then $WETTER_AKTUELL="Stürmisch, Regen"; fi
@@ -210,7 +210,6 @@ wetterprognose() {
 	 if [ "$LUFTDRUCK" -gt "1020" ] && [ "$LUFTDRUCK" -le "1040" ]; then WETTER_AKTUELL="Sonnig"; fi 
 	 if [ "$LUFTDRUCK" -gt "1040" ]; then WETTER_AKTUELL="Trocken, Gewitter"; fi
 
-	fi
 
 	#falls Initialisierung
 	if [[ "$WETTER_TREND" =~ "Minuten" ]]; then
@@ -218,11 +217,15 @@ wetterprognose() {
 	 WETTER_TREND="dauert noch ${RESTZEIT} Minuten"
 	fi
 
+	#sicherstellen dass nur Zahlen im 2. Wert vorhanden sind
+	DRUCKWERTE[1]=$(echo ${DRUCKWERTE[1]} | grep -o '[0-9]*')
+
 	#build Data-String
 	IOB_WDATA=$(cat <<-EOD
 	${DP_WETTER_TREND}=${WETTER_TREND}
 	&${DP_DRUCK_TENDENZ}=${PNOW}
 	&${DP_WETTER_AKTUELL}=${WETTER_AKTUELL}
+	&${DP_WETTERDATA}=${DRUCKWERTE[@]}
 	EOD
      ) 
 
@@ -254,7 +257,7 @@ setup() {
   let "WARTE=WS_POLL*2+6"    #2x Poll + Zuschlag warten
   TIMER_SET=$(date +%s)      #Initial Set
   #Anzeige bis Daten komplett
-   WETTER_TREND="dauert noch 180 Minuten"
+   WETTER_TREND="noch --- Minuten"
 
   declare -a MESSWERTE
   declare -a MESSWERTERAW
@@ -267,9 +270,26 @@ setup() {
  #Fehlermeldungen resetten
   curl "http://${IPP}/set/${DP_KOMFEHLER}?value=false&ack=true" >/dev/null 2>&1
 
+ #Wetterdatenarray lesen
+ DRUCKWERTE_TMP=$(curl -s http://${IPP}/getPlainValue/${DP_WETTERDATA})
+ if [ ${#DRUCKWERTE_TMP} -le "2" ]; then
+   DRUCKWERTE_TMP=${DRUCKWERTE[@]}
+   curl --data "${DP_WETTERDATA}=${DRUCKWERTE_TMP}" http://${IPP}/setBulk >/dev/null 2>&1
+  else
+   LC=$(curl -s http://${IPP}/get/${DP_WETTERDATA}?prettyPrint | grep '"lc":' | tr -d [:alpha:]:\ ,\")
+   LC=`echo "scale=0;${LC}/1000" | bc -l`
+   TS_AKT=$(date +%s)
+   TS_DIFF=`echo "${TS_AKT}-${LC}-3600" | bc` #mind. 1 Stunde Differenz (dann >0)
+   if [ "$TS_DIFF" -le "0" ]; then
+     unset DRUCKWERTE
+     IFS=" "
+     DRUCKWERTE=($DRUCKWERTE_TMP)
+     if [ "${DRUCKWERTE[1]}" -gt "20" ]; then WETTER_TREND="dauert max. 15 Minuten"; fi
+   fi
+ fi
+
  #Startwerte setzen
   curl --data "${DP_WETTER_TREND}=${WETTER_TREND}" http://${IPP}/setBulk >/dev/null 2>&1
-
 }
 
 

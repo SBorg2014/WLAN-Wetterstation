@@ -26,3 +26,5 @@
   createState(DP+"UV_Index"             ,"",   {name: "UV Index",                    type: "number", role: "state" });
   createState(DP+"Zeitstempel"          ,"",   {name: "von wann ist die Messung",    type: "string", role: "state" });
   createState(DP+"_Kommunikationsfehler","",   {name: "liegt ein Problem vor",       type: "boolean",role: "state" });
+  createState(DP+"tempData.Wetterdaten" ,"",   {name: "temporär gespeicherte Wetterdaten",type: "string",role: "state" });
+

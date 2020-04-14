@@ -26,6 +26,14 @@
 <br><br>
 ## Versionen ##
 
+
+**V1.1.0 - 14.04.2020**
+```
+   + aktueller Regenstatus
+   + Luftdrucktendenz, Wettertrend und aktuelles Wetter
+```
+
+
 **V1.0.0 - 18.03.2020**
 ```
    + Berechnung der Jahresregenmenge

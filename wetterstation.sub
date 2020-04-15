@@ -257,7 +257,7 @@ sonnenpuls() {
 	let SONNENSCHEIN_WO+="$WS_POLL"
 	let SONNENSCHEIN_MO+="$WS_POLL"
 	let SONNENSCHEIN_JAHR+="$WS_POLL"
-        curl --data "${DP_SONNENSCHEIN_SAVE}=${SONNENSCHEIN_TAG} ${SONNENSCHEIN_WO} ${SONNENSCHEIN_MO} ${SONNENSCHEIN_JAHR}" http://${IPP}/setBulk >/dev/null 2>&1
+	curl --data "${DP_SONNENSCHEIN_SAVE}=${SONNENSCHEIN_TAG} ${SONNENSCHEIN_WO} ${SONNENSCHEIN_MO} ${SONNENSCHEIN_JAHR}" http://${IPP}/setBulk >/dev/null 2>&1
 	SONNENDAUER_STR_TAG=$(timestr ${SONNENSCHEIN_TAG})
 	SONNENDAUER_STR_WO=$(timestr ${SONNENSCHEIN_WO})
 	SONNENDAUER_STR_MO=$(timestr ${SONNENSCHEIN_MO})
@@ -271,6 +271,8 @@ sonnenpuls() {
 	&${DP_SONNENSCHEIN_JAHR_TEXT}=${SONNENDAUER_STR_JAHR}
 	&${DP_SONNENSCHEIN_TAG}=${SONNENSCHEIN_TAG}
 	&${DP_SONNENSCHEIN_WOCHE}=${SONNENSCHEIN_WO}
+	&${DP_SONNENSCHEIN_MONAT}=${SONNENSCHEIN_MO}
+	&${DP_SONNENSCHEIN_JAHR}=${SONNENSCHEIN_JAHR}
 	EOD
 	) 
 	curl --data "${IOB_SDATA}" http://${IPP}/setBulk >/dev/null 2>&1
@@ -306,9 +308,11 @@ reset_sonnenschein() {
 	#Tageszähler resetten
 	unset SONNENSCHEIN_TAG
 
-	#Wochenzähler resetten
-	#date +%u WO 7? 
-	#$(date -d "now + 1 day" +"%d") MO 
+	#Wochenzähler resetten (Sonntags um 0:00 Uhr)
+	if [ `date +%u` -eq "7" ]; then unset SONNENSCHEIN_WOCHE; fi
+
+	#Monatszähler resetten 
+	if [ $(date -d "now + 1 day" +"%d") -eq "01" ]; then unset SONNENSCHEIN_MONAT; fi 
 }
 
 setup() {

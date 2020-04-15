@@ -1,4 +1,4 @@
-### Subroutinen V1.1.0 --------------------------------------------------------
+### Subroutinen V1.2.0 --------------------------------------------------------
 
 ###-------------------------------------------------------------------------###
 ###  Subroutinen - KEINE ÄNDERUNGEN NÖTIG !                                 ###
@@ -40,12 +40,13 @@ debuging() {
    echo -e "Sonnenstrahlung\t\t: $GR${MESSWERTE[16]}$WE W/m²"
    echo -e "UV-Index\t\t: $GR${MESSWERTE[17]}$WE"
    echo -e "Zeitstempel\t\t: $GR${MESSWERTE[18]}$WE"
+   echo -e "Firmware\t\t: $GR${MESSWERTE[19]}$WE"
    
    echo -e "\n\nDatenstring für ioBroker:\n$GR$IOB_DATA$WE\n"
    if [ "$show_pwid" = "true" ]; then
       DAT=$DATA
     else
-      DAT=$(echo $DATA| sed -e 's/PASSWORD=.*[^&]*&indoort/PASSWORD=*****\&indoort/; s/\?ID=.*[^&]*&PASS/\?ID=*****\&PASS/') 
+      DAT=$(echo $DATA| sed -e 's/PASSWORD=.*[^&]*&indoort/PASSWORD=xxxxxx\&indoort/; s/\?ID=.*[^&]*&PASS/\?ID=xxxxxx\&PASS/') 
    fi
    echo -e "\nDATA von Wetterstation:\n$GR${DAT}$WE\n"
 
@@ -85,7 +86,7 @@ iob_send() {
 	EOD
      )
    
-   #Leerzeichen entfernen + Zeitstempel wg. Leerzeichen erst hier anhängen
+   #Leerzeichen entfernen + Zeitstempel/Regenstatus wg. Leerzeichen erst hier anhängen
     IOB_DATA=$(echo $IOB_DATA|tr -d " ")
     IOB_DATA=${IOB_DATA}\&${DP_REGENSTATUS}=${REGENSTATUS}\&${DP_ZEITSTEMPEL}=${MESSWERTE[18]}
 
@@ -184,7 +185,7 @@ wetterprognose() {
 	LUFTDRUCK=$(round ${MESSWERTE[10]} 0)
 
 	#Array bilden
-	DRUCKWERTE=("${DRUCKWERTE[@]:1}")
+	DRUCKWERTE=(${DRUCKWERTE[@]:1})
 	DRUCKWERTE[11]=$LUFTDRUCK		
 
  
@@ -199,11 +200,11 @@ wetterprognose() {
 	 if [ "$PNOW" -le "30" ] && [ "$PNOW" -ge "5" ]; then WETTER_TREND="lange Schön"; fi
 	 if [ "$PNOW" -le "50" ] && [ "$PNOW" -ge "30" ]; then WETTER_TREND="Schön & labil"; fi
 	 if [ "$PNOW" -gt "50" ]; then WETTER_TREND="Sturmwarnung"; fi
-	 PNOW=`echo "scale=1;$PNOW/10" | bc -l`
+	 PNOW=`echo "scale=2;$PNOW/10" | bc -l`
 	fi
  
 	#Wetter erfassen und bestimmen
-	 if [ "$LUFTDRUCK" -le "980" ]; then $WETTER_AKTUELL="Stürmisch, Regen"; fi
+	 if [ "$LUFTDRUCK" -le "980" ]; then WETTER_AKTUELL="Stürmisch, Regen"; fi
 	 if [ "$LUFTDRUCK" -gt "980" ] && [ "$LUFTDRUCK" -le "1000" ]; then WETTER_AKTUELL="Regnerisch"; fi
 	 if [ "$LUFTDRUCK" -gt "1000" ] && [ "$LUFTDRUCK" -le "1020" ]; then WETTER_AKTUELL="Wechselhaft"; fi 
 	 if [ "$LUFTDRUCK" -gt "1020" ] && [ "$LUFTDRUCK" -le "1040" ]; then WETTER_AKTUELL="Sonnig"; fi 
@@ -234,7 +235,56 @@ wetterprognose() {
 
 
 
+###Check auf Firmwareupgrade
+firmware_check() {
+	#Version auf GitHub holen
+	FW_VER=$(curl https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/firmware.version)
+	FW_AKT=${MESSWERTE[19]}
+	if [ "$FW_VER" != "$FW_AKT" ]; then
+	  curl "http://${IPP}/set/${DP_FW_UPGRADE}?value=true&ack=true" >/dev/null 2>&1
+	 else
+	  curl "http://${IPP}/set/${DP_FW_UPGRADE}?value=false&ack=true" >/dev/null 2>&1
+	fi
+}
+
+
+
+###Sonnenscheindauer (>=120W/m²)
+sonnenpuls() {
+    SONNEN_STRAHLUNG=$(round ${MESSWERTE[16]} 0) 
+    if [ "$SONNEN_STRAHLUNG" -ge "120" ]; then
+	let SONNENSCHEIN_TAG+="$WS_POLL"
+	let SONNENSCHEIN_WO+="$WS_POLL"
+	let SONNENSCHEIN_MO+="$WS_POLL"
+	let SONNENSCHEIN_JAHR+="$WS_POLL"
+        curl --data "${DP_SONNENSCHEIN_SAVE}=${SONNENSCHEIN_TAG} ${SONNENSCHEIN_WO} ${SONNENSCHEIN_MO} ${SONNENSCHEIN_JAHR}" http://${IPP}/setBulk >/dev/null 2>&1
+	SONNENDAUER_STR_TAG=$(timestr ${SONNENSCHEIN_TAG})
+	SONNENDAUER_STR_WO=$(timestr ${SONNENSCHEIN_WO})
+	SONNENDAUER_STR_MO=$(timestr ${SONNENSCHEIN_MO})
+	SONNENDAUER_STR_JAHR=$(timestr ${SONNENSCHEIN_JAHR})
+
+	#build + send Data-String
+	IOB_SDATA=$(cat <<-EOD
+	${DP_SONNENSCHEIN_TAG_TEXT}=${SONNENDAUER_STR_TAG}
+	&${DP_SONNENSCHEIN_WOCHE_TEXT}=${SONNENDAUER_STR_WO}
+	&${DP_SONNENSCHEIN_MONAT_TEXT}=${SONNENDAUER_STR_MO}
+	&${DP_SONNENSCHEIN_JAHR_TEXT}=${SONNENDAUER_STR_JAHR}
+	&${DP_SONNENSCHEIN_TAG}=${SONNENSCHEIN_TAG}
+	&${DP_SONNENSCHEIN_WOCHE}=${SONNENSCHEIN_WO}
+	EOD
+	) 
+	curl --data "${IOB_SDATA}" http://${IPP}/setBulk >/dev/null 2>&1
+    fi
+}
+
+
+
 ###Hilfsfunktionen
+timestr() {
+	SON_STR=$(echo "$(($1 /3600)) Std. $(($1 % 3600 /60)) Min. $(($1 % 60)) Sek.")
+	echo $SON_STR
+}
+
 round() {
     bc -l <<END_BC
         define round(number,r_scale)
@@ -250,6 +300,15 @@ round() {
         }
         round ($1,$2)
 END_BC
+}
+
+reset_sonnenschein() {
+	#Tageszähler resetten
+	unset SONNENSCHEIN_TAG
+
+	#Wochenzähler resetten
+	#date +%u WO 7? 
+	#$(date -d "now + 1 day" +"%d") MO 
 }
 
 setup() {
@@ -270,7 +329,7 @@ setup() {
   curl "http://${IPP}/set/${DP_KOMFEHLER}?value=false&ack=true" >/dev/null 2>&1
 
  #Wetterdatenarray lesen
- DRUCKWERTE_TMP=$(curl -s http://${IPP}/getPlainValue/${DP_WETTERDATA})
+ DRUCKWERTE_TMP=$(curl -s http://${IPP}/getPlainValue/${DP_WETTERDATA}|sed -e 's/\"//g')
  if [ ${#DRUCKWERTE_TMP} -le "2" ]; then
    DRUCKWERTE_TMP=${DRUCKWERTE[@]}
    curl --data "${DP_WETTERDATA}=${DRUCKWERTE_TMP}" http://${IPP}/setBulk >/dev/null 2>&1
@@ -287,8 +346,17 @@ setup() {
    fi
  fi
 
- #Startwerte setzen
-  curl --data "${DP_WETTER_TREND}=${WETTER_TREND}" http://${IPP}/setBulk >/dev/null 2>&1
+   #Sonnenscheinarray lesen
+   SONNENSCHEIN_TMP=$(curl -s http://${IPP}/getPlainValue/${DP_SONNENSCHEIN_SAVE}|sed -e 's/\"//g')
+   IFS=" "
+   SON_ARY=($SONNENSCHEIN_TMP)
+	SONNENSCHEIN_TAG=${SON_ARY[0]}
+	SONNENSCHEIN_WO=${SON_ARY[1]}
+	SONNENSCHEIN_MO=${SON_ARY[2]}
+	SONNENSCHEIN_JAHR=${SON_ARY[3]}
+
+   #Startwerte setzen
+   curl --data "${DP_WETTER_TREND}=${WETTER_TREND}" http://${IPP}/setBulk >/dev/null 2>&1
 }
 
 

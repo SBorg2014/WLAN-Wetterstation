@@ -1,12 +1,14 @@
 #!/bin/bash
 
-# V1.1.0 - 03.04.2020 (c) 2019-2020 SBorg
+# V1.2.0 - 10.04.2020 (c) 2019-2020 SBorg
 #
 # wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-Format aus, konvertiert dieses und überträgt
 # die Daten an den ioBroker
 #
 # benötigt den 'Simple RESTful API'-Adapter im ioBroker und 'bc' unter Linux
 #
+# V1.2.0 / 10.04.2020 - + Firmwareupgrade verfügbar?
+#                       + Sonnenscheindauer Heute, Woche, Monat, Jahr
 # V1.1.0 / 03.04.2020 - + aktueller Regenstatus
 #                       + Luftdrucktendenz, Wettertrend und aktuelles Wetter
 # V1.0.0 / 12.03.2020 - + Berechnung Jahresregenmenge
@@ -25,9 +27,9 @@
 # V0.1.0 / 29.12.2019 - erstes Release
 
 
- SH_VER="V1.1.0"
- CONF_V="V1.1.0"
- SUBVER="V1.1.0"
+ SH_VER="V1.2.0"
+ CONF_V="V1.2.0"
+ SUBVER="V1.2.0"
 
 
  #Installationsverzeichnis feststellen
@@ -94,7 +96,7 @@ while true
 
    #DATA zerlegen (Messwerte Block #3-#22)
    ii=2
-   for ((i=0; i<19; i++))
+   for ((i=0; i<20; i++))
     do
      let "ii++"
      MESSWERTERAW[$i]=$(echo ${DATA}|cut -d'&' -f${ii} | cut -d"=" -f2)
@@ -104,6 +106,7 @@ while true
       if [ "$i" -eq "8" ]; then winddir; fi
       if [ "$i" -eq "9" ] || [ "$i" -eq "10" ]; then convertLuftdruck; fi
       if [ "$i" -ge "11" ] && [ "$i" -lt "16" ]; then convertInchtoMM; fi
+      if [ "$i" -eq "16" ]; then sonnenpuls; fi
       if [ "$i" -eq "18" ]; then convertTime; fi
     done
 
@@ -120,8 +123,12 @@ while true
   #Debug eingeschaltet?
    if [ $debug == "true" ]; then debuging; fi
 
-  #Jahresregenmenge?
-   if [ `date +%H` -ge "23" ] && [ `date +%M` -ge "58" ]; then rain; fi
+  #Mitternachtjobs
+   if [ `date +%H` -ge "23" ] && [ `date +%M` -ge "58" ]; then
+	rain               #Jahresregenmenge
+	firmware_check     #neue Firmware
+	reset_sonnenschein #Sonnenscheindauer zurücksetzen
+   fi
 
   #Wetterprognose
    DO_IT=`date +%M`

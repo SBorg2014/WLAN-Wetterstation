@@ -9,6 +9,7 @@
 #
 # V1.2.0 / 10.04.2020 - + Firmwareupgrade verfügbar?
 #                       + Sonnenscheindauer Heute, Woche, Monat, Jahr
+#                       + UV-Belastung
 # V1.1.0 / 03.04.2020 - + aktueller Regenstatus
 #                       + Luftdrucktendenz, Wettertrend und aktuelles Wetter
 # V1.0.0 / 12.03.2020 - + Berechnung Jahresregenmenge
@@ -107,6 +108,7 @@ while true
       if [ "$i" -eq "9" ] || [ "$i" -eq "10" ]; then convertLuftdruck; fi
       if [ "$i" -ge "11" ] && [ "$i" -lt "16" ]; then convertInchtoMM; fi
       if [ "$i" -eq "16" ]; then sonnenpuls; fi
+      if [ "$i" -eq "17" ]; then uv_belastung; fi
       if [ "$i" -eq "18" ]; then convertTime; fi
     done
 
@@ -125,9 +127,9 @@ while true
 
   #Mitternachtjobs
    if [ `date +%H` -ge "23" ] && [ `date +%M` -ge "58" ]; then
-	rain               #Jahresregenmenge
-	firmware_check     #neue Firmware
-	reset_sonnenschein #Sonnenscheindauer zurücksetzen
+	rain                    #Jahresregenmenge
+	firmware_check          #neue Firmware
+	reset_sonnenschein      #Sonnenscheindauer zurücksetzen
    fi
 
   #Wetterprognose

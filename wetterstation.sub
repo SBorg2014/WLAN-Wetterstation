@@ -86,9 +86,9 @@ iob_send() {
 	EOD
      )
    
-   #Leerzeichen entfernen + Zeitstempel/Regenstatus wg. Leerzeichen erst hier anhängen
+   #Leerzeichen entfernen + Zeitstempel/Regenstatus/UV-Belastung wg. Leerzeichen erst hier anhängen
     IOB_DATA=$(echo $IOB_DATA|tr -d " ")
-    IOB_DATA=${IOB_DATA}\&${DP_REGENSTATUS}=${REGENSTATUS}\&${DP_ZEITSTEMPEL}=${MESSWERTE[18]}
+    IOB_DATA=${IOB_DATA}\&${DP_REGENSTATUS}=${REGENSTATUS}\&${DP_UV_BELASTUNG}=${UV_BELASTUNG}\&${DP_ZEITSTEMPEL}=${MESSWERTE[18]}
 
 
    #Daten an den ioB schicken
@@ -277,6 +277,22 @@ sonnenpuls() {
 	) 
 	curl --data "${IOB_SDATA}" http://${IPP}/setBulk >/dev/null 2>&1
     fi
+}
+
+
+
+###UV-Belastung
+uv_belastung() {
+	UV_TMP=$(round ${MESSWERTE[17]} 0)
+	case ${UV_TMP} in
+	   0)      UV_BELASTUNG="keine" ;;
+	   1|2)    UV_BELASTUNG="gering" ;;
+	   3|4|5)  UV_BELASTUNG="mittel" ;;
+	   6|7)    UV_BELASTUNG="hoch" ;;
+	   8|9|10) UV_BELASTUNG="sehr hoch" ;;
+	   *)      UV_BELASTUNG="--"
+	esac
+	if [ "${UV_TMP}" -ge "11" ]; then UV_BELASTUNG="extrem hoch"; fi
 }
 
 

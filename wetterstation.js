@@ -24,6 +24,7 @@
   createState(DP+"Regen_Jahr_kumuliert"   , 0,   {name: "Regenmenge Jahr berechnet",     type: "number", role: "state", unit: "mm" });
   createState(DP+"Sonnenstrahlung"        ,"",   {name: "Sonnenstrahlung",               type: "number", role: "state", unit: "W/m²" });
   createState(DP+"UV_Index"               ,"",   {name: "UV Index",                      type: "number", role: "state" });
+  createState(DP+"UV_Belastung"           ,"",   {name: "UV-Belastung",                  type: "string", role: "state" });
   createState(DP+"Zeitstempel"            ,"",   {name: "von wann ist die Messung",      type: "string", role: "state" });
   createState(DP+"_Kommunikationsfehler"  ,"",   {name: "liegt ein Problem vor",         type: "boolean",role: "state" });
   createState(DP+"tempData.Wetterdaten"   ,"",   {name: "temporär gespeicherte Wetterdaten",type: "string",role: "state" });

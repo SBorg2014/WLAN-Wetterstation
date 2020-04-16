@@ -252,7 +252,7 @@ firmware_check() {
 ###Sonnenscheindauer (>=120W/m²)
 sonnenpuls() {
     SONNEN_STRAHLUNG=$(round ${MESSWERTE[16]} 0) 
-    if [ "$SONNEN_STRAHLUNG" -ge "120" ]; then
+    if [ "$SONNEN_STRAHLUNG" -ge "120" ] || [ ! -z "$MIDNIGHTRUN" ]; then
 	let SONNENSCHEIN_TAG+="$WS_POLL"
 	let SONNENSCHEIN_WO+="$WS_POLL"
 	let SONNENSCHEIN_MO+="$WS_POLL"
@@ -322,13 +322,18 @@ END_BC
 
 reset_sonnenschein() {
 	#Tageszähler resetten
-	unset SONNENSCHEIN_TAG
+	SONNENSCHEIN_TAG=-$WS_POLL
 
 	#Wochenzähler resetten (Sonntags um 0:00 Uhr)
-	if [ `date +%u` -eq "7" ]; then unset SONNENSCHEIN_WOCHE; fi
+	if [ `date +%u` -eq "7" ]; then SONNENSCHEIN_WOCHE=-$WS_POLL; fi
 
 	#Monatszähler resetten 
-	if [ $(date -d "now + 1 day" +"%d") -eq "01" ]; then unset SONNENSCHEIN_MONAT; fi 
+	if [ $(date -d "now + 1 day" +"%d") -eq "01" ]; then SONNENSCHEIN_MONAT=-$WS_POLL; fi 
+
+	MIDNIGHTRUN=1
+	sonnenpuls
+	unset MIDNIGHTRUN
+
 }
 
 setup() {

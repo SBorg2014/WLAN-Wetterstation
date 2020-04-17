@@ -229,7 +229,7 @@ wetterprognose() {
 	EOD
      ) 
 
-    curl --data "$IOB_WDATA" http://${IPP}/setBulk >/dev/null 2>&1
+    curl --data "$IOB_WDATA" http://${IPP}/setBulk &>/dev/null 2>&1
 
 }
 
@@ -275,7 +275,7 @@ sonnenpuls() {
 	&${DP_SONNENSCHEIN_JAHR}=${SONNENSCHEIN_JAHR}
 	EOD
 	) 
-	curl --data "${IOB_SDATA}" http://${IPP}/setBulk >/dev/null 2>&1
+	curl --data "${IOB_SDATA}" http://${IPP}/setBulk &>/dev/null 2>&1
     fi
 }
 
@@ -328,7 +328,16 @@ reset_sonnenschein() {
 	if [ `date +%u` -eq "7" ]; then SONNENSCHEIN_WOCHE=-$WS_POLL; fi
 
 	#Monatszähler resetten 
-	if [ $(date -d "now + 1 day" +"%d") -eq "01" ]; then SONNENSCHEIN_MONAT=-$WS_POLL; fi 
+	if [ $(date -d "now + 1 day" +"%d") -eq "01" ]; then 
+	  SONNENSCHEIN_MONAT=-$WS_POLL 
+	  if [ `date +%m` -eq "12" ]; then
+		#Jahreszähler resetten
+		curl http://${IPP}/set/${DP_REGENMENGE_VORJAHR}?value="${REGENMENGE}" >/dev/null 2>&1
+		curl http://${IPP}/set/${DP_SONNENSCHEIN_VORJAHR}?value="${SONNENSCHEIN_JAHR}" >/dev/null 2>&1
+		REGENMENGE=0
+		SONNENSCHEIN_JAHR=0
+	  fi
+	fi
 
 	MIDNIGHTRUN=1
 	sonnenpuls

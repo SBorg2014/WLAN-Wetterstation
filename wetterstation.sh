@@ -129,7 +129,7 @@ while true
    if [ `date +%H` -ge "23" ] && [ `date +%M` -ge "58" ]; then
 	rain                    #Jahresregenmenge
 	firmware_check          #neue Firmware
-	reset_sonnenschein      #Sonnenscheindauer zurücksetzen
+	reset_sonnenschein      #Sonnenscheindauer zurücksetzen (enthällt auch Speicherung Werte VorJahr)
    fi
 
   #Wetterprognose

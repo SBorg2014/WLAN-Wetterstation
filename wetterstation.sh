@@ -8,8 +8,11 @@
 # benötigt den 'Simple RESTful API'-Adapter im ioBroker und 'bc' unter Linux
 #
 # V1.2.0 / 10.04.2020 - + Firmwareupgrade verfügbar?
+#                       + Firmwareversion
 #                       + Sonnenscheindauer Heute, Woche, Monat, Jahr
 #                       + UV-Belastung
+#                       + Solarenergie Heute, Woche, Monat, Jahr
+#                       + Vorjahreswerte von Regenmenge, Sonnenscheindauer und Solarenergie
 # V1.1.0 / 03.04.2020 - + aktueller Regenstatus
 #                       + Luftdrucktendenz, Wettertrend und aktuelles Wetter
 # V1.0.0 / 12.03.2020 - + Berechnung Jahresregenmenge
@@ -127,9 +130,9 @@ while true
 
   #Mitternachtjobs
    if [ `date +%H` -ge "23" ] && [ `date +%M` -ge "58" ]; then
-	rain                    #Jahresregenmenge
-	firmware_check          #neue Firmware
-	reset_sonnenschein      #Sonnenscheindauer zurücksetzen (enthällt auch Speicherung Werte VorJahr)
+	rain               #Jahresregenmenge
+	firmware_check     #neue Firmware
+	reset_zaehler      #Sonnenscheindauer, Solarenergie zurücksetzen (enthällt auch Speicherung Werte VorJahr)
    fi
 
   #Wetterprognose

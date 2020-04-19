@@ -1,5 +1,58 @@
 ### Subroutinen V1.2.0 --------------------------------------------------------
 
+
+ #Bezeichnung der Datenpunkte
+  DP_TEMP_INNEN=${PRE_DP}.Innentemperatur
+  DP_TEMP_AUSSEN=${PRE_DP}.Aussentemperatur
+  DP_TAUPUNKT=${PRE_DP}.Taupunkt
+  DP_CHILL=${PRE_DP}.Chillfaktor
+  DP_FEUCHTE_INNEN=${PRE_DP}.Innenfeuchtigkeit
+  DP_FEUCHTE_AUSSEN=${PRE_DP}.Aussenfeuchtigkeit
+  DP_WIND=${PRE_DP}.Wind
+  DP_WIND_MAX=${PRE_DP}.Wind_max
+  DP_WIND_DIR=${PRE_DP}.Windrichtung
+  DP_WIND_DIR_TXT=${PRE_DP}.Windrichtung_Text
+  DP_DRUCK_ABS=${PRE_DP}.Druck_absolut
+  DP_DRUCK_REL=${PRE_DP}.Druck_relativ
+  DP_REGENRATE=${PRE_DP}.Regenrate
+  DP_REGENSTATUS=${PRE_DP}.Regenstatus
+  DP_REGEN_TAG=${PRE_DP}.Regen_Tag
+  DP_REGEN_WOCHE=${PRE_DP}.Regen_Woche
+  DP_REGEN_MONAT=${PRE_DP}.Regen_Monat
+  DP_REGEN_JAHR=${PRE_DP}.Regen_Jahr
+  DP_REGEN_JAHR_KUM=${PRE_DP}.Regen_Jahr_kumuliert
+  DP_SONNE=${PRE_DP}.Sonnenstrahlung
+  DP_UV_INDEX=${PRE_DP}.UV_Index
+  DP_UV_BELASTUNG=${PRE_DP}.UV_Belastung
+  DP_ZEITSTEMPEL=${PRE_DP}.Zeitstempel
+  DP_WETTER_TREND=${PRE_DP}.Wetter_Trend
+  DP_WETTER_AKTUELL=${PRE_DP}.Wetter_aktuell
+  DP_DRUCK_TENDENZ=${PRE_DP}.Druck_Tendenz
+  DP_KOMFEHLER=${PRE_DP}._Kommunikationsfehler
+  DP_WETTERDATA=${PRE_DP}.tempData.Wetterdaten
+  DP_SONNENSCHEIN_SAVE=${PRE_DP}.tempData.Sonnenschein  
+  DP_SOLAR_SAVE=${PRE_DP}.tempData.Solarenergie
+  DP_FW_UPGRADE=${PRE_DP}.Info.FW_Upgrade
+  DP_FW_VERSION=${PRE_DP}.Info.FW_Version
+  DP_SONNENSCHEIN_TAG=${PRE_DP}.Info.Sonnenschein_Tag
+  DP_SONNENSCHEIN_WOCHE=${PRE_DP}.Info.Sonnenschein_Woche
+  DP_SONNENSCHEIN_MONAT=${PRE_DP}.Info.Sonnenschein_Monat
+  DP_SONNENSCHEIN_JAHR=${PRE_DP}.Info.Sonnenschein_Jahr
+  DP_SONNENSCHEIN_TAG_TEXT=${PRE_DP}.Info.Sonnenschein_Tag_Text
+  DP_SONNENSCHEIN_WOCHE_TEXT=${PRE_DP}.Info.Sonnenschein_Woche_Text
+  DP_SONNENSCHEIN_MONAT_TEXT=${PRE_DP}.Info.Sonnenschein_Monat_Text
+  DP_SONNENSCHEIN_JAHR_TEXT=${PRE_DP}.Info.Sonnenschein_Jahr_Text
+  DP_SONNENSCHEIN_VORJAHR=${PRE_DP}.Info.Sonnenschein_VorJahr
+  DP_REGENMENGE_VORJAHR=${PRE_DP}.Info.Regenmenge_VorJahr
+  DP_SOLARENERGIE_TAG=${PRE_DP}.Info.Solarenergie_Tag
+  DP_SOLARENERGIE_WOCHE=${PRE_DP}.Info.Solarenergie_Woche
+  DP_SOLARENERGIE_MONAT=${PRE_DP}.Info.Solarenergie_Monat
+  DP_SOLARENERGIE_JAHR=${PRE_DP}.Info.Solarenergie_Jahr
+  DP_SOLARENERGIE_VORJAHR=${PRE_DP}.Info.Solarenergie_VorJahr
+
+###  Ende Usereinstellungen  
+
+
 ###-------------------------------------------------------------------------###
 ###  Subroutinen - KEINE ÄNDERUNGEN NÖTIG !                                 ###
 ###-------------------------------------------------------------------------###
@@ -245,11 +298,12 @@ firmware_check() {
 	 else
 	  curl "http://${IPP}/set/${DP_FW_UPGRADE}?value=false&ack=true" >/dev/null 2>&1
 	fi
+	curl "http://${IPP}/set/${DP_FW_VERSION}?value=${FW_AKT}&ack=true" >/dev/null 2>&1
 }
 
 
 
-###Sonnenscheindauer (>=120W/m²)
+###Sonnenscheindauer (>=120W/m²) / Solarenergie
 sonnenpuls() {
     SONNEN_STRAHLUNG=$(round ${MESSWERTE[16]} 0) 
     if [ "$SONNEN_STRAHLUNG" -ge "120" ] || [ ! -z "$MIDNIGHTRUN" ]; then
@@ -277,6 +331,39 @@ sonnenpuls() {
 	) 
 	curl --data "${IOB_SDATA}" http://${IPP}/setBulk &>/dev/null 2>&1
     fi
+
+	###Solarenergie
+    if [ "$SONNEN_STRAHLUNG" -gt "0" ] || [ ! -z "$MIDNIGHTRUN" ]; then
+	#Array bilden
+	SOLARENERGIE=(${SOLARENERGIE[@]:1})
+	SOLARENERGIE[1]=$SONNEN_STRAHLUNG		
+
+	#Mittelwert berechnen
+	SOL_TMP=$(echo "scale=2;(${SOLARENERGIE[0]}+${SOLARENERGIE[1]})/2" | bc -l)
+
+	#Leistung berechnen
+	SOL_TMP=$(echo "scale=3;${SOL_TMP}/(3600/${WS_POLL})" | bc -l)
+	SOLARENERGIE_TAG=`echo "scale=3;${SOLARENERGIE_TAG}+${SOL_TMP}" | bc -l`
+	SOLAR_WOCHE=`echo "scale=5;(${SOLAR_WOCHE}+${SOL_TMP})" | bc -l`
+	SOLARENERGIE_WOCHE=`echo "scale=3;${SOLAR_WOCHE}/1000" | bc -l` #Umrechnung in kWh
+	SOLAR_MONAT=`echo "scale=5;(${SOLAR_MONAT}+${SOL_TMP})" | bc -l`
+	SOLARENERGIE_MONAT=`echo "scale=3;${SOLAR_MONAT}/1000" | bc -l` #Umrechnung in kWh
+	SOLAR_JAHR=`echo "scale=5;(${SOLAR_JAHR}+${SOL_TMP})" | bc -l`
+	SOLARENERGIE_JAHR=`echo "scale=3;${SOLAR_JAHR}/1000" | bc -l`   #Umrechnung in kWh
+
+	#Daten für ioB fertig machen
+	IOB_SOLDATA=$(cat <<-EOD
+	${DP_SOLARENERGIE_TAG}=${SOLARENERGIE_TAG}
+	&${DP_SOLARENERGIE_WOCHE}=${SOLARENERGIE_WOCHE}
+	&${DP_SOLARENERGIE_MONAT}=${SOLARENERGIE_MONAT}
+	&${DP_SOLARENERGIE_JAHR}=${SOLARENERGIE_JAHR}
+	&${DP_SOLAR_SAVE}=${SOLARENERGIE_TAG} ${SOLAR_WOCHE} ${SOLAR_MONAT} ${SOLAR_JAHR}
+	EOD
+	)
+
+	curl --data "${IOB_SOLDATA}" http://${IPP}/setBulk &>/dev/null 2>&1
+    fi
+
 }
 
 
@@ -320,22 +407,29 @@ round() {
 END_BC
 }
 
-reset_sonnenschein() {
+reset_zaehler() {
 	#Tageszähler resetten
 	SONNENSCHEIN_TAG=-$WS_POLL
+	SOLARENERGIE_TAG=0
 
 	#Wochenzähler resetten (Sonntags um 0:00 Uhr)
-	if [ `date +%u` -eq "7" ]; then SONNENSCHEIN_WOCHE=-$WS_POLL; fi
+	if [ `date +%u` -eq "7" ]; then 
+	   SONNENSCHEIN_WOCHE=-$WS_POLL
+	   SOLAR_WOCHE=0
+	fi
 
 	#Monatszähler resetten 
 	if [ $(date -d "now + 1 day" +"%d") -eq "01" ]; then 
 	  SONNENSCHEIN_MONAT=-$WS_POLL 
+	  SOLAR_MONAT=0
 	  if [ `date +%m` -eq "12" ]; then
 		#Jahreszähler resetten
 		curl http://${IPP}/set/${DP_REGENMENGE_VORJAHR}?value="${REGENMENGE}" >/dev/null 2>&1
 		curl http://${IPP}/set/${DP_SONNENSCHEIN_VORJAHR}?value="${SONNENSCHEIN_JAHR}" >/dev/null 2>&1
+		curl http://${IPP}/set/${DP_SOLARENERGIE_VORJAHR}?value="${SOLAR_JAHR}" >/dev/null 2>&1
 		REGENMENGE=0
 		SONNENSCHEIN_JAHR=0
+		SOLAR_JAHR=0
 	  fi
 	fi
 
@@ -353,11 +447,15 @@ setup() {
 
   declare -a MESSWERTE
   declare -a MESSWERTERAW
+  SOLARENERGIE=(0 0)
   DRUCKWERTE=(12 11 10 9 8 7 6 5 4 3 2 1)
   WINDDIRS=(N NNO NO ONO O OSO SO SSO S SSW SW WSW W WNW NW NNW N)
 
  #Check ob Pollintervall größer 16 Sekunden
   if [ ${WS_POLL} -lt "16" ]; then WS_POLL=16; fi
+
+ #falls reboot warten bis der ioB wieder läuft...
+  #while ! nc -v -z $(echo $IPP|sed -e 's/:/ /'); do sleep 30; done
 
  #Fehlermeldungen resetten
   curl "http://${IPP}/set/${DP_KOMFEHLER}?value=false&ack=true" >/dev/null 2>&1
@@ -388,6 +486,16 @@ setup() {
 	SONNENSCHEIN_WO=${SON_ARY[1]}
 	SONNENSCHEIN_MO=${SON_ARY[2]}
 	SONNENSCHEIN_JAHR=${SON_ARY[3]}
+
+   #Solarenergiearray lesen
+   SOLAR_TMP=$(curl -s http://${IPP}/getPlainValue/${DP_SOLAR_SAVE}|sed -e 's/\"//g')
+   SOL_ARY=($SOLAR_TMP)
+	SOLARENERGIE_TAG=${SOL_ARY[0]}
+	SOLAR_WOCHE=${SOL_ARY[1]}
+	SOLAR_MONAT=${SOL_ARY[2]}
+	SOLAR_JAHR=${SOL_ARY[3]}
+
+   unset SOL_ARY; unset SON_ARY; unset SONNENSCHEIN_TMP; unset SOLAR_TMP; unset IFS
 
    #Startwerte setzen
    curl --data "${DP_WETTER_TREND}=${WETTER_TREND}" http://${IPP}/setBulk >/dev/null 2>&1

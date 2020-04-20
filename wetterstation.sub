@@ -312,10 +312,10 @@ sonnenpuls() {
 	let SONNENSCHEIN_MO+="$WS_POLL"
 	let SONNENSCHEIN_JAHR+="$WS_POLL"
 	curl --data "${DP_SONNENSCHEIN_SAVE}=${SONNENSCHEIN_TAG} ${SONNENSCHEIN_WO} ${SONNENSCHEIN_MO} ${SONNENSCHEIN_JAHR}" http://${IPP}/setBulk >/dev/null 2>&1
-	SONNENDAUER_STR_TAG=$(timestr ${SONNENSCHEIN_TAG})
-	SONNENDAUER_STR_WO=$(timestr ${SONNENSCHEIN_WO})
-	SONNENDAUER_STR_MO=$(timestr ${SONNENSCHEIN_MO})
-	SONNENDAUER_STR_JAHR=$(timestr ${SONNENSCHEIN_JAHR})
+	timestr ${SONNENSCHEIN_TAG} SONNENDAUER_STR_TAG
+	timestr ${SONNENSCHEIN_WO} SONNENDAUER_STR_WO
+	timestr ${SONNENSCHEIN_MO} SONNENDAUER_STR_MO
+	timestr ${SONNENSCHEIN_JAHR} SONNENDAUER_STR_JAHR
 
 	#build + send Data-String
 	IOB_SDATA=$(cat <<-EOD
@@ -386,8 +386,14 @@ uv_belastung() {
 
 ###Hilfsfunktionen
 timestr() {
-	SON_STR=$(echo "$(($1 /3600)) Std. $(($1 % 3600 /60)) Min. $(($1 % 60)) Sek.")
-	echo $SON_STR
+	STUNDEN=$(echo "$(($1 /3600))")
+	MINUTEN=$(echo "$(($1 % 3600 /60))")
+	SEKUNDEN=$(echo "$(($1 % 60))")
+	case ${SONNENSCHEIN_TXTFORMAT} in
+	   0)   printf -v $2 "%d Std. %02d Min. %02d Sek." $STUNDEN $MINUTEN $SEKUNDEN ;;
+	   1)   printf -v $2 "%d:%02d" $STUNDEN $MINUTEN ;;
+	   *)   printf -v $2 "unbekanntes Format"
+	esac
 }
 
 round() {
@@ -411,16 +417,18 @@ reset_zaehler() {
 	#Tageszähler resetten
 	SONNENSCHEIN_TAG=-$WS_POLL
 	SOLARENERGIE_TAG=0
+	SOLARENERGIE[0]=0
+	SOLARENERGIE[1]=0
 
 	#Wochenzähler resetten (Sonntags um 0:00 Uhr)
 	if [ `date +%u` -eq "7" ]; then 
-	   SONNENSCHEIN_WOCHE=-$WS_POLL
+	   SONNENSCHEIN_WO=-$WS_POLL
 	   SOLAR_WOCHE=0
 	fi
 
 	#Monatszähler resetten 
 	if [ $(date -d "now + 1 day" +"%d") -eq "01" ]; then 
-	  SONNENSCHEIN_MONAT=-$WS_POLL 
+	  SONNENSCHEIN_MO=-$WS_POLL 
 	  SOLAR_MONAT=0
 	  if [ `date +%m` -eq "12" ]; then
 		#Jahreszähler resetten
@@ -474,7 +482,7 @@ setup() {
      unset DRUCKWERTE
      IFS=" "
      DRUCKWERTE=($DRUCKWERTE_TMP)
-     if [ "${DRUCKWERTE[1]}" -gt "20" ]; then WETTER_TREND="dauert max. 15 Minuten"; fi
+     if [ "${DRUCKWERTE[1]}" -gt "20" ]; then WETTER_TREND="dauert max. $(( 15 - (`date +%M` % 15) )) Minuten"; fi
    fi
  fi
 

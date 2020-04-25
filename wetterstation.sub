@@ -311,7 +311,7 @@ sonnenpuls() {
 	let SONNENSCHEIN_WO+="$WS_POLL"
 	let SONNENSCHEIN_MO+="$WS_POLL"
 	let SONNENSCHEIN_JAHR+="$WS_POLL"
-	curl --data "${DP_SONNENSCHEIN_SAVE}=${SONNENSCHEIN_TAG} ${SONNENSCHEIN_WO} ${SONNENSCHEIN_MO} ${SONNENSCHEIN_JAHR}" http://${IPP}/setBulk >/dev/null 2>&1
+	curl --data "${DP_SONNENSCHEIN_SAVE}=${SONNENSCHEIN_TAG} ${SONNENSCHEIN_WO} ${SONNENSCHEIN_MO} ${SONNENSCHEIN_JAHR}" http://${IPP}/setBulk &>/dev/null 2>&1
 	timestr ${SONNENSCHEIN_TAG} SONNENDAUER_STR_TAG
 	timestr ${SONNENSCHEIN_WO} SONNENDAUER_STR_WO
 	timestr ${SONNENSCHEIN_MO} SONNENDAUER_STR_MO
@@ -386,12 +386,18 @@ uv_belastung() {
 
 ###Hilfsfunktionen
 timestr() {
-	STUNDEN=$(echo "$(($1 /3600))")
+	TAGE=$(echo "$(($1 /86400))")
+	STUNDEN_KPL=$(echo "$(($1 /3600))")
+	STUNDEN=$(echo "$(($1 % 86400 /3600))")
 	MINUTEN=$(echo "$(($1 % 3600 /60))")
 	SEKUNDEN=$(echo "$(($1 % 60))")
+
+	if [ "$TAGE" -eq "1" ]; then TAG_TXT="Tag"; else TAG_TXT="Tage"; fi
+
 	case ${SONNENSCHEIN_TXTFORMAT} in
-	   0)   printf -v $2 "%d Std. %02d Min. %02d Sek." $STUNDEN $MINUTEN $SEKUNDEN ;;
-	   1)   printf -v $2 "%d:%02d" $STUNDEN $MINUTEN ;;
+	   0)   printf -v $2 "%d Std. %02d Min. %02d Sek." $STUNDEN_KPL $MINUTEN $SEKUNDEN ;;
+	   1)   printf -v $2 "%d:%02d" $STUNDEN_KPL $MINUTEN ;;
+	   2)   printf -v $2 "%d $TAG_TXT %d Std." $TAGE $STUNDEN ;;
 	   *)   printf -v $2 "unbekanntes Format"
 	esac
 }
@@ -441,9 +447,7 @@ reset_zaehler() {
 	  fi
 	fi
 
-	MIDNIGHTRUN=1
-	sonnenpuls
-	unset MIDNIGHTRUN
+	MIDNIGHTRUN=1; sonnenpuls; unset MIDNIGHTRUN
 
 }
 
@@ -463,7 +467,7 @@ setup() {
   if [ ${WS_POLL} -lt "16" ]; then WS_POLL=16; fi
 
  #falls reboot warten bis der ioB wieder läuft...
-  #while ! nc -v -z $(echo $IPP|sed -e 's/:/ /'); do sleep 30; done
+  while ! nc -v -z $(echo $IPP|sed -e 's/:/ /'); do sleep 30; done
 
  #Fehlermeldungen resetten
   curl "http://${IPP}/set/${DP_KOMFEHLER}?value=false&ack=true" >/dev/null 2>&1
@@ -498,10 +502,10 @@ setup() {
    #Solarenergiearray lesen
    SOLAR_TMP=$(curl -s http://${IPP}/getPlainValue/${DP_SOLAR_SAVE}|sed -e 's/\"//g')
    SOL_ARY=($SOLAR_TMP)
-	SOLARENERGIE_TAG=${SOL_ARY[0]}
-	SOLAR_WOCHE=${SOL_ARY[1]}
-	SOLAR_MONAT=${SOL_ARY[2]}
-	SOLAR_JAHR=${SOL_ARY[3]}
+	SOLARENERGIE_TAG=${SOL_ARY[0]:-0}
+	SOLAR_WOCHE=${SOL_ARY[1]:-0}
+	SOLAR_MONAT=${SOL_ARY[2]:-0}
+	SOLAR_JAHR=${SOL_ARY[3]:-0}
 
    unset SOL_ARY; unset SON_ARY; unset SONNENSCHEIN_TMP; unset SOLAR_TMP; unset IFS
 

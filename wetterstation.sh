@@ -1,12 +1,13 @@
 #!/bin/bash
 
-# V1.2.0 - 20.04.2020 (c) 2019-2020 SBorg
+# V1.3.0 - 28.04.2020 (c) 2019-2020 SBorg
 #
 # wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-Format aus, konvertiert dieses und überträgt
 # die Daten an den ioBroker
 #
 # benötigt den 'Simple RESTful API'-Adapter im ioBroker und 'bc' unter Linux
 #
+# V1.3.0 / 28.04.2020 - + letztes Regenereignis und Regenmenge
 # V1.2.0 / 20.04.2020 - + Firmwareupgrade verfügbar?
 #                       + Firmwareversion
 #                       + Sonnenscheindauer Heute, Woche, Monat, Jahr
@@ -31,9 +32,9 @@
 # V0.1.0 / 29.12.2019 - erstes Release
 
 
- SH_VER="V1.2.0"
- CONF_V="V1.2.1"
- SUBVER="V1.2.0"
+ SH_VER="V1.3.0"
+ CONF_V="V1.3.0"
+ SUBVER="V1.3.0"
 
 
  #Installationsverzeichnis feststellen

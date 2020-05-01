@@ -1,4 +1,4 @@
-### Subroutinen V1.2.0 --------------------------------------------------------
+### Subroutinen V1.3.0 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -49,6 +49,9 @@
   DP_SOLARENERGIE_MONAT=${PRE_DP}.Info.Solarenergie_Monat
   DP_SOLARENERGIE_JAHR=${PRE_DP}.Info.Solarenergie_Jahr
   DP_SOLARENERGIE_VORJAHR=${PRE_DP}.Info.Solarenergie_VorJahr
+  DP_LETZTER_REGEN=${PRE_DP}.Info.Letzter_Regen
+  DP_LETZTE_REGENMENGE=${PRE_DP}.Info.Letzte_Regenmenge
+
 
 ###  Ende Usereinstellungen  
 
@@ -199,6 +202,33 @@ convertInchtoMM() {
 	 if [ "$REGEN" -eq "1" ]; then REGENSTATUS="leichter Regen"; fi
 	 if [ "$REGEN" -eq "0" ]; then REGENSTATUS="--"; fi
 	fi
+	#letztes Regenereignis + letzte Regenmenge
+	if [ "$REGEN" -gt "0" ] && [ "$i" -eq "12" ]; then
+	 AKT_TIMESTAMP=`date +%s`
+	 if [ $LAST_RAIN == "DATUM" ]; then LASTRAINMSG=`date "+%d.%m.%Y %H:%M"`; fi
+	 if [ $LAST_RAIN == "UNIX" ]; then LASTRAINMSG=${AKT_TIMESTAMP}; fi
+	 curl --data "${DP_LETZTER_REGEN}=${LASTRAINMSG}&${DP_LETZTE_REGENMENGE}=${MESSWERTE[12]}" http://${IPP}/setBulk &>/dev/null 2>&1
+	fi
+	if [ $LAST_RAIN == "DIFF" ]; then 
+	   LC=$(curl -s http://${IPP}/get/${DP_REGENRATE}?prettyPrint | grep '"lc":' | tr -d [:alpha:]:\ ,\")
+	   LC=`echo "scale=0;${LC}/1000" | bc -l`
+	   TS_AKT=$(date +%s)
+	   TS_DIFF=`echo "${TS_AKT}-${LC}" | bc`
+           TAGE=$(echo "$(($TS_DIFF /86400))")
+	   case $TAGE in
+		0)  STUNDEN=$(echo "$(($TS_DIFF /3600))")
+		    if [ "$STUNDEN" -eq "1" ]; then 
+			LASTRAINMSG="vor einer Stunde"
+		    else
+		        LASTRAINMSG="vor $STUNDEN Stunden"			
+		    fi
+		    if [ "$STUNDEN" -eq "0" ]; then LASTRAINMSG="gerade eben"; fi ;;
+		1)  LASTRAINMSG="vor einem Tag" ;;
+		*)  LASTRAINMSG="vor $TAGE Tagen"
+	   esac
+	   curl --data "${DP_LETZTER_REGEN}=${LASTRAINMSG}" http://${IPP}/setBulk &>/dev/null 2>&1
+	fi
+
 }
 
 convertTime() {

@@ -27,6 +27,17 @@
 ## Versionen ##
 
 
+**V1.2.0 - 01.05.2020**
+```
+   + Firmwareupgrade verfügbar?
+   + Firmwareversion
+   + Sonnenscheindauer Heute, Woche, Monat, Jahr
+   + UV-Belastung
+   + Solarenergie Heute, Woche, Monat, Jahr
+   + Vorjahreswerte von Regenmenge, Sonnenscheindauer und Solarenergie
+```
+
+
 **V1.1.0 - 14.04.2020**
 ```
    + aktueller Regenstatus

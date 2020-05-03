@@ -516,7 +516,7 @@ setup() {
      unset DRUCKWERTE
      IFS=" "
      DRUCKWERTE=($DRUCKWERTE_TMP)
-     if [ "${DRUCKWERTE[1]}" -gt "20" ]; then WETTER_TREND="dauert max. $(( 15 - (`date +%M` % 15) )) Minuten"; fi
+     if [ "${DRUCKWERTE[1]}" -gt "20" ]; then WETTER_TREND="dauert max. $(( 15 - (`date +%-M` % 15) )) Minuten"; fi
    fi
  fi
 

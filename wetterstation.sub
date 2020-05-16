@@ -111,6 +111,7 @@ debuging() {
    echo -e "IPP: $GE${IPP}$WE\tWS_PORT: $GE${WS_PORT}$WE\t\tWS_POLL: $GE${WS_POLL}$WE\t\tPRE_DP: $GE${PRE_DP}$WE"
    echo -e "Script-Version: $GE$SH_VER$WE\tConfig-Version: $GE${CONF_V}$WE\tSub-Version: $GE${SUBVER}$WE"
 
+   if [ ! -z "$KOMFEHLER" ]; then echo -e "\n${RE}Kommunikationsfehler! Stimmt die WS_ID in der Konfiguration mit der der WS View-App überein?$WE\n"; fi
   #Shell-Skript mit Fehler beenden
     exit 1
 }
@@ -428,6 +429,11 @@ timestr() {
 	   0)   printf -v $2 "%d Std. %02d Min. %02d Sek." $STUNDEN_KPL $MINUTEN $SEKUNDEN ;;
 	   1)   printf -v $2 "%d:%02d" $STUNDEN_KPL $MINUTEN ;;
 	   2)   printf -v $2 "%d $TAG_TXT %d Std." $TAGE $STUNDEN ;;
+	   3)   if [ "$TAGE" -eq "0" ]; then 
+	          printf -v $2 "%d Std, %d Min" $STUNDEN $MINUTEN
+	         else
+	          printf -v $2 "%d $TAG_TXT, %d Std, %d Min" $TAGE $STUNDEN $MINUTEN
+	        fi ;;
 	   *)   printf -v $2 "unbekanntes Format"
 	esac
 }
@@ -516,7 +522,7 @@ setup() {
      unset DRUCKWERTE
      IFS=" "
      DRUCKWERTE=($DRUCKWERTE_TMP)
-     if [ "${DRUCKWERTE[1]}" -gt "20" ]; then WETTER_TREND="dauert max. $(( 15 - (`date +%M` % 15) )) Minuten"; fi
+     if [ "${DRUCKWERTE[1]}" -gt "20" ]; then WETTER_TREND="dauert max. $(( 15 - (`date +%-M` % 15) )) Minuten"; fi
    fi
  fi
 

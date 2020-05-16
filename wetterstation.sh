@@ -8,6 +8,7 @@
 # benötigt den 'Simple RESTful API'-Adapter im ioBroker und 'bc' unter Linux
 #
 # V1.3.0 / 28.04.2020 - + letztes Regenereignis und Regenmenge
+#                       + Fehlermeldung bei falscher WS_ID / ID der Wetterstation
 # V1.2.0 / 20.04.2020 - + Firmwareupgrade verfügbar?
 #                       + Firmwareversion
 #                       + Sonnenscheindauer Heute, Woche, Monat, Jahr

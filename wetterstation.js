@@ -32,6 +32,7 @@
   createState(DP+"tempData.Solarenergie"       ,"0",  {name: "temporäre Daten Tag, Woche, Monat, Jahr",type: "string",role: "state" });
   createState(DP+"Info.FW_Upgrade"             ,"",   {name: "neue Firmware für die Station",     type: "boolean",role: "state" });
   createState(DP+"Info.FW_Version"             ,"",   {name: "Firmwareversion der Station",       type: "string", role: "state" });
+  createState(DP+"Info.Sonnenschein_VorTag"    , 0,   {name: "Sonnenscheindauer Gestern",         type: "number", role: "state", unit: "Sek." });
   createState(DP+"Info.Sonnenschein_Tag"       ,"",   {name: "Sonnenscheindauer Heute",           type: "number", role: "state", unit: "Sek." });
   createState(DP+"Info.Sonnenschein_Woche"     ,"",   {name: "Sonnenscheindauer diese Woche",     type: "number", role: "state", unit: "Sek." });
   createState(DP+"Info.Sonnenschein_Monat"     ,"",   {name: "Sonnenscheindauer diesen Monat",    type: "number", role: "state", unit: "Sek." });
@@ -42,6 +43,7 @@
   createState(DP+"Info.Sonnenschein_Jahr_Text" ,"",   {name: "Sonnenscheindauer dieses Jahr als Text", type: "string", role: "state" });
   createState(DP+"Info.Sonnenschein_VorJahr"   , 0,   {name: "Sonnenscheindauer letztes Jahr",    type: "number", role: "state", unit: "Sek." });
   createState(DP+"Info.Regenmenge_VorJahr"     , 0,   {name: "Regenmenge letztes Jahr",           type: "number", role: "state", unit: "mm" });
+  createState(DP+"Info.Solarenergie_VorTag"    , 0,   {name: "Solarenergie Gestern",              type: "number", role: "state", unit: "Wh/m²" });
   createState(DP+"Info.Solarenergie_Tag"       , 0,   {name: "Solarenergie Heute",                type: "number", role: "state", unit: "Wh/m²" });
   createState(DP+"Info.Solarenergie_Woche"     , 0,   {name: "Solarenergie diese Woche",          type: "number", role: "state", unit: "kWh/m²" });
   createState(DP+"Info.Solarenergie_Monat"     , 0,   {name: "Solarenergie diesen Monat",         type: "number", role: "state", unit: "kWh/m²" });

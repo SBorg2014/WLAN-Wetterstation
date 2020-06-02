@@ -1,14 +1,15 @@
 #!/bin/bash
 
-# V1.3.0 - 28.04.2020 (c) 2019-2020 SBorg
+# V1.3.0 - 25.05.2020 (c) 2019-2020 SBorg
 #
 # wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-Format aus, konvertiert dieses und überträgt
 # die Daten an den ioBroker
 #
 # benötigt den 'Simple RESTful API'-Adapter im ioBroker und 'bc' unter Linux
 #
-# V1.3.0 / 28.04.2020 - + letztes Regenereignis und Regenmenge
+# V1.3.0 / 25.05.2020 - + letztes Regenereignis und Regenmenge
 #                       + Fehlermeldung bei falscher WS_ID / ID der Wetterstation
+#                       + Sonnenscheindauer + Solarenergie vom Vortag
 # V1.2.0 / 20.04.2020 - + Firmwareupgrade verfügbar?
 #                       + Firmwareversion
 #                       + Sonnenscheindauer Heute, Woche, Monat, Jahr
@@ -131,17 +132,18 @@ while true
    if [ $debug == "true" ]; then debuging; fi
 
   #Mitternachtjobs
-   if [ `date +%H` -ge "23" ] && [ `date +%M` -ge "58" ]; then
+   if [ `date +%H` -ge "23" ] && [ `date +%M` -ge "58" ] && [ -z $MIDNIGHTRUN ]; then
 	rain               #Jahresregenmenge
 	firmware_check     #neue Firmware
 	reset_zaehler      #Sonnenscheindauer, Solarenergie zurücksetzen (enthällt auch Speicherung Werte VorJahr)
    fi
+   if [ `date +%H` -eq "0" ] && [ `date +%M` -le "3" ]; then unset MIDNIGHTRUN; fi
+
 
   #Wetterprognose
    DO_IT=`date +%M`
    DO_IT=${DO_IT#0}
    if [ $(( $DO_IT % 15 )) -eq "0" ] && [ `date +%s` -ge "$TIMER_SET" ]; then wetterprognose; fi
-
  done
 
 ###EoF

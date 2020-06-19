@@ -204,7 +204,7 @@ convertInchtoMM() {
 	 if [ "$REGEN" -lt "10" ]; then REGENSTATUS="starker Regen"; fi
 	 if [ "$REGEN" -lt "4" ]; then REGENSTATUS="mäßiger Regen"; fi
 	 if [ "$REGEN" -eq "1" ]; then REGENSTATUS="leichter Regen"; fi
-	 if [ "$REGEN" -eq "0" ]; then REGENSTATUS="--"; fi
+	 if [ "$REGEN" -eq "0" ]; then REGENSTATUS="kein Regen"; fi
 	fi
 	#letztes Regenereignis + letzte Regenmenge
 	if [ "$REGEN" -gt "0" ] && [ "$i" -eq "12" ]; then
@@ -253,7 +253,7 @@ rain() {
 	  if [ ${TS_DIFF} -ge "0" ]; then
 	   REGENMENGE=$(curl -s http://${IPP}/getPlainValue/${DP_REGEN_JAHR_KUM})
 	   REGENMENGE=$(echo "scale=2;$REGENMENGE+${MESSWERTE[12]}" | bc -l)
-	   curl http://${IPP}/set/${DP_REGEN_JAHR_KUM}?value=${REGENMENGE}
+	   curl http://${IPP}/set/${DP_REGEN_JAHR_KUM}?value=${REGENMENGE} >/dev/null 2>&1
 	  fi
 }
 
@@ -281,11 +281,11 @@ wetterprognose() {
 	 let PNOW=($LUFTDRUCK-${DRUCKWERTE[0]})*10
 	 if [ "$PNOW" -le "-80" ]; then WETTER_TREND="Sturm mit Hagel"; fi
 	 if [ "$PNOW" -le "-50" ] && [ "$PNOW" -gt "-80" ]; then WETTER_TREND="Regen/Unwetter"; fi
-	 if [ "$PNOW" -le "-30" ] && [ "$PNOW" -gt "-50" ]; then WETTER_TREND="Regnerisch"; fi
+	 if [ "$PNOW" -le "-30" ] && [ "$PNOW" -gt "-50" ]; then WETTER_TREND="regnerisch"; fi
 	 if [ "$PNOW" -le "-5" ] && [ "$PNOW" -gt "-30" ]; then WETTER_TREND="baldiger Regen"; fi
 	 if [ "$PNOW" -le "5" ] && [ "$PNOW" -gt "-5" ]; then WETTER_TREND="gleichbleibend"; fi
-	 if [ "$PNOW" -le "30" ] && [ "$PNOW" -ge "5" ]; then WETTER_TREND="lange Schön"; fi
-	 if [ "$PNOW" -le "50" ] && [ "$PNOW" -ge "30" ]; then WETTER_TREND="Schön & labil"; fi
+	 if [ "$PNOW" -le "30" ] && [ "$PNOW" -ge "5" ]; then WETTER_TREND="lange schön"; fi
+	 if [ "$PNOW" -le "50" ] && [ "$PNOW" -ge "30" ]; then WETTER_TREND="schön & labil"; fi
 	 if [ "$PNOW" -gt "50" ]; then WETTER_TREND="Sturmwarnung"; fi
 	 PNOW=`echo "scale=2;$PNOW/10" | bc -l`
 	fi
@@ -312,11 +312,11 @@ wetterprognose() {
 	${DP_WETTER_TREND}=${WETTER_TREND}
 	&${DP_DRUCK_TENDENZ}=${PNOW}
 	&${DP_WETTER_AKTUELL}=${WETTER_AKTUELL}
-	&${DP_WETTERDATA}=${DRUCKWERTE[@]}
+	&${DP_WETTERDATA}=${DRUCKWERTE[*]}
 	EOD
 	)
 
-    curl --data "${IOB_WDATA}" http://${IPP}/setBulk
+    curl --data "${IOB_WDATA}" http://${IPP}/setBulk >/dev/null 2>&1
 
 }
 
@@ -328,11 +328,11 @@ firmware_check() {
 	FW_VER=$(curl https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/firmware.version)
 	FW_AKT=${MESSWERTE[19]}
 	if [ "$FW_VER" != "$FW_AKT" ]; then
-	  curl "http://${IPP}/set/${DP_FW_UPGRADE}?value=true"
+	  curl "http://${IPP}/set/${DP_FW_UPGRADE}?value=true" >/dev/null 2>&1
 	 else
-	  curl "http://${IPP}/set/${DP_FW_UPGRADE}?value=false"
+	  curl "http://${IPP}/set/${DP_FW_UPGRADE}?value=false" >/dev/null 2>&1
 	fi
-	curl "http://${IPP}/set/${DP_FW_VERSION}?value=${FW_AKT}"
+	curl "http://${IPP}/set/${DP_FW_VERSION}?value=${FW_AKT}" >/dev/null 2>&1
 }
 
 
@@ -341,10 +341,14 @@ firmware_check() {
 sonnenpuls() {
     SONNEN_STRAHLUNG=$(round ${MESSWERTE[16]} 0)
     if [ "$SONNEN_STRAHLUNG" -ge "120" ] || [ ! -z "$MIDNIGHTRUN" ]; then
-	let SONNENSCHEIN_TAG+="$WS_POLL"
-	let SONNENSCHEIN_WO+="$WS_POLL"
-	let SONNENSCHEIN_MO+="$WS_POLL"
-	let SONNENSCHEIN_JAHR+="$WS_POLL"
+	AKT_TIMESTAMP=`date +%s`
+	let SONNENPULS_DIFF=${AKT_TIMESTAMP}-${TIMER_START}
+	if [ "$SONNENPULS_DIFF" -lt "300" ]; then
+	 let SONNENSCHEIN_TAG+="$SONNENPULS_DIFF"
+	 let SONNENSCHEIN_WO+="$SONNENPULS_DIFF"
+	 let SONNENSCHEIN_MO+="$SONNENPULS_DIFF"
+	 let SONNENSCHEIN_JAHR+="$SONNENPULS_DIFF"
+	fi
 	curl --data "${DP_SONNENSCHEIN_SAVE}=${SONNENSCHEIN_TAG} ${SONNENSCHEIN_WO} ${SONNENSCHEIN_MO} ${SONNENSCHEIN_JAHR}" http://${IPP}/setBulk >/dev/null 2>&1
 	timestr ${SONNENSCHEIN_TAG} SONNENDAUER_STR_TAG
 	timestr ${SONNENSCHEIN_WO} SONNENDAUER_STR_WO
@@ -363,6 +367,7 @@ sonnenpuls() {
 	&${DP_SONNENSCHEIN_JAHR}=${SONNENSCHEIN_JAHR}
 	EOD
 	)
+	if [ -z $MIDNIGHTRUN ]; then TIMER_START=`date +%s`; fi
 	curl --data "${IOB_SDATA}" http://${IPP}/setBulk >/dev/null 2>&1
     fi
 
@@ -460,30 +465,31 @@ END_BC
 
 reset_zaehler() {
 	#VorZaehler aktualisieren
-	curl http://${IPP}/set/${DP_SONNENSCHEIN_VORTAG}?value="${SONNENSCHEIN_TAG}"
-	curl http://${IPP}/set/${DP_SOLARENERGIE_VORTAG}?value="${SOLARENERGIE_TAG}"
+	curl http://${IPP}/set/${DP_SONNENSCHEIN_VORTAG}?value="${SONNENSCHEIN_TAG}" >/dev/null 2>&1
+	curl http://${IPP}/set/${DP_SOLARENERGIE_VORTAG}?value="${SOLARENERGIE_TAG}" >/dev/null 2>&1
 
 	#Tageszähler resetten
-	SONNENSCHEIN_TAG=-$WS_POLL
+	SONNENSCHEIN_TAG=0
 	SOLARENERGIE_TAG=0
 	SOLARENERGIE[0]=0
 	SOLARENERGIE[1]=0
+	TIMER_START=0
 
 	#Wochenzähler resetten (Sonntags um 0:00 Uhr)
 	if [ `date +%u` -eq "7" ]; then
-	   SONNENSCHEIN_WO=-$WS_POLL
+	   SONNENSCHEIN_WO=0
 	   SOLAR_WOCHE=0
 	fi
 
 	#Monatszähler resetten
 	if [ $(date -d "now + 1 day" +"%d") -eq "01" ]; then
-	  SONNENSCHEIN_MO=-$WS_POLL
+	  SONNENSCHEIN_MO=0
 	  SOLAR_MONAT=0
 	  if [ `date +%m` -eq "12" ]; then
 		#Jahreszähler resetten
-		curl http://${IPP}/set/${DP_REGENMENGE_VORJAHR}?value="${REGENMENGE}"
-		curl http://${IPP}/set/${DP_SONNENSCHEIN_VORJAHR}?value="${SONNENSCHEIN_JAHR}"
-		curl http://${IPP}/set/${DP_SOLARENERGIE_VORJAHR}?value="${SOLAR_JAHR}"
+		curl http://${IPP}/set/${DP_REGENMENGE_VORJAHR}?value="${REGENMENGE}" >/dev/null 2>&1
+		curl http://${IPP}/set/${DP_SONNENSCHEIN_VORJAHR}?value="${SONNENSCHEIN_JAHR}" >/dev/null 2>&1
+		curl http://${IPP}/set/${DP_SOLARENERGIE_VORJAHR}?value="${SOLAR_JAHR}" >/dev/null 2>&1
 		REGENMENGE=0
 		SONNENSCHEIN_JAHR=0
 		SOLAR_JAHR=0
@@ -497,6 +503,7 @@ reset_zaehler() {
 setup() {
   let "WARTE=WS_POLL*2+6"    #2x Poll + Zuschlag warten
   TIMER_SET=$(date +%s)      #Initial Set
+  TIMER_START=0              #Reset Sonnenpuls
   #Anzeige bis Daten komplett
   WETTER_TREND="noch --- Minuten"
 
@@ -520,7 +527,7 @@ setup() {
 
  if [ ${#DRUCKWERTE_TMP} -le "2" ]; then
    DRUCKWERTE_TMP=${DRUCKWERTE[*]}
-   curl --data "${DP_WETTERDATA}=${DRUCKWERTE_TMP}" http://${IPP}/setBulk
+   curl --data "${DP_WETTERDATA}=${DRUCKWERTE_TMP}" http://${IPP}/setBulk >/dev/null 2>&1
   else
    LC=$(curl -s http://${IPP}/get/${DP_WETTERDATA}?prettyPrint | grep '"lc":' | tr -d [:alpha:]:\ ,\")
    LC=`echo "scale=0;${LC}/1000" | bc -l`
@@ -553,7 +560,7 @@ setup() {
    unset SOL_ARY; unset SON_ARY; unset SONNENSCHEIN_TMP; unset SOLAR_TMP
 
    #Startwerte setzen
-   curl --data "${DP_WETTER_TREND}=${WETTER_TREND}" http://${IPP}/setBulk
+   curl --data "${DP_WETTER_TREND}=${WETTER_TREND}" http://${IPP}/setBulk >/dev/null 2>&1
 }
 
 

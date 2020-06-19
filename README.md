@@ -20,6 +20,10 @@
 - Ventus W830
 
 <br><br>
+Beispiel einer Visualisierung per Grafana:
+![Grafana](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/Bilder/Grafana-0.png)
+![Grafana](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/Bilder/Grafana-1.png)
+<br><br>
 ## Installation ## 
 ***[siehe WiKi](https://github.com/SBorg2014/WLAN-Wetterstation/wiki)***
 

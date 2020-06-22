@@ -31,6 +31,15 @@ Beispiel einer Visualisierung per Grafana:
 ## Versionen ##
 
 
+**V1.3.0 - 22.06.2020**
+```
+    + letztes Regenereignis und Regenmenge
+    + Fehlermeldung bei falscher WS_ID / ID der Wetterstation
+    + Sonnenscheindauer + Solarenergie vom Vortag
+    ~ Änderung/Fix Sonnenscheindauer
+```
+
+
 **V1.2.0 - 01.05.2020**
 ```
    + Firmwareupgrade verfügbar?

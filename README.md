@@ -13,7 +13,8 @@
  Die Wetterstation muss dazu in der Lage sein ihre Daten im "Wunderground"-Format zu senden.<br><br>
  Bisher getestete Stationen:
 - Eurochron EFWS2900 (baugleich zu Sainlogic 10in1 Wifi, Ambient Weather WS-2902, Chilitec CTW-902 Wifi)
-- Froggit 
+- Froggit
+  * HP1000SE Pro
   * WH3000 SE
   * WH4000 SE
 - Sainlogic 7in1 WiFi WS3500

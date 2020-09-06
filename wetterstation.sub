@@ -162,7 +162,7 @@ iob_send() {
 
 
 ### Daten holen und Integritätscheck
-function get_DATA() {
+get_DATA() {
   #auf Daten der Wetterstation warten
    DATA=$(timeout ${WARTE} nc -lvw 1 -p ${WS_PORT}|sed -n '1 p')
    STRLEN=$(echo -n $DATA | wc -m)
@@ -176,7 +176,7 @@ function get_DATA() {
 
 
 ### Datenpaket der Wetterstation anzeigen
-function ws_data() {
+ws_data() {
    echo -e "\n\nWarte maximal ${WARTE} Sekunden auf Datenpaket der Wetterstation...\n" && timeout ${WARTE} nc -lvw 1 -p ${WS_PORT} | sed -n '1 p'
 }
 

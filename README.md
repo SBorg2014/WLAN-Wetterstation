@@ -28,6 +28,10 @@ Beispiel einer Visualisierung per Grafana:
 Datenpunkte im ioBroker:
 ![ioB-Datenpunkte](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/Bilder/ioB-Datenpunkte.png)
 <br><br>
+## Weiterführende Informationen ##
+***[Thread im ioBroker-Forum](https://forum.iobroker.net/topic/28384/linux-shell-skript-wlan-wetterstation)***
+
+<br><br>
 ## Installation ## 
 ***[siehe WiKi](https://github.com/SBorg2014/WLAN-Wetterstation/wiki)***
 

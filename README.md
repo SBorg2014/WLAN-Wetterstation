@@ -34,7 +34,7 @@ Datenpunkte im ioBroker:
 <br><br>
 
 ## Unterstützung für dieses/zukünftige Projekte ##
-Wer möchte kann mir gerne einen Kaffee ausgeben und mich bei den Projekten unterstützen. Ich freue mich über jedweden Support.<br>
+Wer möchte kann mir gerne einen Kaffee ausgeben und mich bei den Projekten unterstützen. Ich freue mich über jedweden Support.<br><br>
 [![paypal](https://www.paypalobjects.com/de_DE/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=RR76AEZHPJ7H4&source=url)
 <br><br>
 

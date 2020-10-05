@@ -42,6 +42,12 @@ Wer möchte kann mir gerne einen Kaffee ausgeben und mich bei den Projekten unte
 ***[siehe WiKi](https://github.com/SBorg2014/WLAN-Wetterstation/wiki)***
 <br><br>
 
+## Wetterstation-Statistik (Addon) ## 
+![ioB-Datenpunkte](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/Bilder/Wetterstatistik_DPs.png)
+<br>
+***[siehe WiKi](https://github.com/SBorg2014/WLAN-Wetterstation/wiki/Wetterstation-Statistik)***
+<br><br>
+
 ## Versionen ##
 
 

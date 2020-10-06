@@ -4,7 +4,7 @@
    Wichtig: funktioniert nur mit der Default-Datenstruktur des WLAN-Wetterstation-Skriptes!
 
    (c)2020 by SBorg
-   V0.1.0 - 04.10.2020  +DP für Statusmeldungen / Reset Jahresstatistik / AutoDelete "Data"
+   V0.1.0 - 06.10.2020  +DP für Statusmeldungen / Reset Jahresstatistik / AutoDelete "Data"
                         +ScriptVersion / Update vorhanden / UpdateCheck abschaltbar
                         +Jahresstatistik Min-/Max-/Durchschnittstemperatur/Trockenperiode
    V0.0.7 - 19.09.2020  +Min.-/Max.-/Durchschnittstemperatur vom Vortag
@@ -40,7 +40,7 @@ let DP_Check='Control.ScriptVersion_UpdateCheck';
 if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 //Start des Scripts
-    let ScriptVersion = "V0.1.0 RC2";
+    const ScriptVersion = "V0.1.0 RC3";
     let Tiefstwert, Hoechstwert, Temp_Durchschnitt, Max_Windboe, Max_Regenmenge, Regenmenge_Monat, warme_Tage, Sommertage;
     let heisse_Tage, Frost_Tage, kalte_Tage, Eistage, sehr_kalte_Tage;
     let monatstage = [31,28,31,30,31,30,31,31,30,31,30,31];
@@ -50,6 +50,7 @@ if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 //scheduler
     schedule(ZEITPLAN, main);
+
 
 
 // ### Funktionen ###############################################################################################
@@ -164,7 +165,7 @@ function main() {
  });
  if (getState(PRE_DP+'.Control.Reset_Jahresstatistik').val === true) { Reset_Jahresstatistik(); }
  console.log('Auswertung durchgeführt...');
- if (getState(PRE_DP+'.Control.ScriptVersion_UpdateCheck').val) { check_update (); } // neue Script-Version vorhanden?
+ if (getState(PRE_DP+'.Control.ScriptVersion_UpdateCheck').val) { check_update(); } // neue Script-Version vorhanden?
  Statusmeldung('erfolgreich');
 } //end function main
 
@@ -445,7 +446,7 @@ async function createDP(DP_Check) {
     await Sleep(5000);
 }
 
-function check_update () {
+function check_update() {
     const util = require('util')
     const request = util.promisify(require('request'))
    
@@ -453,9 +454,9 @@ function check_update () {
     .then((response) => {
 
      //console.error(`status code: ${response && response.statusCode}`)
-     //console.log(response.body)
+     //console.log(response.body) /<a aria-label="V.*[\r\n]+.*<\/a>/
 
-     let regex = /<a aria-label="V.*[\r\n]+.*<\/a>/
+     let regex = /<a aria-label="V.*[\r\n]+.*/
      , version = response.body.match(regex);
 
      if (version[0].match(ScriptVersion)) { 

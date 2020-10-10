@@ -4,7 +4,7 @@
    Wichtig: funktioniert nur mit der Default-Datenstruktur des WLAN-Wetterstation-Skriptes!
 
    (c)2020 by SBorg
-   V0.1.0 - 06.10.2020  +DP für Statusmeldungen / Reset Jahresstatistik / AutoDelete "Data"
+   V0.1.0 - 08.10.2020  +DP für Statusmeldungen / Reset Jahresstatistik / AutoDelete "Data"
                         +ScriptVersion / Update vorhanden / UpdateCheck abschaltbar
                         +Jahresstatistik Min-/Max-/Durchschnittstemperatur/Trockenperiode
    V0.0.7 - 19.09.2020  +Min.-/Max.-/Durchschnittstemperatur vom Vortag
@@ -23,13 +23,15 @@
 
 
 
-// *** User-Einstellungen ***************************************************************************************
+// *** User-Einstellungen ****************************************************************************************
     let WET_DP='javascript.0.Wetterstation';    /* wo liegen die Datenpunkte mit den Daten der Wetterstation
-                                                   [default: javascript.0.Wetterstation]                       */
+                                                   [default: javascript.0.Wetterstation]                        */
     let INFLUXDB_INSTANZ='0';                   // unter welcher Instanz läuft die InfluxDB [default: 0]   
-    let PRE_DP='0_userdata.0.Statistik.Wetter'; // wo sollen die Statistikwerte abgelegt werden   
-    const ZEITPLAN = "3 1 * * *";               // wann soll die Statistik erstellt werden (Minuten Stunde * * *)                       
-// *** ENDE User-Einstellungen **********************************************************************************
+    let PRE_DP='0_userdata.0.Statistik.Wetter'; /* wo sollen die Statistikwerte abgelegt werden. Nur unter
+                                                   0_userdata oder javascript möglich!                          */   
+    const ZEITPLAN = "3 1 * * *";               /* wann soll die Statistik erstellt werden (Minuten Stunde * * *) 
+                                                   [default 1:03 Uhr]                                           */                      
+// *** ENDE User-Einstellungen ***********************************************************************************
 
 
 
@@ -40,7 +42,7 @@ let DP_Check='Control.ScriptVersion_UpdateCheck';
 if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 //Start des Scripts
-    const ScriptVersion = "V0.1.0 RC3";
+    const ScriptVersion = "V0.1.0";
     let Tiefstwert, Hoechstwert, Temp_Durchschnitt, Max_Windboe, Max_Regenmenge, Regenmenge_Monat, warme_Tage, Sommertage;
     let heisse_Tage, Frost_Tage, kalte_Tage, Eistage, sehr_kalte_Tage;
     let monatstage = [31,28,31,30,31,30,31,31,30,31,30,31];
@@ -67,9 +69,9 @@ function main() {
    speichern_Monat();  //vorherige Monatsstatistik speichern
    VorJahr();          //Vorjahresmonatsstatistik ausführen
    
-   /*DPs unabhängig ihres Wertes initial schreiben; wir nehmen die aktuelle Aussentemp, da sie zum Start des Messzyklus
+   /*DPs unabhängig ihres Wertes initial schreiben; wir nehmen die aktuelle Außentemperatur, da sie zum Start des Messzyklus
      Min, Max und Durchschnitt darstellt; Rest einfach nullen */
-     let initialTemp=getState(WET_DP+'.Aussentemperatur').val;
+    let initialTemp=getState(WET_DP+'.Aussentemperatur').val;
     setState(PRE_DP+'.aktueller_Monat.Tiefstwert', initialTemp, true);
     setState(PRE_DP+'.aktueller_Monat.Hoechstwert', initialTemp, true);
     setState(PRE_DP+'.aktueller_Monat.Temperatur_Durchschnitt', initialTemp, true);
@@ -95,8 +97,8 @@ function main() {
          , function (result) {
              //Anlegen der Arrays + befüllen mit den relevanten Daten
             if (result.error) {
-               console.error('Fehler: '+result.error);
-               Statusmeldung('Fehler: '+result.error);
+               console.error('Fehler beim Lesen der InfluxDB: '+result.error);
+               Statusmeldung('Fehler beim Lesen der InfluxDB: '+result.error);
             } else {
                 //console.log('Rows: ' + JSON.stringify(result.result[2]));
                 for (let i = 0; i < result.result[0].length; i++) { temps[i] = result.result[0][i].value; }
@@ -138,7 +140,7 @@ function main() {
    if (getState(PRE_DP+'.aktueller_Monat.Temperatur_Durchschnitt').val != Temp_Durchschnitt) {setState(PRE_DP+'.aktueller_Monat.Temperatur_Durchschnitt', Temp_Durchschnitt, true);}
    if (getState(PRE_DP+'.aktueller_Monat.Max_Windboe').val < Max_Windboe) {setState(PRE_DP+'.aktueller_Monat.Max_Windboe', Max_Windboe, true);}
    if (getState(PRE_DP+'.aktueller_Monat.Max_Regenmenge').val < Max_Regenmenge) {setState(PRE_DP+'.aktueller_Monat.Max_Regenmenge', Max_Regenmenge, true);}
-   if (Max_Regenmenge > 0) {Regenmenge_Monat = getState(PRE_DP+'.aktueller_Monat.Regenmenge_Monat').val + Max_Regenmenge; setState(PRE_DP+'.aktueller_Monat.Regenmenge_Monat', Regenmenge_Monat, true);}
+   if (Max_Regenmenge > 0) {Regenmenge_Monat = getState(PRE_DP+'.aktueller_Monat.Regenmenge_Monat').val + Max_Regenmenge; setState(PRE_DP+'.aktueller_Monat.Regenmenge_Monat', Number(Regenmenge_Monat).toFixed(2), true);}
    if (warme_Tage) {warme_Tage = getState(PRE_DP+'.aktueller_Monat.warme_Tage').val +1; setState(PRE_DP+'.aktueller_Monat.warme_Tage', warme_Tage, true);}
    if (Sommertage) {Sommertage = getState(PRE_DP+'.aktueller_Monat.Sommertage').val +1; setState(PRE_DP+'.aktueller_Monat.Sommertage', Sommertage, true);}
    if (heisse_Tage) {heisse_Tage = getState(PRE_DP+'.aktueller_Monat.heisse_Tage').val +1; setState(PRE_DP+'.aktueller_Monat.heisse_Tage', heisse_Tage, true);}

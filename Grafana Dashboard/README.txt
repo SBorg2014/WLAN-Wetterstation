@@ -6,6 +6,9 @@ Das Grafana-Dashboard als JSON-Export.
 Benötigt :
  * Boom Theme Plugin (für das Hintergrundbild)
  * WindRose Plugin
+ * Blendstat Panel (by farski) Plugin
+ * Table Plugin
+
 
 Vor dem Import in der Datei __DBname__ durch den eigenen Influx-Datenbanknamen ersetzen (40 Treffer), sonst gibt das
 später eine Klickorgie 😉
@@ -28,6 +31,8 @@ The Grafana dashboard as a JSON export.
 Requires:
   * Boom Theme plugin (for the background image)
   * WindRose plugin
+  * Blendstat Panel (by farski) Plugin
+  * Table Plugin
 
 Before importing, replace __DBname__ in the file with your own Influx database name (40 hits), otherwise you get 
 later a click orgy 😉

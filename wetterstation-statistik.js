@@ -4,6 +4,7 @@
    Wichtig: funktioniert nur mit der Default-Datenstruktur des WLAN-Wetterstation-Skriptes!
 
    (c)2020 by SBorg
+   V0.1.1 - 12.10.2020  +AutoReset Jahresstatistik
    V0.1.0 - 08.10.2020  +DP für Statusmeldungen / Reset Jahresstatistik / AutoDelete "Data"
                         +ScriptVersion / Update vorhanden / UpdateCheck abschaltbar
                         +Jahresstatistik Min-/Max-/Durchschnittstemperatur/Trockenperiode
@@ -16,7 +17,7 @@
    V0.0.2 - 12.09.2020  +warme Tage über 20°C / Sommertage über 25°C / heiße Tage über 30°C
    V0.0.1 - 11.09.2020   erste Beta + Temp-Min/Temp-Max/Temp-Durchschnitt/max. Windböe/max. Regenmenge pro Tag 
 
-      ToDo: Autoreset Jahresstatistik
+      ToDo: ---
       known issues: keine
 
 */
@@ -38,11 +39,11 @@
 
 //ab hier gibt es nix mehr zu ändern :)
 //first start?
-let DP_Check='Control.ScriptVersion_UpdateCheck';
+let DP_Check='Control.AutoReset_Jahresstatistik';
 if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 //Start des Scripts
-    const ScriptVersion = "V0.1.0";
+    const ScriptVersion = "V0.1.1";
     let Tiefstwert, Hoechstwert, Temp_Durchschnitt, Max_Windboe, Max_Regenmenge, Regenmenge_Monat, warme_Tage, Sommertage;
     let heisse_Tage, Frost_Tage, kalte_Tage, Eistage, sehr_kalte_Tage;
     let monatstage = [31,28,31,30,31,30,31,31,30,31,30,31];
@@ -66,6 +67,25 @@ function main() {
 
     //Jobs Monatserster
  if (zeitstempel.getDate() == 1) { 
+     if (zeitstempel.getMonth() == 0) { //heute ist der 01.01. 
+         let mode=getState(PRE_DP+'.Control.AutoReset_Jahresstatistik').val;
+         switch (mode) { //0=Aus, 1=Ein, 2=Ein+Backup
+             case 0:
+                break;
+
+             case 1:
+                Reset_Jahresstatistik();
+                break;
+
+             case 2:
+                Backup_Jahresstatistik();
+                Reset_Jahresstatistik();
+                break;
+
+             default:
+                break;
+         }
+     }
    speichern_Monat();  //vorherige Monatsstatistik speichern
    VorJahr();          //Vorjahresmonatsstatistik ausführen
    
@@ -391,6 +411,44 @@ function Statusmeldung(Text) {
     setState(PRE_DP+'.Control.Statusmeldung', Text, true);
 }
 
+// Test auf neue Skriptversion
+function check_update() {
+    const util = require('util')
+    const request = util.promisify(require('request'))
+   
+    request('https://github.com/SBorg2014/WLAN-Wetterstation/commits/master/wetterstation-statistik.js')
+    .then((response) => {
+
+     //console.error(`status code: ${response && response.statusCode}`)
+     //console.log(response.body) /<a aria-label="V.*[\r\n]+.*<\/a>/
+
+     let regex = /<a aria-label="V.*[\r\n]+.*/
+     , version = response.body.match(regex);
+
+     if (version[0].match(ScriptVersion)) { 
+         setState(PRE_DP+'.Control.ScriptVersion_Update','---',true); 
+     } else {
+         setState(PRE_DP+'.Control.ScriptVersion_Update','https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/wetterstation-statistik.js',true);
+         console.log('neue Script-Version verfügbar...');
+     }
+
+    })
+        .catch((error) => {
+        console.error(`error: ${error}`)
+    })
+} // end function
+
+// Jahresstatistik-Backup
+function Backup_Jahresstatistik() {
+    let Temperatur_Hoechstwert = getState(PRE_DP+'.Jahreswerte.Temperatur_Hoechstwert').val;
+    let Temperatur_Tiefstwert = getState(PRE_DP+'.Jahreswerte.Temperatur_Tiefstwert').val;
+    let Temperatur_Durchschnitt = getState(PRE_DP+'.Jahreswerte.Temperatur_Durchschnitt').val;
+    let Trockenperiode = getState(PRE_DP+'.Jahreswerte.Trockenperiode').val;
+    let json = JSON.stringify({"Temperatur Tiefstwert": Temperatur_Tiefstwert, "Temperatur Hoechstwert": Temperatur_Hoechstwert, "Temperatur Durchschnitt": Temperatur_Durchschnitt,
+        Trockenperiode: Trockenperiode});
+    createState(PRE_DP+'.Jahreswerte.VorJahre.'+(new Date().getFullYear()-1), '', { name: "Jahresstatistik", type: "json", role: "state"}, () => { setState(PRE_DP+'.Jahreswerte.VorJahre.'+(new Date().getFullYear()-1), json, true) });
+} // end function
+
 //Datenpunkte anlegen
 async function createDP(DP_Check) {
     console.log(PRE_DP + '.' + DP_Check + ' existiert nicht... Lege Datenstruktur an...');
@@ -441,6 +499,7 @@ async function createDP(DP_Check) {
 
     createState(PRE_DP+'.Control.Statusmeldung',                  '',    { name: "Statusmeldungen",                             type: "string", role: "state"});
     createState(PRE_DP+'.Control.Reset_Jahresstatistik',          false, { name: "Jahresstatistik zurücksetzen",                type: "boolean",role: "state"});
+    createState(PRE_DP+'.Control.AutoReset_Jahresstatistik',      0,     { name: "Jahresstatistik zurücksetzen [0=Aus, 1=Ein, 2=Ein+Backup]",type: "number",role: "state"});
     createState(PRE_DP+'.Control.AutoDelete_Data',                0,     { name: "Data bereinigen? [0 = nie, 1...n = nach x Monaten]",  type: "number", role: "state"});
     createState(PRE_DP+'.Control.ScriptVersion',                  '',    { name: "aktuelle Versionsnummer des Statistik-Skriptes",type: "string",role: "state"});
     createState(PRE_DP+'.Control.ScriptVersion_Update',           '',    { name: "neue Version des Statistik-Skriptes vorhanden",type: "string",role: "state"});
@@ -448,28 +507,3 @@ async function createDP(DP_Check) {
     await Sleep(5000);
 }
 
-function check_update() {
-    const util = require('util')
-    const request = util.promisify(require('request'))
-   
-    request('https://github.com/SBorg2014/WLAN-Wetterstation/commits/master/wetterstation-statistik.js')
-    .then((response) => {
-
-     //console.error(`status code: ${response && response.statusCode}`)
-     //console.log(response.body) /<a aria-label="V.*[\r\n]+.*<\/a>/
-
-     let regex = /<a aria-label="V.*[\r\n]+.*/
-     , version = response.body.match(regex);
-
-     if (version[0].match(ScriptVersion)) { 
-         setState(PRE_DP+'.Control.ScriptVersion_Update','---',true); 
-     } else {
-         setState(PRE_DP+'.Control.ScriptVersion_Update','https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/wetterstation-statistik.js',true);
-         console.log('neue Script-Version verfügbar...');
-     }
-
-    })
-        .catch((error) => {
-        console.error(`error: ${error}`)
-    })
-} // end function

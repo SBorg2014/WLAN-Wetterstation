@@ -4,6 +4,7 @@
    Wichtig: funktioniert nur mit der Default-Datenstruktur des WLAN-Wetterstation-Skriptes!
 
    (c)2020 by SBorg
+   V0.1.2 - 14.10.2020  ~Fix "NaN" bei Regenmenge Monat
    V0.1.1 - 12.10.2020  +AutoReset Jahresstatistik
    V0.1.0 - 08.10.2020  +DP für Statusmeldungen / Reset Jahresstatistik / AutoDelete "Data"
                         +ScriptVersion / Update vorhanden / UpdateCheck abschaltbar
@@ -43,7 +44,7 @@ let DP_Check='Control.AutoReset_Jahresstatistik';
 if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 //Start des Scripts
-    const ScriptVersion = "V0.1.1";
+    const ScriptVersion = "V0.1.2";
     let Tiefstwert, Hoechstwert, Temp_Durchschnitt, Max_Windboe, Max_Regenmenge, Regenmenge_Monat, warme_Tage, Sommertage;
     let heisse_Tage, Frost_Tage, kalte_Tage, Eistage, sehr_kalte_Tage;
     let monatstage = [31,28,31,30,31,30,31,31,30,31,30,31];
@@ -160,7 +161,7 @@ function main() {
    if (getState(PRE_DP+'.aktueller_Monat.Temperatur_Durchschnitt').val != Temp_Durchschnitt) {setState(PRE_DP+'.aktueller_Monat.Temperatur_Durchschnitt', Temp_Durchschnitt, true);}
    if (getState(PRE_DP+'.aktueller_Monat.Max_Windboe').val < Max_Windboe) {setState(PRE_DP+'.aktueller_Monat.Max_Windboe', Max_Windboe, true);}
    if (getState(PRE_DP+'.aktueller_Monat.Max_Regenmenge').val < Max_Regenmenge) {setState(PRE_DP+'.aktueller_Monat.Max_Regenmenge', Max_Regenmenge, true);}
-   if (Max_Regenmenge > 0) {Regenmenge_Monat = getState(PRE_DP+'.aktueller_Monat.Regenmenge_Monat').val + Max_Regenmenge; setState(PRE_DP+'.aktueller_Monat.Regenmenge_Monat', Number(Regenmenge_Monat).toFixed(2), true);}
+   if (Max_Regenmenge > 0) {Regenmenge_Monat = getState(PRE_DP+'.aktueller_Monat.Regenmenge_Monat').val + Max_Regenmenge; setState(PRE_DP+'.aktueller_Monat.Regenmenge_Monat', Number((Regenmenge_Monat).toFixed(2)), true);}
    if (warme_Tage) {warme_Tage = getState(PRE_DP+'.aktueller_Monat.warme_Tage').val +1; setState(PRE_DP+'.aktueller_Monat.warme_Tage', warme_Tage, true);}
    if (Sommertage) {Sommertage = getState(PRE_DP+'.aktueller_Monat.Sommertage').val +1; setState(PRE_DP+'.aktueller_Monat.Sommertage', Sommertage, true);}
    if (heisse_Tage) {heisse_Tage = getState(PRE_DP+'.aktueller_Monat.heisse_Tage').val +1; setState(PRE_DP+'.aktueller_Monat.heisse_Tage', heisse_Tage, true);}

@@ -1,10 +1,11 @@
 /* Wetterstation-Statistiken 
 
-   holt die Messdaten aus einer InfluxDB und erstellt eine Monats- und Vorjahres-Statistik
+   holt die Messdaten aus einer InfluxDB und erstellt eine Monats-, Vorjahresmonat- und
+   Rekordwerte-Statistik
    Wichtig: funktioniert nur mit der Default-Datenstruktur des WLAN-Wetterstation-Skriptes!
 
    (c)2020 by SBorg
-   V0.1.3 - 15.10.2020  +Rekordwerte
+   V0.1.3 - 21.10.2020  +Rekordwerte
    V0.1.2 - 14.10.2020  ~Fix "NaN" bei Regenmenge Monat
    V0.1.1 - 12.10.2020  +AutoReset Jahresstatistik
    V0.1.0 - 08.10.2020  +DP für Statusmeldungen / Reset Jahresstatistik / AutoDelete "Data"
@@ -41,7 +42,7 @@
                                                        [MONAT_KURZ]=Monatsname kurz (Jan, Feb,..., Dez)
                                                        [JAHR]    = Jahreszahl vierstellig (2020)
                                                        Die 'Units' wie bspw. "°C" oder "Tage" werden direkt aus dem 
-                                                       Datenpunkt ergänzt. [default: [WERT] im [MONAT] [JAHR]] erzeugt
+                                                       Datenpunkt ergänzt. [default: [WERT] im [MONAT] [JAHR] ] erzeugt
                                                        als Beispiel im DP die Ausgabe: "22.42 °C im Juni 2020"        */  
     const ZEITPLAN = "3 1 * * *";                   /* wann soll die Statistik erstellt werden (Minuten Stunde * * *) 
                                                        [default 1:03 Uhr]                                             */                      
@@ -56,7 +57,7 @@ let DP_Check='Rekordwerte.Temperatur_Jahresdurchschnitt_Max';
 if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 //Start des Scripts
-    const ScriptVersion = "V0.1.3B_01";
+    const ScriptVersion = "V0.1.3B_02";
     let Tiefstwert, Hoechstwert, Temp_Durchschnitt, Max_Windboe, Max_Regenmenge, Regenmenge_Monat, warme_Tage, Sommertage;
     let heisse_Tage, Frost_Tage, kalte_Tage, Eistage, sehr_kalte_Tage;
     let monatstage = [31,28,31,30,31,30,31,31,30,31,30,31];
@@ -83,24 +84,47 @@ function main() {
     //Jobs Monatserster
  if (zeitstempel.getDate() == 1) { 
      if (zeitstempel.getMonth() == 0) { //heute ist der 01.01. 
-         let mode=getState(PRE_DP+'.Control.AutoReset_Jahresstatistik').val;
-         switch (mode) { //0=Aus, 1=Ein, 2=Ein+Backup
-             case 0:
-                break;
 
-             case 1:
-                Reset_Jahresstatistik();
-                break;
+        //Rekordwerte (Temperatur-Durchschnitt) setzen
+            //max Jahrestemperaturdurchschnitt
+            let JahresTemperatur_Durchschnitt = getState(PRE_DP+'.Jahreswerte.Temperatur_Durchschnitt').val;
+            if (getState(PRE_DP+'.Rekordwerte.value.Temp_Durchschnitt_Max').val < JahresTemperatur_Durchschnitt) {
+                setState(PRE_DP+'.Rekordwerte.value.Temp_Durchschnitt_Max', JahresTemperatur_Durchschnitt, true, () => { Template_Rekordwerte('Temp_Durchschnitt_Max','Rekordwerte.Temperatur_Jahresdurchschnitt_Max'); });
+            }  
+            //min Jahrestemperaturdurchschnitt
+            if (getState(PRE_DP+'.Rekordwerte.value.Temp_Durchschnitt_Min').val > JahresTemperatur_Durchschnitt) {
+                setState(PRE_DP+'.Rekordwerte.value.Temp_Durchschnitt_Min', JahresTemperatur_Durchschnitt, true, () => { Template_Rekordwerte('Temp_Durchschnitt_Min','Rekordwerte.Temperatur_Jahresdurchschnitt_Min'); });
+            }
 
-             case 2:
-                Backup_Jahresstatistik();
-                Reset_Jahresstatistik();
-                break;
+        //Rekordwerte (Temperatur-Durchschnitt) einmalig resetten [InstallationsJahr +1]
+        let Inst_Jahr = (new Date(getState(PRE_DP).ts)).getFullYear();
+        if (zeitstempel.getFullYear() == Inst_Jahr+1) {
+            setState(PRE_DP+'.Rekordwerte.value.Temp_Durchschnitt_Max', -99.99, true);
+            setState(PRE_DP+'.Rekordwerte.value.Temp_Durchschnitt_Min',  99.99, true);
+            setState(PRE_DP+'.Rekordwerte.Temperatur_Jahresdurchschnitt_Max' ,'' ,true);
+            setState(PRE_DP+'.Rekordwerte.Temperatur_Jahresdurchschnitt_Min' ,'' ,true);
+        }
 
-             default:
-                break;
-         }
-     }
+        let mode=getState(PRE_DP+'.Control.AutoReset_Jahresstatistik').val;
+        switch (mode) { //0=Aus, 1=Ein, 2=Ein+Backup
+            case 0:
+               break;
+
+            case 1:
+               Reset_Jahresstatistik();
+               break;
+
+            case 2:
+               Backup_Jahresstatistik();
+               Reset_Jahresstatistik();
+               break;
+
+            default:
+               break;
+        } // end switch
+
+     } // end if 01.01.
+
    speichern_Monat();  //vorherige Monatsstatistik speichern
    VorJahr();          //Vorjahresmonatsstatistik ausführen
    
@@ -465,6 +489,55 @@ function Backup_Jahresstatistik() {
     createState(PRE_DP+'.Jahreswerte.VorJahre.'+(new Date().getFullYear()-1), '', { name: "Jahresstatistik", type: "json", role: "state"}, () => { setState(PRE_DP+'.Jahreswerte.VorJahre.'+(new Date().getFullYear()-1), json, true) });
 } // end function
 
+
+function Rekordwerte() {
+    //max Temp
+    if (getState(PRE_DP+'.Rekordwerte.value.Temp_Max').val < Hoechstwert) {
+        setState(PRE_DP+'.Rekordwerte.value.Temp_Max', Hoechstwert, true, () => { Template_Rekordwerte('Temp_Max','Rekordwerte.Temperatur_Spitzenhoechstwert'); });
+    }
+
+    //min Temp
+    if (getState(PRE_DP+'.Rekordwerte.value.Temp_Min').val > Tiefstwert) {
+        setState(PRE_DP+'.Rekordwerte.value.Temp_Min', Tiefstwert, true, () => { Template_Rekordwerte('Temp_Min','Rekordwerte.Temperatur_Spitzentiefstwert'); });
+    }  
+
+} // end function
+
+
+function Template_Rekordwerte(DatenPunkt, DatenPunktName) {
+    let wert = getState(PRE_DP+'.Rekordwerte.value.'+DatenPunkt).val;
+    let unit = getObject(PRE_DP+'.Rekordwerte.value.'+DatenPunkt).common.unit;
+    let REKORDWERTEAUSGABE;
+    
+    //[WERT]
+    if (REKORDWERTE_AUSGABEFORMAT.search("[WERT]") != -1) {
+        REKORDWERTEAUSGABE = REKORDWERTE_AUSGABEFORMAT.replace("[WERT]", wert+' '+unit);
+    } else { REKORDWERTEAUSGABE = REKORDWERTE_AUSGABEFORMAT; }
+
+    //[TAG]
+    REKORDWERTEAUSGABE = REKORDWERTEAUSGABE.replace("[TAG]", new Date(getState(PRE_DP+'.Rekordwerte.value.'+DatenPunkt).lc).getDate());
+
+    //[MONAT]
+    REKORDWERTEAUSGABE = REKORDWERTEAUSGABE.replace("[MONAT]", monatsname[new Date(getState(PRE_DP+'.Rekordwerte.value.'+DatenPunkt).lc).getMonth()]);
+
+    //[MONAT_ZAHL]
+    REKORDWERTEAUSGABE = REKORDWERTEAUSGABE.replace("[MONAT_ZAHL]", pad(new Date(getState(PRE_DP+'.Rekordwerte.value.'+DatenPunkt).lc).getMonth()+1));
+
+    //[MONAT_KURZ]
+    REKORDWERTEAUSGABE = REKORDWERTEAUSGABE.replace("[MONAT_KURZ]", monatsname_kurz[new Date(getState(PRE_DP+'.Rekordwerte.value.'+DatenPunkt).lc).getMonth()]);
+
+    //[JAHR]
+    REKORDWERTEAUSGABE = REKORDWERTEAUSGABE.replace("[JAHR]", new Date(getState(PRE_DP+'.Rekordwerte.value.'+DatenPunkt).lc).getFullYear());
+
+    //Spezialpatch für 1 Tag
+    if ((REKORDWERTEAUSGABE.search("Tage") != -1) && (wert == 1)) {
+        REKORDWERTEAUSGABE = REKORDWERTEAUSGABE.replace("Tage", "Tag");
+    }
+
+    setState(PRE_DP+'.'+DatenPunktName, REKORDWERTEAUSGABE, true);                                                 
+} // end function
+
+
 //Datenpunkte anlegen
 async function createDP(DP_Check) {
     console.log(PRE_DP + '.' + DP_Check + ' existiert nicht... Lege Datenstruktur an...');
@@ -517,8 +590,8 @@ async function createDP(DP_Check) {
     createState(PRE_DP+'.Rekordwerte.value.Temp_Max',             -100,  { name: "Max. Tagestemperatur",                        type: "number", role: "state", unit: "°C" });
     createState(PRE_DP+'.Rekordwerte.value.Temp_Min',             100,   { name: "Min. Tagestemperatur",                        type: "number", role: "state", unit: "°C" });
     createState(PRE_DP+'.Rekordwerte.value.Trockenperiode',       0,     { name: "längste Trockenperiode",                      type: "number", role: "state", unit: "Tage" });
-    createState(PRE_DP+'.Rekordwerte.value.Temp_Durchschnitt_Min',100,   { name: "niedrigster Jahrestemperaturdurchschnitt",    type: "number", role: "state", unit: "°C" });
-    createState(PRE_DP+'.Rekordwerte.value.Temp_Durchschnitt_Max',-100,  { name: "höchster Jahrestemperaturdurchschnitt",       type: "number", role: "state", unit: "°C" });
+    createState(PRE_DP+'.Rekordwerte.value.Temp_Durchschnitt_Min',99.99, { name: "niedrigster Jahrestemperaturdurchschnitt",    type: "number", role: "state", unit: "°C" });
+    createState(PRE_DP+'.Rekordwerte.value.Temp_Durchschnitt_Max',-99.99,{ name: "höchster Jahrestemperaturdurchschnitt",       type: "number", role: "state", unit: "°C" });
     createState(PRE_DP+'.Rekordwerte.Temperatur_Spitzenhoechstwert', '', { name: "höchste je gemessene Tagestemperatur",        type: "string", role: "state" });
     createState(PRE_DP+'.Rekordwerte.Temperatur_Spitzentiefstwert',  '', { name: "niedrigste je gemessene Tagestemperatur",     type: "string", role: "state" });
     createState(PRE_DP+'.Rekordwerte.Temperatur_Jahresdurchschnitt_Max', '', { name: "höchster Jahrestemperaturdurchschnitt",   type: "string", role: "state" });
@@ -534,59 +607,3 @@ async function createDP(DP_Check) {
     createState(PRE_DP+'.Control.ScriptVersion_UpdateCheck',      '',    { name: "Skript-Updatecheck ein-/ausschalten",         type: "boolean",role: "state"});
     await Sleep(5000);
 }
-
-function Rekordwerte() {
-    //max Temp
-    if (getState(PRE_DP+'.Rekordwerte.value.Temp_Max').val < Hoechstwert) {
-        setState(PRE_DP+'.Rekordwerte.value.Temp_Max', Hoechstwert, true, () => { Template_Rekordwerte('Temp_Max','Rekordwerte.Temperatur_Spitzenhoechstwert'); });
-    }
-
-    //min Temp
-    if (getState(PRE_DP+'.Rekordwerte.value.Temp_Min').val > Tiefstwert) {
-        setState(PRE_DP+'.Rekordwerte.value.Temp_Min', Tiefstwert, true, () => { Template_Rekordwerte('Temp_Min','Rekordwerte.Temperatur_Spitzentiefstwert'); });
-    }  
-
-    //max Jahrestemperaturdurchschnitt
-    let JahresTemperatur_Durchschnitt = getState(PRE_DP+'.Jahreswerte.Temperatur_Durchschnitt').val;
-    if (getState(PRE_DP+'.Rekordwerte.value.Temp_Durchschnitt_Max').val < JahresTemperatur_Durchschnitt) {
-        setState(PRE_DP+'.Rekordwerte.value.Temp_Durchschnitt_Max', JahresTemperatur_Durchschnitt, true, () => { Template_Rekordwerte('Temp_Durchschnitt_Max','Rekordwerte.Temperatur_Jahresdurchschnitt_Max'); });
-    }  
-    //min Jahrestemperaturdurchschnitt
-    if (getState(PRE_DP+'.Rekordwerte.value.Temp_Durchschnitt_Min').val > JahresTemperatur_Durchschnitt) {
-        setState(PRE_DP+'.Rekordwerte.value.Temp_Durchschnitt_Min', JahresTemperatur_Durchschnitt, true, () => { Template_Rekordwerte('Temp_Durchschnitt_Min','Rekordwerte.Temperatur_Jahresdurchschnitt_Min'); });
-    }
-
-} // end function
-
-function Template_Rekordwerte(DatenPunkt, DatenPunktName) {
-    let wert = getState(PRE_DP+'.Rekordwerte.value.'+DatenPunkt).val;
-    let unit = getObject(PRE_DP+'.Rekordwerte.value.'+DatenPunkt).common.unit;
-    let REKORDWERTEAUSGABE;
-    
-    //[WERT]
-    if (REKORDWERTE_AUSGABEFORMAT.search("[WERT]") != -1) {
-        REKORDWERTEAUSGABE = REKORDWERTE_AUSGABEFORMAT.replace("[WERT]", wert+' '+unit);
-    } else { REKORDWERTEAUSGABE = REKORDWERTE_AUSGABEFORMAT; }
-
-    //[TAG]
-    REKORDWERTEAUSGABE = REKORDWERTEAUSGABE.replace("[TAG]", new Date(getState(PRE_DP+'.Rekordwerte.value.'+DatenPunkt).lc).getDate());
-
-    //[MONAT]
-    REKORDWERTEAUSGABE = REKORDWERTEAUSGABE.replace("[MONAT]", monatsname[new Date(getState(PRE_DP+'.Rekordwerte.value.'+DatenPunkt).lc).getMonth()]);
-
-    //[MONAT_ZAHL]
-    REKORDWERTEAUSGABE = REKORDWERTEAUSGABE.replace("[MONAT_ZAHL]", pad(new Date(getState(PRE_DP+'.Rekordwerte.value.'+DatenPunkt).lc).getMonth()+1));
-
-    //[MONAT_KURZ]
-    REKORDWERTEAUSGABE = REKORDWERTEAUSGABE.replace("[MONAT_KURZ]", monatsname_kurz[new Date(getState(PRE_DP+'.Rekordwerte.value.'+DatenPunkt).lc).getMonth()]);
-
-    //[JAHR]
-    REKORDWERTEAUSGABE = REKORDWERTEAUSGABE.replace("[JAHR]", new Date(getState(PRE_DP+'.Rekordwerte.value.'+DatenPunkt).lc).getFullYear());
-
-    //Spezialpatch für 1 Tag
-    if ((REKORDWERTEAUSGABE.search("Tage") != -1) && (wert == 1)) {
-        REKORDWERTEAUSGABE = REKORDWERTEAUSGABE.replace("Tage", "Tag");
-    }
-
-    setState(PRE_DP+'.'+DatenPunktName, REKORDWERTEAUSGABE, true);                                                 
-} // end function

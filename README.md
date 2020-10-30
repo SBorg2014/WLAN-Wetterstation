@@ -8,7 +8,7 @@
 [![Commits since last release](https://img.shields.io/github/commits-since/SBorg2014/WLAN-Wetterstation/latest.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/releases/latest)
 [![License](https://img.shields.io/github/license/SBorg2014/WLAN-Wetterstation.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/LICENSE)
 
- schafft eine Verbindung von einer WLAN-Wetterstation zum ioBroker (__nur für Linux__)<br>
+ schafft eine Verbindung von einer WLAN-Wetterstation zum ioBroker und kann die Wetterdaten in [openSenseMap](https://opensensemap.org) zur Verfügung stellen (__Projekt läuft nur unter Linux__)<br>
  
  Die Wetterstation muss dazu in der Lage sein ihre Daten im "Wunderground"-Format zu senden.<br><br>
  Bisher getestete Stationen:

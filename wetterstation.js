@@ -1,4 +1,4 @@
-//Wetterstation Datenpunkte anlegen V1.3.1
+//Wetterstation Datenpunkte anlegen V1.4.0
  let DP="javascript.0.Wetterstation."
   createState(DP+"Innentemperatur"             ,"",   {name: "Temperatur im Haus",                type: "number", role: "state", unit: "°C" });
   createState(DP+"Aussentemperatur"            ,"",   {name: "Temperatur Außen",                  type: "number", role: "state", unit: "°C" });

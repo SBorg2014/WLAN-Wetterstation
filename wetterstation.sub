@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V1.3.1 --------------------------------------------------------
+### Subroutinen V1.4.0 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -566,8 +566,9 @@ setup() {
 
 ###Befehlszeilenparameter
 usage() {
-	echo -e "\nusage: wetterstation [[--debug] | [-s|--show] | [-d|--data] | [-v|--version] | [-h|--help]]\n"
+	echo -e "\nusage: wetterstation [[--debug] | [-s|--show] | [-d|--data] | [--osem_reg] | [-v|--version] | [-h|--help]]\n"
 	echo -e " --debug\teinmaliger Testdurchlauf mit Ausgabe"
+	echo -e " --osem_reg\tführt Registrierung bei openSenseMap durch"
 	echo -e " -s | --show\tzeigt bei der Debug-Ausgabe Passwort und Station-ID im Klartext an"
 	echo -e " -d | --data\tzeigt nur das gesendete Datenpaket der Wetterstation an"
 	echo -e " -v | --version\tAusgabe der Versionsnummer"
@@ -579,5 +580,203 @@ version() {
 	echo -e " Config-Version: ${CONF_V}"
 	echo -e " Sub-Version   : ${SUBVER}\n"
 }
+
+
+opensensemap() {
+
+	let ii=0
+	unset OSeM_DATA
+	for i in "${SENSEBOX_IDSENSOR[@]}"
+	do
+		OSeM_DATA="${OSeM_DATA}{\"sensor\":\"${i}\", \"value\":\"${MESSWERTE[${SENSEBOX_IDMESSWERT[ii]}]}\"}"
+		let ii++
+	done
+
+	OSeM_DATA=$(echo $OSeM_DATA | sed "s/}{/},{/g" )
+ 	curl -s -H "Content-Type: application/json" -H "Authorization: ${BOX_TOKEN}" \
+          -d "[ ${OSeM_DATA} ]" https://api.opensensemap.org/boxes/${senseBox_ID}/data >/dev/null 2>&1
+
+}
+
+
+osem_register() {
+  if [ ${openSenseMap} == "true" ]; then echo -e "\n${RE} [FEHLER:]   ABBRUCH! \"openSenseMap\" ist in der Konfiguration auf 'true' gesetzt!\n"; exit; fi
+
+  #benötigter jq installiert?
+   if [ ! $(which jq) ]; then
+        echo -en "\n\n${WE} Benötigter ${GR}jq${WE} ist auf dem System nicht installiert? Soll er nun installiert werden? [${GR}J/N${WE}]: "
+        read -n 1 JN
+        if [ $JN != "J" ]; then echo -e " \n$RE Abbruch... ${WE}\n\n"; exit; fi
+        sudo apt-get install jq
+   fi
+
+  #Abfragen
+   clear
+        echo -en "\n$WE Neuen SenseBox-User registrieren [${GR}Ja/Nein${WE}]: $GE"
+        read JN
+        if [ ! $JN ]; then JN="Nein"; fi
+        if [ $JN == "Ja" ]; then
+         echo -e "\n$WE Voller Name oder Nickname. 3-40 Zeichen lang. Erlaubt sind die Zeichen (${GR}a-zA-Z0-9${WE}), Punkte (${GR}.${WE}), Striche (${GR}-${WE}) und Unterstriche (${GR}_${WE})."
+         echo -en " Das erste Zeichen muss ein Buchstabe oder eine Ziffer sein: $GE"
+         read OSEM_USER
+         echo -en "\n$WE gültige Email-Adresse: $GE"
+         read OSEM_EMAIL
+         echo -en "\n$WE Passwort (mind. 8 Zeichen. Erlaubte Zeichen wie bei Name): $GE"
+         read OSEM_PWD
+         echo -en "\n$WE Sprache [${GR}d${WE}]eutsch / [${GR}e${WE}]nglisch: $GE"
+         read OSEM_LANG
+         if [ $OSEM_LANG == "d" ]; then OSEM_LANG=de_DE; OSEM_LANG_OUT=Deutsch; else OSEM_LANG=en_US; OSEM_LANG_OUT=Englisch; fi
+
+         echo -e "\n\n\n$WE Username     :$GE $OSEM_USER"
+         echo -e "$WE Email-Adresse:$GE $OSEM_EMAIL"
+         echo -e "$WE Passwort     :$GE $OSEM_PWD"
+         echo -e "$WE Sprache      :$GE $OSEM_LANG_OUT"
+
+         echo -en "\n$WE Alle Eingaben korrekt [${GR}J/N${WE}]: $GE"
+         read JN
+         if [ ! $JN ]; then JN="N"; fi
+         if [ $JN != "J" ]; then osem_register; fi
+                echo -en "\n\n$BL Lege neuen SenseBox-User an..."
+                NEW_USER=$(curl -s -d "{\"name\":\"$OSEM_USER\", \"email\":\"$OSEM_EMAIL\", \"password\":\"$OSEM_PWD\", \"language\":\"$OSEM_LANG\"}" \
+                 -H "Content-Type: application/json" https://api.opensensemap.org/users/register)
+
+                OSEM_CODE=$(echo $NEW_USER | jq -r '.code')
+                OSEM_MESSAGE=$(echo $NEW_USER | jq -r '.message')
+
+                if [ $OSEM_CODE == "UnprocessableEntity" ]; then echo -e "$RE !...Fehler...!"; echo -e "$RE Fehlermeldung: $OSEM_MESSAGE\n"; exit; fi
+		#User anlegen hat funktioniert
+		echo -e "$GR OK "
+		echo -en "$BL Speichere User und Passwort in wetterstation.conf ab..."
+		sed -i "s/senseBox_USER=/senseBox_USER=$OSEM_USER/" ./wetterstation.conf
+		sed -i "s/senseBox_PWD=/senseBox_PWD=\"$OSEM_PWD\"/" ./wetterstation.conf
+		echo -e "$GR OK "
+
+		echo -e "$BL Vor dem fortfahren nun bitte zuerst die Email-Adresse verifizieren (Email von OpenSenseMap im Posteingang)..."
+		exit
+
+	elif [ $JN == "Nein" ]; then
+	 #dummy
+	 echo -en "\n\n"
+	else
+	 echo -en "\n$RE Keine gültige Antwort: \"$JN\"\n\n"
+	 exit
+	fi
+
+  ###neue SenseBox registrieren
+	echo -en "$WE Neue SenseBox registrieren [${GR}Ja/Nein${WE}]: $GE"
+	read JN
+	if [ ! $JN ]; then JN="Nein"; fi
+	if [ $JN == "Ja" ]; then
+
+	echo -en "$WE Bezeichnung der SenseBox (üblicherweise Standort wie bspw.$GR Berlin Kudamm$WE): $GE"
+	read OSEM_SB_NAME
+	echo -en "$WE Breitengrad / Latitude der Station (${GR}-90 bis 90${WE}): $GE"
+	read OSEM_LAT
+	echo -en "$WE Längengrad / Longitude der Station (${GR}-180 bis 180${WE}): $GE"
+	read OSEM_LNG
+	echo -en "$WE Höhe der Station über Meeresgrund (${GR}GPS, nicht über Grund!${WE}): $GE"
+	read OSEM_HOEHE
+
+	#in Opensensemap einloggen + Token speichern
+	osem_login
+
+
+	#neue SenseBox anlegen
+	echo -en "\n$BL Neue SenseBox registrieren..."
+	NEW_BOX=$(curl -s -d "{\"name\":\"$OSEM_SB_NAME\", \"exposure\":\"outdoor\", \"location\": {\"lat\": $OSEM_LAT, \"lng\": $OSEM_LNG, \"height\": $OSEM_HOEHE}, \"sensors\":[{\"title\":\"Temperatur\", \"unit\":\"°C\", \"sensorType\":\"Wetterstation\",\"icon\":\"osem-thermometer\"}] }" \
+        -H "Content-Type: application/json" -H "Authorization: Bearer ${TOKEN}" https://api.opensensemap.org/boxes)
+	OSEM_CODE=$(echo $NEW_BOX | jq -r '.code')
+	OSEM_MESSAGE=$(echo $NEW_BOX | jq -r '.message')
+
+	if [ $OSEM_CODE == "UnprocessableEntity" ]; then echo -e "$RE !...Fehler...!"; echo -e "$RE Fehlermeldung: $OSEM_MESSAGE\n"; exit; fi
+	echo -e "$GR OK "
+
+	#aus OpenSenseMap ausloggen
+	echo -e "\n\n\n$WE Nun bitte in OpenSenseMap mittels User $GR$senseBox_USER$WE und Passwort $GR$senseBox_PWD$WE einloggen"
+	echo -e " und die SenseBox-ID und den Security-Token der SenseBox in die \"${GR}wetterstation.conf${WE}\" eintragen.\n\n"
+	osem_logout
+	exit
+	fi
+
+	#Sensoren nun reggen
+	echo -en "\n\n$WE Sensoren nun registrieren [${GR}Ja/Nein${WE}]: $GE"
+	read JN
+	if [ ! $JN ]; then JN="Nein"; fi
+	if [ $JN == "Ja" ]; then
+		echo -e "\n$BL Registriere nun Sensoren in der SenseBox...\e[s"
+		osem_login; echo
+
+		for ((i=1;i<${#SENSEBOX_IDNAME[@]};i++)); do
+		  SENSOR_DATA="$SENSOR_DATA{\"edited\":\"true\", \"new\":\"true\", \"title\":\"${SENSEBOX_IDNAME[i]}\", \"unit\":\"${UNITS[i]}\", \"sensorType\":\"Wetterstation\",\"icon\":\"${ICONS[i]}\"},"
+		done
+		SENSOR_DATA="{\"sensors\":["${SENSOR_DATA%,}"]}"
+		NEW_SENSORS=$(curl -s -X PUT -H 'Content-Type: application/json' -H "Authorization: Bearer ${TOKEN}" \
+		  -d "$SENSOR_DATA" https://api.opensensemap.org/boxes/${senseBox_ID})
+		OSEM_CODE=$(echo $NEW_SENSORS | jq -r '.code')
+		OSEM_MESSAGE=$(echo $NEW_SENSORS | jq -r '.message')
+		if [ $OSEM_CODE != "Ok" ]; then echo -e "$RE !...Fehler...!"; echo -e "$RE Fehlermeldung: $OSEM_MESSAGE\n"; exit; fi
+		let ii+=3; echo -e "\e[u$GR OK $WE\e[${ii}B"
+
+
+		SENSOREN_IDs=($(curl -s https://api.opensensemap.org/boxes/${senseBox_ID} | jq -r ".sensors|.[]._id"))
+		let ii=0
+		for i in "${SENSEBOX_IDNAME[@]}"
+		 do
+		  echo -e "$BL SensorID für Sensor $GE$i$BL\e[1C\t: ${GR}${SENSOREN_IDs[ii]}${WE}"
+		  SENSOR_tmpS="$SENSOR_tmpS${SENSOREN_IDs[ii]} "
+		  let ii++
+		 done
+		sed -i "s/SENSEBOX_IDSENSOR=()/SENSEBOX_IDSENSOR=(${SENSOR_tmpS% })/" ./wetterstation.conf
+
+		#nun OSEM aktivieren und service neu starten
+		osem_logout
+		echo -en "\n$WE OpenSensMap nun aktivieren und den Wetterstation.service neu starten [${GR}Ja/Nein${WE}]? $GE"
+		read JN
+		if [ ! $JN ]; then JN="Nein"; fi
+		if [ $JN == "Ja" ]; then
+		 sed -i "s/openSenseMap=false/openSenseMap=true/" ./wetterstation.conf
+		 if [ -f /etc/systemd/system/wetterstation.service ]; then
+			sudo systemctl restart wetterstation
+		  else
+			echo -e "\n$RE Wetterstation läuft nicht als Service. Bitte von Hand neu starten...$WE"
+		 fi
+		 echo -e "\n$GR Done...$WE"
+		fi
+	fi
+
+ echo -e "\n"
+ exit
+}
+
+
+osem_login() {
+	echo -en "\n$BL Einloggen in OpenSenseMap und Token beziehen..."
+	MESSAGE=$(curl -s -d "{\"email\":\"$senseBox_USER\", \"password\":\"$senseBox_PWD\"}" -H 'Content-Type: application/json' https://api.opensensemap.org/users/sign-in)
+ 	TOKEN=$(echo $MESSAGE | jq -r '.token')
+	OSEM_MESSAGE=$(echo $MESSAGE | jq -r '.message')
+
+	if [[ "$OSEM_MESSAGE" == "Successfully signed in" ]]; then
+	  echo -e "$GR OK "
+         else
+          echo -e "$RE !...Fehler...!"
+	  echo -e "$RE Fehlermeldung: \"$OSEM_MESSAGE\"\n"
+	  exit
+	fi
+}
+
+osem_logout() {
+	echo -en "\n$BL Ausloggen von OpenSenseMap..."
+	SIGN_OUT=$(curl -s -d '' -H "Authorization: Bearer ${TOKEN}" https://api.opensensemap.org/users/sign-out)
+	LOGOFF=$(echo $SIGN_OUT | jq -r '.code')
+	OSEM_MESSAGE=$(echo $SIGN_OUT | jq -r '.message')
+	if [ $LOGOFF == "Ok" ]; then
+          echo -e "$GR OK "
+         else
+          echo -e "$RE !...Fehler...!"
+          echo -e "$RE Fehlermeldung: \"$OSEM_MESSAGE\"\n"
+          exit
+        fi
+}
+
 
 ###EoF

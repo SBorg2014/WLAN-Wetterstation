@@ -1,12 +1,13 @@
 #!/bin/bash
 
-# V1.3.1 - 08.10.2020 (c) 2019-2020 SBorg
+# V1.4.0 - 30.10.2020 (c) 2019-2020 SBorg
 #
 # wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-Format aus, konvertiert dieses und überträgt
 # die Daten an den ioBroker
 #
-# benötigt den 'Simple RESTful API'-Adapter im ioBroker und 'bc' unter Linux
+# benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq' (nur openSenseMap) und 'bc' unter Linux
 #
+# V1.4.0 / 30.10.2020 - + Support für openSenseMap
 # V1.3.1 / 08.10.2020 - ~ Fix falls Leerzeichen im Verzeichnisnamen
 # V1.3.0 / 19.06.2020 - + letztes Regenereignis und Regenmenge
 #                       + Fehlermeldung bei falscher WS_ID / ID der Wetterstation
@@ -36,9 +37,9 @@
 # V0.1.0 / 29.12.2019 - erstes Release
 
 
- SH_VER="V1.3.1"
- CONF_V="V1.3.1"
- SUBVER="V1.3.1"
+ SH_VER="V1.4.0"
+ CONF_V="V1.4.0"
+ SUBVER="V1.4.0"
 
 
  #Installationsverzeichnis feststellen
@@ -64,8 +65,6 @@
  #Konfiguration lesen + Subroutinen laden
   . "${DIR}/wetterstation.conf"
   . "${DIR}/wetterstation.sub"
- #Setup ausführen
-  setup
 
 
  #gibt es Parameter?
@@ -73,9 +72,13 @@
     case $1 in
         --debug	)               debug=true   #override
                                 ;;
+        --osem_reg )		osem_register
+                                exit
+                                ;;
         -s | --show )           show_pwid=true
                                 ;;
-        -d | --data )           ws_data
+        -d | --data )           setup
+				ws_data
                                 exit
                                 ;;
         -v | --version )        version
@@ -89,6 +92,9 @@
     esac
     shift
   done
+
+ #Setup ausführen
+  setup
 
 
 
@@ -146,6 +152,9 @@ while true
    DO_IT=`date +%M`
    DO_IT=${DO_IT#0}
    if [ $(( $DO_IT % 15 )) -eq "0" ] && [ `date +%s` -ge "$TIMER_SET" ]; then wetterprognose; fi
+
+  #openSenseMap
+   if [ ${openSenseMap} == "true" ]; then opensensemap; fi
  done
 
 ###EoF

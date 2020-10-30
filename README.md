@@ -25,8 +25,11 @@ Beispiel einer Visualisierung per Grafana (zu finden [hier](https://github.com/S
 ![Grafana](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/Bilder/Grafana-0.png)
 ![Grafana](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/Bilder/Grafana-1.png)
 <br><br>
-Datenpunkte im ioBroker:
+Datenpunkte im ioBroker:<br>
 ![ioB-Datenpunkte](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/Bilder/ioB-Datenpunkte.png)
+<br><br>
+Daten in openSenseMap:<br>
+![Bild openSenseMap](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/Bilder/OSEM_Messwerte.png)
 <br><br>
 
 ## Weiterführende Informationen ##

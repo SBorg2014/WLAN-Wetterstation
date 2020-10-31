@@ -70,15 +70,15 @@
  #gibt es Parameter?
   while [ "$1" != "" ]; do
     case $1 in
-        --debug	)               debug=true   #override
+        --debug )               debug=true   #override
                                 ;;
-        --osem_reg )		osem_register
+        --osem_reg )            osem_register
                                 exit
                                 ;;
         -s | --show )           show_pwid=true
                                 ;;
         -d | --data )           setup
-				ws_data
+                                ws_data
                                 exit
                                 ;;
         -v | --version )        version

@@ -1,4 +1,4 @@
-//Wetterstation Datenpunkte anlegen V1.4.0
+//Wetterstation Datenpunkte anlegen V1.3.1
  let DP="javascript.0.Wetterstation."
   createState(DP+"Innentemperatur"             ,"",   {name: "Temperatur im Haus",                type: "number", role: "state", unit: "°C" });
   createState(DP+"Aussentemperatur"            ,"",   {name: "Temperatur Außen",                  type: "number", role: "state", unit: "°C" });
@@ -32,6 +32,7 @@
   createState(DP+"tempData.Solarenergie"       ,"0",  {name: "temporäre Daten Tag, Woche, Monat, Jahr",type: "string",role: "state" });
   createState(DP+"Info.FW_Upgrade"             ,"",   {name: "neue Firmware für die Station",     type: "boolean",role: "state" });
   createState(DP+"Info.FW_Version"             ,"",   {name: "Firmwareversion der Station",       type: "string", role: "state" });
+  createState(DP+"Info.openSenseMap"           ,"",   {name: "Datenübertragung openSenseMap erfolgreich",type: "boolean",role: "state" });
   createState(DP+"Info.Sonnenschein_VorTag"    , 0,   {name: "Sonnenscheindauer Gestern",         type: "number", role: "state", unit: "Sek." });
   createState(DP+"Info.Sonnenschein_Tag"       ,"",   {name: "Sonnenscheindauer Heute",           type: "number", role: "state", unit: "Sek." });
   createState(DP+"Info.Sonnenschein_Woche"     ,"",   {name: "Sonnenscheindauer diese Woche",     type: "number", role: "state", unit: "Sek." });

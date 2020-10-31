@@ -35,6 +35,7 @@
   DP_SOLAR_SAVE=${PRE_DP}.tempData.Solarenergie
   DP_FW_UPGRADE=${PRE_DP}.Info.FW_Upgrade
   DP_FW_VERSION=${PRE_DP}.Info.FW_Version
+  DP_OSEM_TRANSMIT=${PRE_DP}.Info.openSenseMap
   DP_SONNENSCHEIN_VORTAG=${PRE_DP}.Info.Sonnenschein_VorTag
   DP_SONNENSCHEIN_TAG=${PRE_DP}.Info.Sonnenschein_Tag
   DP_SONNENSCHEIN_WOCHE=${PRE_DP}.Info.Sonnenschein_Woche
@@ -583,7 +584,6 @@ version() {
 
 
 opensensemap() {
-
 	let ii=0
 	unset OSeM_DATA
 	for i in "${SENSEBOX_IDSENSOR[@]}"
@@ -593,9 +593,13 @@ opensensemap() {
 	done
 
 	OSeM_DATA=$(echo $OSeM_DATA | sed "s/}{/},{/g" )
- 	curl -s -H "Content-Type: application/json" -H "Authorization: ${BOX_TOKEN}" \
-          -d "[ ${OSeM_DATA} ]" https://api.opensensemap.org/boxes/${senseBox_ID}/data >/dev/null 2>&1
-
+ 	OSEM_TRANSMIT=$(curl -s -H "Content-Type: application/json" -H "Authorization: ${BOX_TOKEN}" \
+          -d "[ ${OSeM_DATA} ]" https://api.opensensemap.org/boxes/${senseBox_ID}/data)
+        if [[ "$OSEM_TRANSMIT" == "\"Measurements saved in box\"" ]]; then
+          curl "http://${IPP}/set/${DP_OSEM_TRANSMIT}?value=true&ack=true" >/dev/null 2>&1
+        else
+          curl "http://${IPP}/set/${DP_OSEM_TRANSMIT}?value=false&ack=true" >/dev/null 2>&1
+        fi
 }
 
 

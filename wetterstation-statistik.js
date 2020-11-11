@@ -5,7 +5,7 @@
    Wichtig: funktioniert nur mit der Default-Datenstruktur des WLAN-Wetterstation-Skriptes!
 
    (c)2020 by SBorg
-   V0.1.3 - 21.10.2020  +Rekordwerte
+   V0.1.3 - 11.11.2020  +Rekordwerte
    V0.1.2 - 14.10.2020  ~Fix "NaN" bei Regenmenge Monat
    V0.1.1 - 12.10.2020  +AutoReset Jahresstatistik
    V0.1.0 - 08.10.2020  +DP für Statusmeldungen / Reset Jahresstatistik / AutoDelete "Data"
@@ -57,7 +57,7 @@ let DP_Check='Rekordwerte.Temperatur_Jahresdurchschnitt_Max';
 if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 //Start des Scripts
-    const ScriptVersion = "V0.1.3B_02";
+    const ScriptVersion = "V0.1.3B_03";
     let Tiefstwert, Hoechstwert, Temp_Durchschnitt, Max_Windboe, Max_Regenmenge, Regenmenge_Monat, warme_Tage, Sommertage;
     let heisse_Tage, Frost_Tage, kalte_Tage, Eistage, sehr_kalte_Tage;
     let monatstage = [31,28,31,30,31,30,31,31,30,31,30,31];
@@ -73,7 +73,7 @@ if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 
 // ### Funktionen ###############################################################################################
-function main() {
+async function main() {
     let start, end;
     let zeitstempel = new Date();
     start = new Date(zeitstempel.getFullYear(),zeitstempel.getMonth(),zeitstempel.getDate()-1,0,0,0);
@@ -125,8 +125,8 @@ function main() {
 
      } // end if 01.01.
 
-   speichern_Monat();  //vorherige Monatsstatistik speichern
-   VorJahr();          //Vorjahresmonatsstatistik ausführen
+   await speichern_Monat();  //vorherige Monatsstatistik speichern
+   await VorJahr();          //Vorjahresmonatsstatistik ausführen
    
    /*DPs unabhängig ihres Wertes initial schreiben; wir nehmen die aktuelle Außentemperatur, da sie zum Start des Messzyklus
      Min, Max und Durchschnitt darstellt; Rest einfach nullen */
@@ -259,7 +259,7 @@ function AutoDelete_Data() {
     }); //end selector
 
     //check ob Jahresordner leer ist + ggf. löschen
-    for ( let i=0; i<DP_Years.length; i++) {
+    for ( let i=0; i<DP_Years.length; i++ ) {
         let DP_Ordner_test=$(PRE_DP+'.Data.'+DP_Years[i]+'.*');
         if ( DP_Ordner_test.length == 0 ) { deleteState(PRE_DP+'.Data.'+DP_Years[i]); }
     }
@@ -492,19 +492,20 @@ function Backup_Jahresstatistik() {
 
 function Rekordwerte() {
     //max Temp
-    if (getState(PRE_DP+'.Rekordwerte.value.Temp_Max').val < Hoechstwert) {
+    if (getState(PRE_DP+'.Rekordwerte.value.Temp_Max').val <= Hoechstwert) {
         setState(PRE_DP+'.Rekordwerte.value.Temp_Max', Hoechstwert, true, () => { Template_Rekordwerte('Temp_Max','Rekordwerte.Temperatur_Spitzenhoechstwert'); });
     }
 
     //min Temp
-    if (getState(PRE_DP+'.Rekordwerte.value.Temp_Min').val > Tiefstwert) {
+    if (getState(PRE_DP+'.Rekordwerte.value.Temp_Min').val >= Tiefstwert) {
         setState(PRE_DP+'.Rekordwerte.value.Temp_Min', Tiefstwert, true, () => { Template_Rekordwerte('Temp_Min','Rekordwerte.Temperatur_Spitzentiefstwert'); });
     }  
 
 } // end function
 
 
-function Template_Rekordwerte(DatenPunkt, DatenPunktName) {
+async function Template_Rekordwerte(DatenPunkt, DatenPunktName) {
+    await Sleep(5000);
     let wert = getState(PRE_DP+'.Rekordwerte.value.'+DatenPunkt).val;
     let unit = getObject(PRE_DP+'.Rekordwerte.value.'+DatenPunkt).common.unit;
     let REKORDWERTEAUSGABE;

@@ -67,7 +67,7 @@ if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
     console.log('Wetterstation-Statistiken gestartet...');
     setTimeout(Statusmeldung, 500);
 
-//scheduler
+//Scheduler
     schedule(ZEITPLAN, main);
 
 

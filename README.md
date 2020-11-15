@@ -54,6 +54,12 @@ Wer möchte kann mir gerne einen Kaffee ausgeben und mich bei den Projekten unte
 ## Versionen ##
 
 
+**V1.4.0 - 15.11.2020**
+```
+    + Support für OpenSenseMap
+```
+
+
 **V1.3.1 - 10.10.2020**
 ```
     ~ fix für Leerzeichen im Verzeichnisnamen

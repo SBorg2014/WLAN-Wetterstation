@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V1.4.0 --------------------------------------------------------
+### Subroutinen V1.5.0 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -120,6 +120,23 @@ debuging() {
     exit 1
 }
 
+###SAPI
+function SAPI()
+{
+  #1 Single / Bulk
+  #2 SAPI-URL
+  #3 DATA (setBulk)
+
+  if [ "$1" == "Single" ]; then
+   retval=$(curl -s ${WEB}://${IPP}/${2}&user=${AUTH_USER}&pass=${AUTH_PASS} >/dev/null 2>&1)
+  fi
+
+  if [ "$1" == "Bulk" ]; then
+   curl --data "${3}&user=${AUTH_USER}&pass=${AUTH_PASS}" ${WEB}://${IPP}/${2} >/dev/null 2>&1
+  fi
+
+}
+
 
 ### ioB-Daten senden
 iob_send() {
@@ -154,9 +171,9 @@ iob_send() {
 
    #Daten an den ioB schicken
     if [ $debug == "true" ]; then
-	curl --data "$IOB_DATA&prettyPrint" http://${IPP}/setBulk
+	curl --data "$IOB_DATA&user=${AUTH_USER}&pass=${AUTH_PASS}&prettyPrint" ${WEB}://${IPP}/setBulk
       else
-	curl --data "$IOB_DATA" http://${IPP}/setBulk >/dev/null 2>&1
+	curl --data "$IOB_DATA&user=${AUTH_USER}&pass=${AUTH_PASS}" ${WEB}://${IPP}/setBulk >/dev/null 2>&1
     fi
 }
 
@@ -212,10 +229,11 @@ convertInchtoMM() {
 	 AKT_TIMESTAMP=`date +%s`
 	 if [ $LAST_RAIN == "DATUM" ]; then LASTRAINMSG=`date "+%d.%m.%Y %H:%M"`; fi
 	 if [ $LAST_RAIN == "UNIX" ]; then LASTRAINMSG=${AKT_TIMESTAMP}; fi
-	 curl --data "${DP_LETZTER_REGEN}=${LASTRAINMSG}&${DP_LETZTE_REGENMENGE}=${MESSWERTE[12]}" http://${IPP}/setBulk >/dev/null 2>&1
+	 SAPI "Bulk" "setBulk" "${DP_LETZTER_REGEN}=${LASTRAINMSG}&${DP_LETZTE_REGENMENGE}=${MESSWERTE[12]}"
 	fi
 	if [ $LAST_RAIN == "DIFF" ]; then
-	   LC=$(curl -s http://${IPP}/get/${DP_REGENRATE}?prettyPrint | grep '"lc":' | tr -d [:alpha:]:\ ,\")
+           SAPI "Single" "get/${DP_REGENRATE}?prettyPrint"
+           LC=$(echo ${retval} | jq -r '.lc')
 	   LC=`echo "scale=0;${LC}/1000" | bc -l`
 	   TS_AKT=$(date +%s)
 	   TS_DIFF=`echo "${TS_AKT}-${LC}" | bc`
@@ -231,7 +249,7 @@ convertInchtoMM() {
 		1)  LASTRAINMSG="vor einem Tag" ;;
 		*)  LASTRAINMSG="vor $TAGE Tagen"
 	   esac
-	   curl --data "${DP_LETZTER_REGEN}=${LASTRAINMSG}" http://${IPP}/setBulk >/dev/null 2>&1
+           SAPI "Bulk" "setBulk" "${DP_LETZTER_REGEN}=${LASTRAINMSG}"
 	fi
 
 }
@@ -246,15 +264,16 @@ convertTime() {
 
 ###Jahresregenmenge
 rain() {
-	   LC=$(curl -s http://${IPP}/get/${DP_REGEN_JAHR_KUM}?prettyPrint | grep '"lc":' | tr -d [:alpha:]:\ ,\")
+	   SAPI "Single" "get/${DP_REGEN_JAHR_KUM}?prettyPrint"
+           LC=$(echo ${retval} | jq -r '.lc')
 	   LC=`echo "scale=0;${LC}/1000" | bc -l`
 	   TS_AKT=$(date +%s)
 	   TS_DIFF=`echo "${TS_AKT}-${LC}-3600" | bc` #mind. 1 Stunde Differenz
 
 	  if [ ${TS_DIFF} -ge "0" ]; then
-	   REGENMENGE=$(curl -s http://${IPP}/getPlainValue/${DP_REGEN_JAHR_KUM})
-	   REGENMENGE=$(echo "scale=2;$REGENMENGE+${MESSWERTE[12]}" | bc -l)
-	   curl http://${IPP}/set/${DP_REGEN_JAHR_KUM}?value=${REGENMENGE} >/dev/null 2>&1
+           SAPI "Single" "getPlainValue/${DP_REGEN_JAHR_KUM}"
+	   REGENMENGE=$(echo "scale=2;${retval}+${MESSWERTE[12]}" | bc -l)
+	   SAPI "Single" "set/${DP_REGEN_JAHR_KUM}?value=${REGENMENGE}"
 	  fi
 }
 
@@ -292,11 +311,11 @@ wetterprognose() {
 	fi
 
 	#Wetter erfassen und bestimmen
-	 if [ "$LUFTDRUCK" -le "980" ]; then WETTER_AKTUELL="Stürmisch, Regen"; fi
-	 if [ "$LUFTDRUCK" -gt "980" ] && [ "$LUFTDRUCK" -le "1000" ]; then WETTER_AKTUELL="Regnerisch"; fi
-	 if [ "$LUFTDRUCK" -gt "1000" ] && [ "$LUFTDRUCK" -le "1020" ]; then WETTER_AKTUELL="Wechselhaft"; fi
-	 if [ "$LUFTDRUCK" -gt "1020" ] && [ "$LUFTDRUCK" -le "1040" ]; then WETTER_AKTUELL="Sonnig"; fi
-	 if [ "$LUFTDRUCK" -gt "1040" ]; then WETTER_AKTUELL="Trocken, Gewitter"; fi
+	 if [ "$LUFTDRUCK" -le "980" ]; then WETTER_AKTUELL="stürmisch, Regen"; fi
+	 if [ "$LUFTDRUCK" -gt "980" ] && [ "$LUFTDRUCK" -le "1000" ]; then WETTER_AKTUELL="regnerisch"; fi
+	 if [ "$LUFTDRUCK" -gt "1000" ] && [ "$LUFTDRUCK" -le "1020" ]; then WETTER_AKTUELL="wechselhaft"; fi
+	 if [ "$LUFTDRUCK" -gt "1020" ] && [ "$LUFTDRUCK" -le "1040" ]; then WETTER_AKTUELL="sonnig"; fi
+	 if [ "$LUFTDRUCK" -gt "1040" ]; then WETTER_AKTUELL="trocken, Gewitter"; fi
 
 
 	#falls Initialisierung
@@ -317,7 +336,7 @@ wetterprognose() {
 	EOD
 	)
 
-    curl --data "${IOB_WDATA}" http://${IPP}/setBulk >/dev/null 2>&1
+    SAPI "Bulk" "setBulk" "${IOB_WDATA}"
 
 }
 
@@ -329,11 +348,11 @@ firmware_check() {
 	FW_VER=$(curl https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/firmware.version)
 	FW_AKT=${MESSWERTE[19]}
 	if [ "$FW_VER" != "$FW_AKT" ]; then
-	  curl "http://${IPP}/set/${DP_FW_UPGRADE}?value=true" >/dev/null 2>&1
+	  SAPI "Single" "set/${DP_FW_UPGRADE}?value=true"
 	 else
-	  curl "http://${IPP}/set/${DP_FW_UPGRADE}?value=false" >/dev/null 2>&1
+	  SAPI "Single" "set/${DP_FW_UPGRADE}?value=false"
 	fi
-	curl "http://${IPP}/set/${DP_FW_VERSION}?value=${FW_AKT}" >/dev/null 2>&1
+	SAPI "Single" "set/${DP_FW_VERSION}?value=${FW_AKT}"
 }
 
 
@@ -350,7 +369,7 @@ sonnenpuls() {
 	 let SONNENSCHEIN_MO+="$SONNENPULS_DIFF"
 	 let SONNENSCHEIN_JAHR+="$SONNENPULS_DIFF"
 	fi
-	curl --data "${DP_SONNENSCHEIN_SAVE}=${SONNENSCHEIN_TAG} ${SONNENSCHEIN_WO} ${SONNENSCHEIN_MO} ${SONNENSCHEIN_JAHR}" http://${IPP}/setBulk >/dev/null 2>&1
+	SAPI "Bulk" "setBulk" "${DP_SONNENSCHEIN_SAVE}=${SONNENSCHEIN_TAG} ${SONNENSCHEIN_WO} ${SONNENSCHEIN_MO} ${SONNENSCHEIN_JAHR}"
 	timestr ${SONNENSCHEIN_TAG} SONNENDAUER_STR_TAG
 	timestr ${SONNENSCHEIN_WO} SONNENDAUER_STR_WO
 	timestr ${SONNENSCHEIN_MO} SONNENDAUER_STR_MO
@@ -369,7 +388,7 @@ sonnenpuls() {
 	EOD
 	)
 	if [ -z $MIDNIGHTRUN ]; then TIMER_START=`date +%s`; fi
-	curl --data "${IOB_SDATA}" http://${IPP}/setBulk >/dev/null 2>&1
+	SAPI "Bulk" "setBulk" "${IOB_SDATA}"
     fi
 
 	###Solarenergie
@@ -401,7 +420,7 @@ sonnenpuls() {
 	EOD
 	)
 
-	curl --data "${IOB_SOLDATA}" http://${IPP}/setBulk >/dev/null 2>&1
+	SAPI "Bulk" "setBulk" "${IOB_SOLDATA}"
     fi
 
 }
@@ -466,8 +485,8 @@ END_BC
 
 reset_zaehler() {
 	#VorZaehler aktualisieren
-	curl http://${IPP}/set/${DP_SONNENSCHEIN_VORTAG}?value="${SONNENSCHEIN_TAG}" >/dev/null 2>&1
-	curl http://${IPP}/set/${DP_SOLARENERGIE_VORTAG}?value="${SOLARENERGIE_TAG}" >/dev/null 2>&1
+	SAPI "Single" "set/${DP_SONNENSCHEIN_VORTAG}?value=${SONNENSCHEIN_TAG}"
+	SAPI "Single" "set/${DP_SOLARENERGIE_VORTAG}?value=${SOLARENERGIE_TAG}"
 
 	#Tageszähler resetten
 	SONNENSCHEIN_TAG=0
@@ -488,9 +507,9 @@ reset_zaehler() {
 	  SOLAR_MONAT=0
 	  if [ `date +%m` -eq "12" ]; then
 		#Jahreszähler resetten
-		curl http://${IPP}/set/${DP_REGENMENGE_VORJAHR}?value="${REGENMENGE}" >/dev/null 2>&1
-		curl http://${IPP}/set/${DP_SONNENSCHEIN_VORJAHR}?value="${SONNENSCHEIN_JAHR}" >/dev/null 2>&1
-		curl http://${IPP}/set/${DP_SOLARENERGIE_VORJAHR}?value="${SOLAR_JAHR}" >/dev/null 2>&1
+		SAPI "Single" "set/${DP_REGENMENGE_VORJAHR}?value=${REGENMENGE}"
+		SAPI "Single" "set/${DP_SONNENSCHEIN_VORJAHR}?value=${SONNENSCHEIN_JAHR}"
+		SAPI "Single" "set/${DP_SOLARENERGIE_VORJAHR}?value=${SOLAR_JAHR}"
 		REGENMENGE=0
 		SONNENSCHEIN_JAHR=0
 		SOLAR_JAHR=0
@@ -521,16 +540,18 @@ setup() {
   while ! nc -v -z $(echo $IPP|sed -e 's/:/ /'); do sleep 30; done
 
  #Fehlermeldungen resetten
-  curl "http://${IPP}/set/${DP_KOMFEHLER}?value=false&ack=true" >/dev/null 2>&1
+  SAPI "Single" "set/${DP_KOMFEHLER}?value=false&ack=true"
 
  #Wetterdatenarray lesen
- DRUCKWERTE_TMP=$(curl -s http://${IPP}/getPlainValue/${DP_WETTERDATA}|sed -e 's/\"//g')
+  SAPI "Single" "getPlainValue/${DP_WETTERDATA}"
+  DRUCKWERTE_TMP=$(echo $retval | sed -e 's/\"//g' | tr -d '\\')
 
  if [ ${#DRUCKWERTE_TMP} -le "2" ]; then
    DRUCKWERTE_TMP=${DRUCKWERTE[*]}
-   curl --data "${DP_WETTERDATA}=${DRUCKWERTE_TMP}" http://${IPP}/setBulk >/dev/null 2>&1
+   SAPI "Bulk" "setBulk" "${DP_WETTERDATA}=${DRUCKWERTE_TMP}"
   else
-   LC=$(curl -s http://${IPP}/get/${DP_WETTERDATA}?prettyPrint | grep '"lc":' | tr -d [:alpha:]:\ ,\")
+   SAPI "Single" "get/${DP_WETTERDATA}?prettyPrint"
+   LC=$(echo $retval | jq -r '.lc')
    LC=`echo "scale=0;${LC}/1000" | bc -l`
    TS_AKT=$(date +%s)
    TS_DIFF=`echo "${TS_AKT}-${LC}-3600" | bc` #mind. 1 Stunde Differenz (dann >0)
@@ -542,7 +563,8 @@ setup() {
  fi
 
    #Sonnenscheinarray lesen
-   SONNENSCHEIN_TMP=$(curl -s http://${IPP}/getPlainValue/${DP_SONNENSCHEIN_SAVE}|sed -e 's/\"//g')
+   SAPI "Single" "getPlainValue/${DP_SONNENSCHEIN_SAVE}"
+   SONNENSCHEIN_TMP=$(echo ${retval}|sed -e 's/\"//g')
    IFS=" "
    SON_ARY=($SONNENSCHEIN_TMP)
 	SONNENSCHEIN_TAG=${SON_ARY[0]}
@@ -551,7 +573,8 @@ setup() {
 	SONNENSCHEIN_JAHR=${SON_ARY[3]}
 
    #Solarenergiearray lesen
-   SOLAR_TMP=$(curl -s http://${IPP}/getPlainValue/${DP_SOLAR_SAVE}|sed -e 's/\"//g')
+   SAPI "Single" "getPlainValue/${DP_SOLAR_SAVE}"
+   SOLAR_TMP=$(echo ${retval}|sed -e 's/\"//g')
    SOL_ARY=($SOLAR_TMP)
 	SOLARENERGIE_TAG=${SOL_ARY[0]:-0}
 	SOLAR_WOCHE=${SOL_ARY[1]:-0}
@@ -561,7 +584,7 @@ setup() {
    unset SOL_ARY; unset SON_ARY; unset SONNENSCHEIN_TMP; unset SOLAR_TMP
 
    #Startwerte setzen
-   curl --data "${DP_WETTER_TREND}=${WETTER_TREND}" http://${IPP}/setBulk >/dev/null 2>&1
+   SAPI "Bulk" "setBulk" "${DP_WETTER_TREND}=${WETTER_TREND}"
 }
 
 
@@ -595,8 +618,9 @@ opensensemap() {
 	OSeM_DATA=$(echo $OSeM_DATA | sed "s/}{/},{/g" )
  	OSEM_TRANSMIT=$(curl -s -H "Content-Type: application/json" -H "Authorization: ${BOX_TOKEN}" \
           -d "[ ${OSeM_DATA} ]" https://api.opensensemap.org/boxes/${senseBox_ID}/data)
+
         if [[ "$OSEM_TRANSMIT" == "\"Measurements saved in box\"" ]]; then
-          curl "http://${IPP}/set/${DP_OSEM_TRANSMIT}?value=true&ack=true" >/dev/null 2>&1
+          SAPI "Single" "set/${DP_OSEM_TRANSMIT}?value=true"
         else
           curl "http://${IPP}/set/${DP_OSEM_TRANSMIT}?value=false&ack=true" >/dev/null 2>&1
         fi

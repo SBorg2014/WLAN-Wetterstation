@@ -1,12 +1,14 @@
 #!/bin/bash
 
-# V1.4.0 - 30.10.2020 (c) 2019-2020 SBorg
+# V1.5.0 - 30.11.2020 (c) 2019-2020 SBorg
 #
 # wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-Format aus, konvertiert dieses und überträgt
 # die Daten an den ioBroker
 #
 # benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq' (nur openSenseMap) und 'bc' unter Linux
 #
+# V1.5.0 / 30.11.2020 - ~ Simple-API per HTTP[S] und Authentifizierung
+#                       + Update-Routine (beta)
 # V1.4.0 / 30.10.2020 - + Support für openSenseMap
 # V1.3.1 / 08.10.2020 - ~ Fix falls Leerzeichen im Verzeichnisnamen
 # V1.3.0 / 19.06.2020 - + letztes Regenereignis und Regenmenge
@@ -37,9 +39,9 @@
 # V0.1.0 / 29.12.2019 - erstes Release
 
 
- SH_VER="V1.4.0"
- CONF_V="V1.4.0"
- SUBVER="V1.4.0"
+ SH_VER="V1.5.0"
+ CONF_V="V1.5.0"
+ SUBVER="V1.5.0"
 
 
  #Installationsverzeichnis feststellen
@@ -93,9 +95,9 @@
     shift
   done
 
+
  #Setup ausführen
   setup
-
 
 
 
@@ -132,7 +134,7 @@ while true
 
   else
    let "KOMFEHLER++"
-   if [ "$KOMFEHLER" -eq "5" ]; then curl "http://${IPP}/set/${DP_KOMFEHLER}?value=true&ack=true" >/dev/null 2>&1;fi
+   if [ "$KOMFEHLER" -eq "5" ]; then SAPI "Single" "set/${DP_KOMFEHLER}?value=true&ack=true"; fi
   fi
 
 

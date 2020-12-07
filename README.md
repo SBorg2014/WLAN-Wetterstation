@@ -54,6 +54,13 @@ Wer möchte kann mir gerne einen Kaffee ausgeben und mich bei den Projekten unte
 
 ## Versionen ##
 
+**V1.5.0 - 07.12.2020**
+```
+    + Verschlüsselung mittels HTTPS möglich
+    + Authentifizierung mittels User/Passwort
+    + ws_updater.sh (zum updaten der wetterstattion.conf)
+```
+
 
 **V1.4.0 - 15.11.2020**
 ```

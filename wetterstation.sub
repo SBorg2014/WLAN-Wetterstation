@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V1.5.0 --------------------------------------------------------
+### Subroutinen V1.6.0 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -75,6 +75,7 @@
 
 ###  Debugging
 debuging() {
+
   #Messwerteblock
    echo -e "\n\n${WE}Messwerteblock: $GR${MESSWERTERAW[*]}$WE"
 
@@ -182,7 +183,7 @@ iob_send() {
 ### Daten holen und Integritätscheck
 get_DATA() {
   #auf Daten der Wetterstation warten
-   DATA=$(timeout ${WARTE} nc -lvw 1 -p ${WS_PORT}|sed -n '1 p')
+   DATA=$(timeout ${WARTE} nc -nlvw 1 -p ${WS_PORT}|sed -n '1 p')
    STRLEN=$(echo -n $DATA | wc -m)
 
   #haben wir eine Jahresregenmenge?
@@ -195,7 +196,7 @@ get_DATA() {
 
 ### Datenpaket der Wetterstation anzeigen
 ws_data() {
-   echo -e "\n\nWarte maximal ${WARTE} Sekunden auf Datenpaket der Wetterstation...\n" && timeout ${WARTE} nc -lvw 1 -p ${WS_PORT} | sed -n '1 p'
+   echo -e "\n\nWarte maximal ${WARTE} Sekunden auf Datenpaket der Wetterstation...\n" && timeout ${WARTE} nc -nlvw 1 -p ${WS_PORT} | sed -n '1 p'
 }
 
 
@@ -603,6 +604,18 @@ version() {
 	echo -e "\n$BL ${SH_VER} - (c) 2019-2020 SBorg"
 	echo -e " Config-Version: ${CONF_V}"
 	echo -e " Sub-Version   : ${SUBVER}\n"
+
+        #Test ob bc und jq installiert sind
+         if [ $(which bc) ]; then
+           echo -e " $GR'bc'$WE installiert: $GR\u2713"
+          else
+           echo -e " $GR'bc'$WE installiert: $RE\u2717"
+         fi
+         if [ $(which jq) ]; then
+           echo -e " $GR'jq'$WE installiert: $GR\u2713\n"
+          else
+           echo -e " $GR'jq'$WE installiert: $RE\u2717\n"
+         fi
 }
 
 

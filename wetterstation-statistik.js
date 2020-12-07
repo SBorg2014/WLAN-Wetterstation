@@ -57,7 +57,7 @@ let DP_Check='Rekordwerte.Temperatur_Jahresdurchschnitt_Max';
 if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 //Start des Scripts
-    const ScriptVersion = "V0.1.3B_03";
+    const ScriptVersion = "V0.1.3B_04";
     let Tiefstwert, Hoechstwert, Temp_Durchschnitt, Max_Windboe, Max_Regenmenge, Regenmenge_Monat, warme_Tage, Sommertage;
     let heisse_Tage, Frost_Tage, kalte_Tage, Eistage, sehr_kalte_Tage;
     let monatstage = [31,28,31,30,31,30,31,31,30,31,30,31];
@@ -67,7 +67,7 @@ if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
     console.log('Wetterstation-Statistiken gestartet...');
     setTimeout(Statusmeldung, 500);
 
-//Scheduler
+//scheduler
     schedule(ZEITPLAN, main);
 
 
@@ -145,6 +145,8 @@ async function main() {
     setState(PRE_DP+'.aktueller_Monat.Eistage', 0, true);
     setState(PRE_DP+'.aktueller_Monat.sehr_kalte_Tage', 0, true);
 
+    sleep(3000);
+    
    if (getState(PRE_DP+'.Control.AutoDelete_Data').val >0) { AutoDelete_Data(); }
  }//End Jobs Monatserster
 
@@ -170,13 +172,13 @@ async function main() {
     Hoechstwert = Math.max(...temps);
     Math.sum = (...temps) => Array.prototype.reduce.call(temps,(a,b) => a+b);
     Temp_Durchschnitt = Number((Math.sum(...temps)/temps.length).toFixed(2));
-    if (Hoechstwert > 20) { warme_Tage = 1; }
-    if (Hoechstwert > 25) { Sommertage = 1; }
-    if (Hoechstwert > 30) { heisse_Tage = 1; }
-    if (Tiefstwert < 0) { Frost_Tage = 1; }
-    if (Hoechstwert < 10) { kalte_Tage = 1; }
-    if (Hoechstwert < 0) { Eistage = 1; }
-    if (Tiefstwert < -10) { sehr_kalte_Tage = 1;}
+    if (Hoechstwert > 20) { warme_Tage = 1; } else { warme_Tage = 0; }
+    if (Hoechstwert > 25) { Sommertage = 1; } else { Sommertage = 0; } 
+    if (Hoechstwert > 30) { heisse_Tage = 1; } else { heisse_Tage = 0; } 
+    if (Tiefstwert < 0) { Frost_Tage = 1; } else { Frost_Tage = 0; } 
+    if (Hoechstwert < 10) { kalte_Tage = 1; } else { kalte_Tage = 0; }
+    if (Hoechstwert < 0) { Eistage = 1; } else { Eistage = 0; }
+    if (Tiefstwert < -10) { sehr_kalte_Tage = 1; } else { sehr_kalte_Tage = 0; }
 
   //Wind
     Max_Windboe = Math.max(...wind);      
@@ -244,9 +246,9 @@ function Reset_Jahresstatistik() {
 function AutoDelete_Data() {
     let AutoDelete = getState(PRE_DP+'.Control.AutoDelete_Data').val; //Anzahl Monate
     let zeitstempel = new Date();
-    let start = new Date(zeitstempel.getFullYear(),zeitstempel.getMonth()-AutoDelete,1);
-    let AutoDelete_Year = start.getFullYear();
-    let AutoDelete_Month = start.getMonth();
+    let startAD = new Date(zeitstempel.getFullYear(),zeitstempel.getMonth()-AutoDelete,1);
+    let AutoDelete_Year = startAD.getFullYear();
+    let AutoDelete_Month = startAD.getMonth();
     let DP_Years = []; //Jahresordnernamen
 
     $(PRE_DP+'.Data.*').each(function(DPID) {

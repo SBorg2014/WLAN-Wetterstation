@@ -58,7 +58,7 @@ Wer möchte kann mir gerne einen Kaffee ausgeben und mich bei den Projekten unte
 ```
     + Verschlüsselung mittels HTTPS möglich
     + Authentifizierung mittels User/Passwort
-    + ws_updater.sh (zum updaten der wetterstattion.conf)
+    + ws_updater.sh (zum updaten der wetterstation.conf)
 ```
 
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V1.6.0 --------------------------------------------------------
+### Subroutinen V2.0.0 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -55,7 +55,12 @@
   DP_SOLARENERGIE_VORJAHR=${PRE_DP}.Info.Solarenergie_VorJahr
   DP_LETZTER_REGEN=${PRE_DP}.Info.Letzter_Regen
   DP_LETZTE_REGENMENGE=${PRE_DP}.Info.Letzte_Regenmenge
-
+  DP_STATION_BATTERIE=${PRE_DP}.Info.Station_Batteriestatus
+  DP_WINDBOEEN_MAX=${PRE_DP}.Windboeen_max
+  DP_REGEN_EVENT=${PRE_DP}.Regen_Event
+  DP_REGEN_STUNDE=${PRE_DP}.Regen_Stunde
+  DP_REGEN_TOTAL=${PRE_DP}.Regen_Total
+  DP_GATEWAY_NAME=${PRE_DP}.Info.Wetterstation_Gateway
 
 ###  Ende Usereinstellungen
 
@@ -77,31 +82,48 @@
 debuging() {
 
   #Messwerteblock
-   echo -e "\n\n${WE}Messwerteblock: $GR${MESSWERTERAW[*]}$WE"
+   echo -e "\n\n${WE}Messwerteblock: $GR${MESSWERTE[*]}$WE"
 
   #Datenfelder ausgeben
-   echo -e "\n\nTemperatur Innen\t: $GR${MESSWERTE[0]}$WE °C"
+   echo -e "\n\nNicht alle Werte werden unterstützt (abhängig vom Modell der Wetterstation und dem verwendeten Protokoll)!"
+   echo -e "\nTemperatur Innen\t: $GR${MESSWERTE[0]}$WE °C"
    echo -e "Temperatur Aussen\t: $GR${MESSWERTE[1]}$WE °C"
    echo -e "Taupunkt\t\t: $GR${MESSWERTE[2]}$WE °C"
    echo -e "Chill-Faktor\t\t: $GR${MESSWERTE[3]}$WE °C"
    echo -e "Luftfeuchte Innen\t: $GR${MESSWERTE[4]}$WE %"
    echo -e "Luftfeuchte Aussen\t: $GR${MESSWERTE[5]}$WE %"
    echo -e "Windgeschwindkeit\t: $GR${MESSWERTE[6]}$WE km/h"
-   echo -e "max. Windgeschwindkeit\t: $GR${MESSWERTE[7]}$WE km/h"
+   echo -e "Windböengeschwindkeit\t: $GR${MESSWERTE[7]}$WE km/h"
+   echo -e "max. Windböe\t\t: $GR${MESSWERTE[21]}$WE km/h"
    echo -e "Windrichtung\t\t: $GR${MESSWERTE[8]}$WE °"
    echo -e "Windrichtung\t\t: $GR${WINDRICHTUNG}$WE"
    echo -e "Luftdruck absolut\t: $GR${MESSWERTE[9]}$WE hPa"
    echo -e "Luftdruck relativ\t: $GR${MESSWERTE[10]}$WE hPa"
    echo -e "Regenrate\t\t: $GR${MESSWERTE[11]}$WE mm/h"
    echo -e "Regenstatus\t\t: $GR${REGENSTATUS}$WE"
+   echo -e "Regen seit Regenbeginn\t: $GR${MESSWERTE[22]}$WE mm"
+   echo -e "Regen Stunde\t\t: $GR${MESSWERTE[23]}$WE mm"
    echo -e "Regen Tag\t\t: $GR${MESSWERTE[12]}$WE mm"
    echo -e "Regen Woche\t\t: $GR${MESSWERTE[13]}$WE mm"
    echo -e "Regen Monat\t\t: $GR${MESSWERTE[14]}$WE mm"
    echo -e "Regen Jahr\t\t: $GR${MESSWERTE[15]}$WE mm"
+   echo -e "Regen Gesamt\t\t: $GR${MESSWERTE[24]}$WE mm"
    echo -e "Sonnenstrahlung\t\t: $GR${MESSWERTE[16]}$WE W/m²"
    echo -e "UV-Index\t\t: $GR${MESSWERTE[17]}$WE"
    echo -e "Zeitstempel\t\t: $GR${MESSWERTE[18]}$WE"
    echo -e "Firmware\t\t: $GR${MESSWERTE[19]}$WE"
+   echo -e "Batteriestand:\t\t: $GR${MESSWERTE[20]}$WE"
+   echo -e "Gateway-Modell\t\t: $GR${MESSWERTE[25]}$WE"
+
+   echo -en "\nZusatzsensoren:"
+   if [ $WS_PROTOKOLL = 1 ]; then echo -e "$GR keine $WE"; else echo -e "\n"; fi
+   for ((i=31; i<$MAXDEVICES; i++))
+   do
+     if [ ! -z ${MESSWERTE[$i]} ]; then
+        echo -e "${MESSWERTE[$i]}\t\t: $GR${MESSWERTE[$(($i+1))]}$WE"
+     fi
+     ((i++))
+   done
 
    echo -e "\n\nDatenstring für ioBroker:\n$GR$IOB_DATA$WE\n"
    if [ "$show_pwid" = "true" ]; then
@@ -114,6 +136,8 @@ debuging() {
    echo -e "\nDebug VAR:"
    echo -e "Installationsverzeichnis: $GE$DIR$WE"
    echo -e "IPP: $GE${IPP}$WE\tWS_PORT: $GE${WS_PORT}$WE\t\tWS_POLL: $GE${WS_POLL}$WE\t\tPRE_DP: $GE${PRE_DP}$WE"
+   echo -en "WEB: $GE${WEB}\t\t${WE}WS_PROT: $GE"; if [ $WS_PROTOKOLL = 1 ]; then echo -en "Wunderground"; else echo -en "Ecowitt"; fi
+   echo -e "$WE\tDP50/100: $GE${ANZAHL_DP50} $WE| $GE${ANZAHL_DP100}$WE"
    echo -e "Script-Version: $GE$SH_VER$WE\tConfig-Version: $GE${CONF_V}$WE\tSub-Version: $GE${SUBVER}$WE"
 
    if [ ! -z "$KOMFEHLER" ]; then echo -e "\n${RE}Kommunikationsfehler! Stimmt die WS_ID in der Konfiguration mit der der WS View-App überein?$WE\n"; fi
@@ -135,40 +159,34 @@ function SAPI()
   if [ "$1" == "Bulk" ]; then
    curl --data "${3}&user=${AUTH_USER}&pass=${AUTH_PASS}" ${WEB}://${IPP}/${2} >/dev/null 2>&1
   fi
-
 }
 
 
 ### ioB-Daten senden
 iob_send() {
-   #build Data-String
-    IOB_DATA=$(cat <<-EOD
-	${DP_TEMP_INNEN}=${MESSWERTE[0]}
-	&${DP_TEMP_AUSSEN}=${MESSWERTE[1]}
-	&${DP_TAUPUNKT}=${MESSWERTE[2]}
-	&${DP_CHILL}=${MESSWERTE[3]}
-	&${DP_FEUCHTE_INNEN}=${MESSWERTE[4]}
-	&${DP_FEUCHTE_AUSSEN}=${MESSWERTE[5]}
-	&${DP_WIND}=${MESSWERTE[6]}
-	&${DP_WIND_MAX}=${MESSWERTE[7]}
-	&${DP_WIND_DIR}=${MESSWERTE[8]}
-	&${DP_WIND_DIR_TXT}=${WINDRICHTUNG}
-	&${DP_DRUCK_ABS}=${MESSWERTE[9]}
-	&${DP_DRUCK_REL}=${MESSWERTE[10]}
-	&${DP_REGENRATE}=${MESSWERTE[11]}
-	&${DP_REGEN_TAG}=${MESSWERTE[12]}
-	&${DP_REGEN_WOCHE}=${MESSWERTE[13]}
-	&${DP_REGEN_MONAT}=${MESSWERTE[14]}
-	&${DP_REGEN_JAHR}=${MESSWERTE[15]}
-	&${DP_SONNE}=${MESSWERTE[16]}
-	&${DP_UV_INDEX}=${MESSWERTE[17]}
-	EOD
-     )
+    IOBPAR=(${DP_TEMP_INNEN} ${DP_TEMP_AUSSEN} ${DP_TAUPUNKT} ${DP_CHILL} ${DP_FEUCHTE_INNEN} ${DP_FEUCHTE_AUSSEN} ${DP_WIND} ${DP_WIND_MAX} ${DP_WIND_DIR} ${DP_DRUCK_ABS} ${DP_DRUCK_REL} ${DP_REGENRATE} ${DP_REGEN_TAG} ${DP_REGEN_WOCHE} ${DP_REGEN_MONAT} ${DP_REGEN_JAHR} ${DP_SONNE} ${DP_UV_INDEX} ${DP_DP50_1_TEMP} ${DP_ZEITSTEMPEL} ${DP_FW_VERSION} ${DP_STATION_BATTERIE} ${DP_WINDBOEEN_MAX} ${DP_REGEN_EVENT} ${DP_REGEN_STUNDE} ${DP_REGEN_TOTAL} ${DP_GATEWAY_NAME})
+
+    IOBOUT=""
+    #Standard DP für ioBroker
+    for (( i = 0; i < 26; i++ )); do
+       if [[ ! -z "${MESSWERTE[$i]}" ]]; then IOBOUT="${IOBOUT}&${IOBPAR[$i]}=${MESSWERTE[$i]}"; fi
+    done
+
+    #Sensoren DP für ioBroker
+    for (( i = 31; i < $MAXDEVICES; i+=2 )); do
+      if [[ ! -z "${MESSWERTE[$i]}" ]]; then
+         if [[ "${MESSWERTE[$i]}" =~ ^temp[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP50.${MESSWERTE[$i]:4:1}.Temperatur=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^humidity[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP50.${MESSWERTE[$i]:8:1}.Feuchtigkeit=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^batt[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP50.${MESSWERTE[$i]:4:1}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soilbatt[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:8:1}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soilmoisture[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:12:1}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
+      fi
+    done
+    IOBOUT="${IOBOUT:1}"
 
    #Leerzeichen entfernen + Zeitstempel/Regenstatus/UV-Belastung wg. Leerzeichen erst hier anhängen
-    IOB_DATA=$(echo $IOB_DATA|tr -d " ")
-    IOB_DATA=${IOB_DATA}\&${DP_REGENSTATUS}=${REGENSTATUS}\&${DP_UV_BELASTUNG}=${UV_BELASTUNG}\&${DP_ZEITSTEMPEL}=${MESSWERTE[18]}
-
+    IOB_DATA=$(echo $IOBOUT|tr -d " ")
+    IOB_DATA=${IOB_DATA}\&${DP_REGENSTATUS}=${REGENSTATUS}\&${DP_UV_BELASTUNG}=${UV_BELASTUNG}\&${DP_WIND_DIR_TXT}=${WINDRICHTUNG}
 
    #Daten an den ioB schicken
     if [ $debug == "true" ]; then
@@ -179,17 +197,25 @@ iob_send() {
 }
 
 
-
 ### Daten holen und Integritätscheck
 get_DATA() {
   #auf Daten der Wetterstation warten
-   DATA=$(timeout ${WARTE} nc -nlvw 1 -p ${WS_PORT}|sed -n '1 p')
-   STRLEN=$(echo -n $DATA | wc -m)
-
-  #haben wir eine Jahresregenmenge?
-   if [[ ! "$DATA" =~ "yearlyrainin" ]]; then DATA=$(echo $DATA| sed -e 's/solarradiation/yearlyrainin=0\&solarradiation/' ); fi
-  #check auf Datenintigrität
-   if [ "$STRLEN" -gt "400" ] && [[ "$DATA" =~ "/weatherstation/updateweatherstation.php?ID=${WS_ID}" ]]; then return 0; else return 1; fi
+   if [ $WS_PROTOKOLL = "1" ]; then
+     DATA=$(timeout ${WARTE} nc -nlvw 1 -p ${WS_PORT}|sed -n '1 p')
+     STRLEN=$(echo -n $DATA | wc -m)
+     #haben wir eine Jahresregenmenge?
+     if [[ ! "$DATA" =~ "yearlyrainin" ]]; then DATA=$(echo $DATA| sed -e 's/solarradiation/yearlyrainin=0\&solarradiation/' ); fi
+     #check auf Datenintigrität
+     if [ "$STRLEN" -gt "400" ] && [[ "$DATA" =~ "/weatherstation/updateweatherstation.php?ID=${WS_ID}" ]]; then return 0; else return 1; fi
+   elif [ $WS_PROTOKOLL = "2" ]; then
+     DATA=$(timeout ${WARTE} nc -nlvw 1 -p ${WS_PORT}|tail -1)
+     STRLEN=$(echo -n $DATA | wc -m)
+     if [ "$STRLEN" -gt "400" ] && [[ "$DATA" =~ "PASSKEY=" ]]; then return 0; else return 1; fi
+   else
+     echo -e "\n${RE}Die Angabe: WS_PROTOKOLL=$WS_PROTOKOLL ist ungültig. Bitte die Einagbe in wetterstation.conf  korrigieren$WE\n"
+     #Shell-Skript mit Fehler beenden
+     exit 1
+   fi
 }
 
 
@@ -203,21 +229,21 @@ ws_data() {
 
 ### Datenkonvertierungen
 convertFtoC() {
-	MESSWERTE[$i]=`echo "scale=2;(${MESSWERTE[$i]}-32)*5/9" | bc -l`
+	MESSWERTE[$1]=`echo "scale=2;(${MESSWERTE[$1]}-32)*5/9" | bc -l`
 }
 
 convertMPHtoKMH() {
-	MESSWERTE[$i]=`echo "scale=2;(${MESSWERTE[$i]}*16094/10000)" | bc -l`
+	MESSWERTE[$1]=`echo "scale=2;(${MESSWERTE[$1]}*16094/10000)" | bc -l`
 }
 
 convertLuftdruck() {
-	MESSWERTE[$i]=`echo "scale=2;${MESSWERTE[$i]}*33864/1000" | bc -l`
+	MESSWERTE[$1]=`echo "scale=2;${MESSWERTE[$1]}*33864/1000" | bc -l`
 }
 
 convertInchtoMM() {
-	MESSWERTE[$i]=`echo "scale=1;${MESSWERTE[$i]}*254/10" | bc -l`
+	MESSWERTE[$1]=`echo "scale=1;${MESSWERTE[$1]}*254/10" | bc -l`
 	#Regenstatus bestimmen (#11)
-	if [ "$i" -eq "11" ]; then
+	if [ "$1" -eq "11" ]; then
 	 REGEN=$(round ${MESSWERTE[11]} 0)
 	 if [ "$REGEN" -ge "10" ]; then REGENSTATUS="Starkregen"; fi
 	 if [ "$REGEN" -lt "10" ]; then REGENSTATUS="starker Regen"; fi
@@ -226,7 +252,7 @@ convertInchtoMM() {
 	 if [ "$REGEN" -eq "0" ]; then REGENSTATUS="kein Regen"; fi
 	fi
 	#letztes Regenereignis + letzte Regenmenge
-	if [ "$REGEN" -gt "0" ] && [ "$i" -eq "12" ]; then
+	if [ "$REGEN" -gt "0" ] && [ "$1" -eq "12" ]; then
 	 AKT_TIMESTAMP=`date +%s`
 	 if [ $LAST_RAIN == "DATUM" ]; then LASTRAINMSG=`date "+%d.%m.%Y %H:%M"`; fi
 	 if [ $LAST_RAIN == "UNIX" ]; then LASTRAINMSG=${AKT_TIMESTAMP}; fi
@@ -256,9 +282,14 @@ convertInchtoMM() {
 }
 
 convertTime() {
-	MESSWERTE[$i]=$(echo ${MESSWERTE[$i]}|sed -e 's/%20/ /')
-	MESSWERTE[$i]=$(date --date="${MESSWERTE[$i]} UTC" +'%d.%m.%Y %H:%M:%S')
-	#MESSWERTE[$i]=$(echo ${MESSWERTE[$i]}|awk -F'-|%20' '{printf "%02s.%02s.%s %s", $3, $2, $1, $4}')
+        MESSWERTE[$1]=$(echo ${MESSWERTE[$1]}|sed -e 's/+/ /' -e 's/%20/ /')
+        if [[ ${MESSWERTE[$1]} == "now" ]]; then
+                MESSWERTE[$1]=$(date --date="${MESSWERTE[$1]}" +'%d.%m.%Y %H:%M:%S')
+        else
+                MESSWERTE[$1]=$(date --date="${MESSWERTE[$1]} UTC" +'%d.%m.%Y %H:%M:%S')
+        fi
+        MESSWERTE[$1]=$(echo ${MESSWERTE[$1]}|sed -e 's/ /%20/')
+	#MESSWERTE[$i]=$(echo ${MESSWERTE[$1]}|awk -F'-|%20' '{printf "%02s.%02s.%s %s", $3, $2, $1, $4}')
 }
 
 
@@ -282,9 +313,17 @@ rain() {
 
 ###Windrichtung als Text
 winddir() {
-   WINDRICHTUNG=${WINDDIRS[$(round ${MESSWERTE[8]}/22.5 0)]}
+   WINDRICHTUNG=${WINDDIRS[$(round ${MESSWERTE[$1]}/22.5 0)]}
 }
 
+### Batteriestatus als Text
+batterie() {
+   if [ $MESSWERTE[$1] = "0" ]; then
+      MESSWERTE[$1]="OK";
+   else
+      MESSWERTE[$1]="Alarm";
+   fi
+}
 
 
 ###Wetterprognose
@@ -348,6 +387,7 @@ firmware_check() {
 	#Version auf GitHub holen
 	FW_VER=$(curl https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/firmware.version)
 	FW_AKT=${MESSWERTE[19]}
+
 	if [ "$FW_VER" != "$FW_AKT" ]; then
 	  SAPI "Single" "set/${DP_FW_UPGRADE}?value=true"
 	 else
@@ -360,7 +400,7 @@ firmware_check() {
 
 ###Sonnenscheindauer (>=120W/m²) / Solarenergie
 sonnenpuls() {
-    SONNEN_STRAHLUNG=$(round ${MESSWERTE[16]} 0)
+    SONNEN_STRAHLUNG=$(round ${MESSWERTE[$1]} 0)
     if [ "$SONNEN_STRAHLUNG" -ge "120" ] || [ ! -z "$MIDNIGHTRUN" ]; then
 	AKT_TIMESTAMP=`date +%s`
 	let SONNENPULS_DIFF=${AKT_TIMESTAMP}-${TIMER_START}
@@ -430,7 +470,7 @@ sonnenpuls() {
 
 ###UV-Belastung
 uv_belastung() {
-	UV_TMP=$(round ${MESSWERTE[17]} 0)
+	UV_TMP=$(round ${MESSWERTE[$1]} 0)
 	case ${UV_TMP} in
 	   0)      UV_BELASTUNG="keine" ;;
 	   1|2)    UV_BELASTUNG="gering" ;;
@@ -466,6 +506,7 @@ timestr() {
 	   *)   printf -v $2 "unbekanntes Format"
 	esac
 }
+
 
 round() {
     bc -l <<END_BC
@@ -529,13 +570,19 @@ setup() {
   WETTER_TREND="noch --- Minuten"
 
   declare -a MESSWERTE
-  declare -a MESSWERTERAW
   SOLARENERGIE=(0 0)
   DRUCKWERTE=(12 11 10 9 8 7 6 5 4 3 2 1)
   WINDDIRS=(N NNO NO ONO O OSO SO SSO S SSW SW WSW W WNW NW NNW N)
 
  #Check ob Pollintervall größer 16 Sekunden
   if [ ${WS_POLL} -lt "16" ]; then WS_POLL=16; fi
+
+ #Anzahl der DP Berechnen
+  if [ $WS_PROTOKOLL = "1" ]; then
+     MAXDEVICES=22
+  else
+     MAXDEVICES=$(( 31 + $ANZAHL_DP50 * 6 + ANZAHL_DP100 * 4 ))
+  fi
 
  #falls reboot warten bis der ioB wieder läuft...
   while ! nc -v -z $(echo $IPP|sed -e 's/:/ /'); do sleep 30; done

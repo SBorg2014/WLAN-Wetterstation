@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V1.6.0
+UPDATE_VER=V2.0.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -33,6 +33,7 @@ FEHLER() {
  exit 1
 }
 
+
 ########################################################################################
 #Patch Version V1.4.0 auf V1.5.0
 PATCH140() {
@@ -51,6 +52,14 @@ PATCH150() {
  echo -e " Fertig...\n"
 }
 
+#Patch Version V1.6.0 auf V2.0.0
+PATCH160() {
+ backup
+ echo -e "\n Patche wetterstation.conf auf V2.0.0 ..."
+ sed -i '/^.#Protokoll (HTTP oder HTTPS)/i \ #Protokoll der Wetterstation [1/2] \/ 1=Wunderground ; 2=Ecowitt \/ default: 1\n  WS_PROTOKOLL=1\n\n #Anzahl der vorhandenen DP50 Sensoren \/ default: 0\n  ANZAHL_DP50=0\n\n #HTTP Anzahl der vorhandenen DP100 Sensoren \/ default: 0\n  ANZAHL_DP100=0\n' ./wetterstation.conf
+ sed -i 's/### Settings V1.6.0/### Settings V2.0.0/' ./wetterstation.conf
+ echo -e " Fertig...\n"
+}
 
 
 
@@ -60,7 +69,7 @@ PATCH150() {
  case ${VERSION} in
            V1.4.0) PATCH140 ;;
            V1.5.0) PATCH150 ;;
+           V1.6.0) PATCH160 ;;
            *)      FEHLER
  esac
  exit 0
-

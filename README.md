@@ -54,7 +54,16 @@ Wer möchte kann mir gerne einen Kaffee ausgeben und mich bei den Projekten unte
 
 ## Versionen ##
 
-**V1.5.0 - 07.12.2020**
+**V1.6.0 - 06.12.2020**
+```
+    + Patch (@a200) für neuere Firmwareversionen (V1.6.3) speziell bei Nutzung eines Gateways
+    ~ Reset des Error-Kommunikationszählers
+    + Prüfung bei Option "-v" ob 'bc' und 'jq' installiert sind
+    ~ Option "n" bei netcat hinzugefügt
+```
+
+
+**V1.5.0 - 30.11.2020**
 ```
     + Verschlüsselung mittels HTTPS möglich
     + Authentifizierung mittels User/Passwort

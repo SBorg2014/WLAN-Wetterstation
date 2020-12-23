@@ -57,7 +57,7 @@ let DP_Check='Rekordwerte.Temperatur_Jahresdurchschnitt_Max';
 if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 //Start des Scripts
-    const ScriptVersion = "V0.1.3B_04";
+    const ScriptVersion = "V0.1.3B_05";
     let Tiefstwert, Hoechstwert, Temp_Durchschnitt, Max_Windboe, Max_Regenmenge, Regenmenge_Monat, warme_Tage, Sommertage;
     let heisse_Tage, Frost_Tage, kalte_Tage, Eistage, sehr_kalte_Tage;
     let monatstage = [31,28,31,30,31,30,31,31,30,31,30,31];
@@ -172,6 +172,7 @@ async function main() {
     Hoechstwert = Math.max(...temps);
     Math.sum = (...temps) => Array.prototype.reduce.call(temps,(a,b) => a+b);
     Temp_Durchschnitt = Number((Math.sum(...temps)/temps.length).toFixed(2));
+    let MonatsTemp_Durchschnitt = Math.round(((((getState(PRE_DP+'.aktueller_Monat.Temperatur_Durchschnitt').val)/(zeitstempel.getDate()-1))+Temp_Durchschnitt)/zeitstempel.getDate())*100)/100;
     if (Hoechstwert > 20) { warme_Tage = 1; } else { warme_Tage = 0; }
     if (Hoechstwert > 25) { Sommertage = 1; } else { Sommertage = 0; } 
     if (Hoechstwert > 30) { heisse_Tage = 1; } else { heisse_Tage = 0; } 
@@ -194,11 +195,18 @@ async function main() {
     console.log('Letzter Messwert: ' + new Date(result.result[0][temps.length-1].ts).toISOString() + ' ***' + result.result[0][temps.length-1].value);
     console.log('Anzahl Datensätze: T_' + temps.length + '|W_' + wind.length + '|R_' + regen.length); */
 
+// Tag des Jahres berechnen
+   let Jahr = zeitstempel.getFullYear();
+   let heutestart = new Date(zeitstempel.setHours(0,0,0,0));
+   let neujahr = new Date(Jahr,0,1);
+   let difftage = (heutestart - neujahr) / (24*60*60*1000) + 1;
+   let tag_des_jahres = Math.ceil(difftage);
+   
 
    // Datenpunkte schreiben
    if (getState(PRE_DP+'.aktueller_Monat.Tiefstwert').val > Tiefstwert) {setState(PRE_DP+'.aktueller_Monat.Tiefstwert', Tiefstwert, true);}    
    if (getState(PRE_DP+'.aktueller_Monat.Hoechstwert').val < Hoechstwert) {setState(PRE_DP+'.aktueller_Monat.Hoechstwert', Hoechstwert, true);}    
-   if (getState(PRE_DP+'.aktueller_Monat.Temperatur_Durchschnitt').val != Temp_Durchschnitt) {setState(PRE_DP+'.aktueller_Monat.Temperatur_Durchschnitt', Temp_Durchschnitt, true);}
+   if (getState(PRE_DP+'.aktueller_Monat.Temperatur_Durchschnitt').val != MonatsTemp_Durchschnitt) {setState(PRE_DP+'.aktueller_Monat.Temperatur_Durchschnitt', MonatsTemp_Durchschnitt, true);}
    if (getState(PRE_DP+'.aktueller_Monat.Max_Windboe').val < Max_Windboe) {setState(PRE_DP+'.aktueller_Monat.Max_Windboe', Max_Windboe, true);}
    if (getState(PRE_DP+'.aktueller_Monat.Max_Regenmenge').val < Max_Regenmenge) {setState(PRE_DP+'.aktueller_Monat.Max_Regenmenge', Max_Regenmenge, true);}
    if (Max_Regenmenge > 0) {Regenmenge_Monat = getState(PRE_DP+'.aktueller_Monat.Regenmenge_Monat').val + Max_Regenmenge; setState(PRE_DP+'.aktueller_Monat.Regenmenge_Monat', Number((Regenmenge_Monat).toFixed(2)), true);}
@@ -217,7 +225,7 @@ async function main() {
     if (getState(PRE_DP+'.Jahreswerte.Temperatur_Hoechstwert').val < Hoechstwert) {setState(PRE_DP+'.Jahreswerte.Temperatur_Hoechstwert', Hoechstwert, true);}
     if (getState(PRE_DP+'.Jahreswerte.Temperatur_Tiefstwert').val > Tiefstwert) {setState(PRE_DP+'.Jahreswerte.Temperatur_Tiefstwert', Tiefstwert, true);}
        //Temperaturdurchschnitt
-       let JahresTemp_Durchschnitt=Math.round(((getState(PRE_DP+'.Jahreswerte.Temperatur_Durchschnitt').val + Temp_Durchschnitt)/2)*100)/100;
+       let JahresTemp_Durchschnitt=Math.round(((getState(PRE_DP+'.Jahreswerte.Temperatur_Durchschnitt').val / (tag_des_jahres-1) + Temp_Durchschnitt)/tag_des_jahres)*100)/100;
        setState(PRE_DP+'.Jahreswerte.Temperatur_Durchschnitt', JahresTemp_Durchschnitt, true);
     if (getState(WET_DP+'.Info.Letzter_Regen').val.match(/Tag/g)) { //nur setzen bei [Tag]en, nicht bei Stunden
         let Trockenperiode_akt=parseInt(getState(WET_DP+'.Info.Letzter_Regen').val.replace(/[^0-9\.]/g, ''), 10);

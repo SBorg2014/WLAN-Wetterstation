@@ -172,7 +172,7 @@ async function main() {
     Hoechstwert = Math.max(...temps);
     Math.sum = (...temps) => Array.prototype.reduce.call(temps,(a,b) => a+b);
     Temp_Durchschnitt = Number((Math.sum(...temps)/temps.length).toFixed(2));
-    let MonatsTemp_Durchschnitt = Math.round(((((getState(PRE_DP+'.aktueller_Monat.Temperatur_Durchschnitt').val)/(zeitstempel.getDate()-1))+Temp_Durchschnitt)/zeitstempel.getDate())*100)/100;
+    let MonatsTemp_Durchschnitt = Math.round(((((getState(PRE_DP+'.aktueller_Monat.Temperatur_Durchschnitt').val)*(zeitstempel.getDate()-1))+Temp_Durchschnitt)/zeitstempel.getDate())*100)/100;
     if (Hoechstwert > 20) { warme_Tage = 1; } else { warme_Tage = 0; }
     if (Hoechstwert > 25) { Sommertage = 1; } else { Sommertage = 0; } 
     if (Hoechstwert > 30) { heisse_Tage = 1; } else { heisse_Tage = 0; } 
@@ -225,7 +225,7 @@ async function main() {
     if (getState(PRE_DP+'.Jahreswerte.Temperatur_Hoechstwert').val < Hoechstwert) {setState(PRE_DP+'.Jahreswerte.Temperatur_Hoechstwert', Hoechstwert, true);}
     if (getState(PRE_DP+'.Jahreswerte.Temperatur_Tiefstwert').val > Tiefstwert) {setState(PRE_DP+'.Jahreswerte.Temperatur_Tiefstwert', Tiefstwert, true);}
        //Temperaturdurchschnitt
-       let JahresTemp_Durchschnitt=Math.round(((getState(PRE_DP+'.Jahreswerte.Temperatur_Durchschnitt').val / (tag_des_jahres-1) + Temp_Durchschnitt)/tag_des_jahres)*100)/100;
+       let JahresTemp_Durchschnitt=Math.round(((getState(PRE_DP+'.Jahreswerte.Temperatur_Durchschnitt').val * (tag_des_jahres-1) + Temp_Durchschnitt)/tag_des_jahres)*100)/100;
        setState(PRE_DP+'.Jahreswerte.Temperatur_Durchschnitt', JahresTemp_Durchschnitt, true);
     if (getState(WET_DP+'.Info.Letzter_Regen').val.match(/Tag/g)) { //nur setzen bei [Tag]en, nicht bei Stunden
         let Trockenperiode_akt=parseInt(getState(WET_DP+'.Info.Letzter_Regen').val.replace(/[^0-9\.]/g, ''), 10);

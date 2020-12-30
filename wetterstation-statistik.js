@@ -5,6 +5,7 @@
    Wichtig: funktioniert nur mit der Default-Datenstruktur des WLAN-Wetterstation-Skriptes!
 
    (c)2020 by SBorg
+   V0.1.5 - 29.12.2020  +Summe "kalte Tage" und "warme Tage" für das gesamte Jahr
    V0.1.4 - 26.12.2020  +max. Regenmenge pro Tag für Jahres-/Rekordwerte
    V0.1.3 - 11.11.2020  +Rekordwerte
    V0.1.2 - 14.10.2020  ~Fix "NaN" bei Regenmenge Monat
@@ -15,9 +16,9 @@
    V0.0.7 - 19.09.2020  +Min.-/Max.-/Durchschnittstemperatur vom Vortag
    V0.0.6 - 18.09.2020  +Regenmenge Monat
    V0.0.5 - 17.09.2020  +Gradtage Vorjahr
-   V0.0.4 - 16.09.2020  +Eistage (Max. unter 0°C) / Sehr kalte Tage (Min. unter -10°C)
+   V0.0.4 - 16.09.2020  +Eistage (Max. unter 0°C) / sehr kalte Tage (Min. unter -10°C)
                         ~Frosttage (Korrektur: Tiefstwert unter 0°C)
-   V0.0.3 - 15.09.2020  +Frosttage (Min. unter 0°C) / Kalte Tage (Max. unter 10°C)
+   V0.0.3 - 15.09.2020  +Frosttage (Min. unter 0°C) / kalte Tage (Max. unter 10°C)
    V0.0.2 - 12.09.2020  +warme Tage über 20°C / Sommertage über 25°C / heiße Tage über 30°C
    V0.0.1 - 11.09.2020   erste Beta + Temp-Min/Temp-Max/Temp-Durchschnitt/max. Windböe/max. Regenmenge pro Tag 
 
@@ -54,13 +55,14 @@
 
 //ab hier gibt es nix mehr zu ändern :)
 //first start?
-let DP_Check='Rekordwerte.Regenmengetag';
+let DP_Check='Jahreswerte.Gradtage_warmeTage';
 if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 //Start des Scripts
-    const ScriptVersion = "V0.1.4";
+    const ScriptVersion = "V0.1.5";
     let Tiefstwert, Hoechstwert, Temp_Durchschnitt, Max_Windboe, Max_Regenmenge, Regenmenge_Monat, warme_Tage, Sommertage;
     let heisse_Tage, Frost_Tage, kalte_Tage, Eistage, sehr_kalte_Tage;
+    let kalte_Tage_Jahr, warme_Tage_Jahr;
     let monatstage = [31,28,31,30,31,30,31,31,30,31,30,31];
     let monatsname = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
     let monatsname_kurz = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
@@ -211,11 +213,13 @@ async function main() {
    if (getState(PRE_DP+'.aktueller_Monat.Max_Windboe').val < Max_Windboe) {setState(PRE_DP+'.aktueller_Monat.Max_Windboe', Max_Windboe, true);}
    if (getState(PRE_DP+'.aktueller_Monat.Max_Regenmenge').val < Max_Regenmenge) {setState(PRE_DP+'.aktueller_Monat.Max_Regenmenge', Max_Regenmenge, true);}
    if (Max_Regenmenge > 0) {Regenmenge_Monat = getState(PRE_DP+'.aktueller_Monat.Regenmenge_Monat').val + Max_Regenmenge; setState(PRE_DP+'.aktueller_Monat.Regenmenge_Monat', Number((Regenmenge_Monat).toFixed(2)), true);}
-   if (warme_Tage) {warme_Tage = getState(PRE_DP+'.aktueller_Monat.warme_Tage').val +1; setState(PRE_DP+'.aktueller_Monat.warme_Tage', warme_Tage, true);}
+   if (warme_Tage) {warme_Tage = getState(PRE_DP+'.aktueller_Monat.warme_Tage').val +1; setState(PRE_DP+'.aktueller_Monat.warme_Tage', warme_Tage, true);
+                    warme_Tage_Jahr = getState(PRE_DP+'.Jahreswerte.Gradtage_warmeTage').val +1; setState(PRE_DP+'.Jahreswerte.Gradtage_warmeTage', warme_Tage_Jahr, true);}
    if (Sommertage) {Sommertage = getState(PRE_DP+'.aktueller_Monat.Sommertage').val +1; setState(PRE_DP+'.aktueller_Monat.Sommertage', Sommertage, true);}
    if (heisse_Tage) {heisse_Tage = getState(PRE_DP+'.aktueller_Monat.heisse_Tage').val +1; setState(PRE_DP+'.aktueller_Monat.heisse_Tage', heisse_Tage, true);}
    if (Frost_Tage) {Frost_Tage = getState(PRE_DP+'.aktueller_Monat.Frost_Tage').val +1; setState(PRE_DP+'.aktueller_Monat.Frost_Tage', Frost_Tage, true);}
-   if (kalte_Tage) {kalte_Tage = getState(PRE_DP+'.aktueller_Monat.kalte_Tage').val +1; setState(PRE_DP+'.aktueller_Monat.kalte_Tage', kalte_Tage, true);}
+   if (kalte_Tage) {kalte_Tage = getState(PRE_DP+'.aktueller_Monat.kalte_Tage').val +1; setState(PRE_DP+'.aktueller_Monat.kalte_Tage', kalte_Tage, true);
+                    kalte_Tage_Jahr = getState(PRE_DP+'.Jahreswerte.Gradtage_kalteTage').val +1; setState(PRE_DP+'.Jahreswerte.Gradtage_kalteTage', kalte_Tage_Jahr, true);}
    if (Eistage) {Eistage = getState(PRE_DP+'.aktueller_Monat.Eistage').val +1; setState(PRE_DP+'.aktueller_Monat.Eistage', Eistage, true);}
    if (sehr_kalte_Tage) {sehr_kalte_Tage = getState(PRE_DP+'.aktueller_Monat.sehr_kalte_Tage').val +1; setState(PRE_DP+'.aktueller_Monat.sehr_kalte_Tage', sehr_kalte_Tage, true);}
     //VorTag
@@ -234,7 +238,7 @@ async function main() {
     if (getState(WET_DP+'.Info.Letzter_Regen').val.match(/Tag/g)) { //nur setzen bei [Tag]en, nicht bei Stunden
         let Trockenperiode_akt=parseInt(getState(WET_DP+'.Info.Letzter_Regen').val.replace(/[^0-9\.]/g, ''), 10);
         let Trockenperiode_alt=getState(PRE_DP+'.Jahreswerte.Trockenperiode').val;
-        if (Trockenperiode_akt > Trockenperiode_alt) { setState(PRE_DP+'.Jahreswerte.Trockenperiode', Trockenperiode_akt, true); }
+        if (Trockenperiode_akt >= Trockenperiode_alt) { setState(PRE_DP+'.Jahreswerte.Trockenperiode', Trockenperiode_akt, true); }
     }
     //Rekordwerte
     Rekordwerte();
@@ -252,6 +256,8 @@ function Reset_Jahresstatistik() {
         setState(PRE_DP+'.Jahreswerte.Temperatur_Durchschnitt', 0,    true);
         setState(PRE_DP+'.Jahreswerte.Trockenperiode',          0,    true);
         setState(PRE_DP+'.Jahreswerte.Regenmengetag',           0,    true);
+        setState(PRE_DP+'.Jahreswerte.Gradtage_kalteTage',      0,    true);
+        setState(PRE_DP+'.Jahreswerte.Gradtage_warmeTage',      0,    true);
 
         setState(PRE_DP+'.Control.Reset_Jahresstatistik', false, true);
 } //end function
@@ -500,8 +506,12 @@ function Backup_Jahresstatistik() {
     let Temperatur_Durchschnitt = getState(PRE_DP+'.Jahreswerte.Temperatur_Durchschnitt').val;
     let Regenmengetag = getState(PRE_DP+'.Jahreswerte.Regenmengetag').val;
     let Trockenperiode = getState(PRE_DP+'.Jahreswerte.Trockenperiode').val;
-    let json = JSON.stringify({"Temperatur Tiefstwert": Temperatur_Tiefstwert, "Temperatur Hoechstwert": Temperatur_Hoechstwert, "Temperatur Durchschnitt": Temperatur_Durchschnitt,
-        "Regenmengetag": Regenmengetag, "Trockenperiode": Trockenperiode});
+    let kalte_Tage_Jahr = getState(PRE_DP+'.Jahreswerte.Gradtage_kalteTage').val;
+    let warme_Tage_Jahr = getState(PRE_DP+'.Jahreswerte.Gradtage_warmeTage').val;
+    let json = JSON.stringify({"Temperatur Tiefstwert": Temperatur_Tiefstwert, "Temperatur Höchstwert": Temperatur_Hoechstwert, "Temperatur Durchschnitt": Temperatur_Durchschnitt,
+        "Regenmengetag": Regenmengetag,
+        "Trockenperiode": Trockenperiode,
+        "kalte Tage": kalte_Tage_Jahr, "warme Tage": warme_Tage_Jahr});
     createState(PRE_DP+'.Jahreswerte.VorJahre.'+(new Date().getFullYear()-1), '', { name: "Jahresstatistik", type: "json", role: "state"}, () => { setState(PRE_DP+'.Jahreswerte.VorJahre.'+(new Date().getFullYear()-1), json, true) });
 } // end function
 
@@ -610,6 +620,8 @@ async function createDP(DP_Check) {
     createState(PRE_DP+'.Jahreswerte.Temperatur_Durchschnitt',    0,     { name: "Durchschnittstemperatur des Jahres",          type: "number", role: "state", unit: "°C" });
     createState(PRE_DP+'.Jahreswerte.Trockenperiode',             0,     { name: "längste Periode ohne Regen",                  type: "number", role: "state", unit: "Tage" });
     createState(PRE_DP+'.Jahreswerte.Regenmengetag',              0,     { name: "höchste Regenmenge an einem Tag",             type: "number", role: "state", unit: "l/m²" });
+    createState(PRE_DP+'.Jahreswerte.Gradtage_kalteTage',         0,     { name: "Tage mit einer Höchsttemperatur unter 10°",   type: "number", role: "state", unit: "Tage" });
+    createState(PRE_DP+'.Jahreswerte.Gradtage_warmeTage',         0,     { name: "Tage mit einer Höchsttemperatur über 20°",    type: "number", role: "state", unit: "Tage" });
 
     createState(PRE_DP+'.Rekordwerte.value.Temp_Max',             -100,  { name: "Max. Tagestemperatur",                        type: "number", role: "state", unit: "°C" });
     createState(PRE_DP+'.Rekordwerte.value.Temp_Min',             100,   { name: "Min. Tagestemperatur",                        type: "number", role: "state", unit: "°C" });

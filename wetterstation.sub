@@ -533,8 +533,7 @@ reset_zaehler() {
 	#Tageszähler resetten
 	SONNENSCHEIN_TAG=0
 	SOLARENERGIE_TAG=0
-	SOLARENERGIE[0]=0
-	SOLARENERGIE[1]=0
+	SOLARENERGIE=(0 0)
 	TIMER_START=0
 
 	#Wochenzähler resetten (Sonntags um 0:00 Uhr)
@@ -558,7 +557,7 @@ reset_zaehler() {
 	  fi
 	fi
 
-	MIDNIGHTRUN=1; sonnenpuls
+	MIDNIGHTRUN=1; sonnenpuls 16
 
 }
 

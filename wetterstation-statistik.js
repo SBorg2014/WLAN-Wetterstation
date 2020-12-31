@@ -5,6 +5,7 @@
    Wichtig: funktioniert nur mit der Default-Datenstruktur des WLAN-Wetterstation-Skriptes!
 
    (c)2020 by SBorg
+   V0.1.6 - 30.12.2020  +Summe "Sommertage", "heiße Tage", "Frosttage", "Eistage" und "sehr kalte Tage" für das gesamte Jahr
    V0.1.5 - 29.12.2020  +Summe "kalte Tage" und "warme Tage" für das gesamte Jahr
    V0.1.4 - 26.12.2020  +max. Regenmenge pro Tag für Jahres-/Rekordwerte
    V0.1.3 - 11.11.2020  +Rekordwerte
@@ -22,7 +23,7 @@
    V0.0.2 - 12.09.2020  +warme Tage über 20°C / Sommertage über 25°C / heiße Tage über 30°C
    V0.0.1 - 11.09.2020   erste Beta + Temp-Min/Temp-Max/Temp-Durchschnitt/max. Windböe/max. Regenmenge pro Tag 
 
-      ToDo: max. Windböe / max. Regenmenge pro Monat Jahr+Rekord / Summe Gradtage für das gesamte Jahr
+      ToDo: max. Windböe / max. Regenmenge pro Monat Jahr+Rekord
       known issues: keine
 
 */
@@ -30,13 +31,13 @@
 
 
 // *** User-Einstellungen **********************************************************************************************
-    let WET_DP='javascript.0.Wetterstation';        /* wo liegen die Datenpunkte mit den Daten der Wetterstation
+    const WET_DP='javascript.0.Wetterstation';        /* wo liegen die Datenpunkte mit den Daten der Wetterstation
                                                        [default: javascript.0.Wetterstation]                          */
-    let INFLUXDB_INSTANZ='0';                       // unter welcher Instanz läuft die InfluxDB [default: 0]   
-    let PRE_DP='0_userdata.0.Statistik.Wetter';     /* wo sollen die Statistikwerte abgelegt werden. Nur unter
+    const INFLUXDB_INSTANZ='0';                       /* unter welcher Instanz läuft die InfluxDB [default: 0]        */  
+    const PRE_DP='0_userdata.0.Statistik.Wetter';     /* wo sollen die Statistikwerte abgelegt werden. Nur unter
                                                        0_userdata oder javascript möglich!                            */ 
-    let REKORDWERTE_AUSGABEFORMAT="[WERT] im [MONAT] [JAHR]"; /* Wie soll die Ausgabe der Rekordwerte 
-                                                       formatiert werden (Template-Vorlage)?
+    let REKORDWERTE_AUSGABEFORMAT="[WERT] im [MONAT] [JAHR]"; /* Wie soll die Ausgabe der Rekordwerte formatiert werden 
+                                                       (Template-Vorlage)?
                                                        [WERT]    = Messwert (zB. '22.42' bei Temperatur, '12' bei Tagen)
                                                        [TAG]     = Tag (0-31)
                                                        [MONAT]   = Monatsname (Januar, Februar,..., Dezember)
@@ -46,7 +47,7 @@
                                                        Die 'Units' wie bspw. "°C" oder "Tage" werden direkt aus dem 
                                                        Datenpunkt ergänzt. [default: [WERT] im [MONAT] [JAHR] ] erzeugt
                                                        als Beispiel im DP die Ausgabe: "22.42 °C im Juni 2020"        */  
-    const ZEITPLAN = "3 1 * * *";                   /* wann soll die Statistik erstellt werden (Minuten Stunde * * *) 
+    const ZEITPLAN = "3 1 * * *";                     /* wann soll die Statistik erstellt werden (Minuten Stunde * * *) 
                                                        [default 1:03 Uhr]                                             */                      
 // *** ENDE User-Einstellungen *****************************************************************************************
 
@@ -55,14 +56,14 @@
 
 //ab hier gibt es nix mehr zu ändern :)
 //first start?
-let DP_Check='Jahreswerte.Gradtage_warmeTage';
+const DP_Check='Jahreswerte.Gradtage_sehrkalteTage';
 if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 //Start des Scripts
-    const ScriptVersion = "V0.1.5";
+    const ScriptVersion = "V0.1.6";
     let Tiefstwert, Hoechstwert, Temp_Durchschnitt, Max_Windboe, Max_Regenmenge, Regenmenge_Monat, warme_Tage, Sommertage;
     let heisse_Tage, Frost_Tage, kalte_Tage, Eistage, sehr_kalte_Tage;
-    let kalte_Tage_Jahr, warme_Tage_Jahr;
+    let kalte_Tage_Jahr, warme_Tage_Jahr, Sommertage_Jahr, heisse_Tage_Jahr, Frosttage_Jahr, Eistage_Jahr, sehrkalte_Tage_Jahr;
     let monatstage = [31,28,31,30,31,30,31,31,30,31,30,31];
     let monatsname = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
     let monatsname_kurz = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
@@ -92,11 +93,15 @@ async function main() {
             //max Jahrestemperaturdurchschnitt
             let JahresTemperatur_Durchschnitt = getState(PRE_DP+'.Jahreswerte.Temperatur_Durchschnitt').val;
             if (getState(PRE_DP+'.Rekordwerte.value.Temp_Durchschnitt_Max').val < JahresTemperatur_Durchschnitt) {
-                setState(PRE_DP+'.Rekordwerte.value.Temp_Durchschnitt_Max', JahresTemperatur_Durchschnitt, true, () => { Template_Rekordwerte('Temp_Durchschnitt_Max','Rekordwerte.Temperatur_Jahresdurchschnitt_Max'); });
+                setState(PRE_DP+'.Rekordwerte.value.Temp_Durchschnitt_Max', JahresTemperatur_Durchschnitt, true);
+                setState(PRE_DP+'.Rekordwerte.Temperatur_Jahresdurchschnitt_Max', JahresTemperatur_Durchschnitt+' für '+ (zeitstempel.getFullYear()-1), true);
+                //, () => { Template_Rekordwerte('Temp_Durchschnitt_Max','Rekordwerte.Temperatur_Jahresdurchschnitt_Max'); });
             }  
             //min Jahrestemperaturdurchschnitt
             if (getState(PRE_DP+'.Rekordwerte.value.Temp_Durchschnitt_Min').val > JahresTemperatur_Durchschnitt) {
-                setState(PRE_DP+'.Rekordwerte.value.Temp_Durchschnitt_Min', JahresTemperatur_Durchschnitt, true, () => { Template_Rekordwerte('Temp_Durchschnitt_Min','Rekordwerte.Temperatur_Jahresdurchschnitt_Min'); });
+                setState(PRE_DP+'.Rekordwerte.value.Temp_Durchschnitt_Min', JahresTemperatur_Durchschnitt, true);
+                setState(PRE_DP+'.Rekordwerte.Temperatur_Jahresdurchschnitt_Min', JahresTemperatur_Durchschnitt+' für '+ (zeitstempel.getFullYear()-1), true);
+                //, () => { Template_Rekordwerte('Temp_Durchschnitt_Min','Rekordwerte.Temperatur_Jahresdurchschnitt_Min'); });
             }
 
         //Rekordwerte (Temperatur-Durchschnitt) einmalig resetten [InstallationsJahr +1]
@@ -215,13 +220,18 @@ async function main() {
    if (Max_Regenmenge > 0) {Regenmenge_Monat = getState(PRE_DP+'.aktueller_Monat.Regenmenge_Monat').val + Max_Regenmenge; setState(PRE_DP+'.aktueller_Monat.Regenmenge_Monat', Number((Regenmenge_Monat).toFixed(2)), true);}
    if (warme_Tage) {warme_Tage = getState(PRE_DP+'.aktueller_Monat.warme_Tage').val +1; setState(PRE_DP+'.aktueller_Monat.warme_Tage', warme_Tage, true);
                     warme_Tage_Jahr = getState(PRE_DP+'.Jahreswerte.Gradtage_warmeTage').val +1; setState(PRE_DP+'.Jahreswerte.Gradtage_warmeTage', warme_Tage_Jahr, true);}
-   if (Sommertage) {Sommertage = getState(PRE_DP+'.aktueller_Monat.Sommertage').val +1; setState(PRE_DP+'.aktueller_Monat.Sommertage', Sommertage, true);}
-   if (heisse_Tage) {heisse_Tage = getState(PRE_DP+'.aktueller_Monat.heisse_Tage').val +1; setState(PRE_DP+'.aktueller_Monat.heisse_Tage', heisse_Tage, true);}
-   if (Frost_Tage) {Frost_Tage = getState(PRE_DP+'.aktueller_Monat.Frost_Tage').val +1; setState(PRE_DP+'.aktueller_Monat.Frost_Tage', Frost_Tage, true);}
+   if (Sommertage) {Sommertage = getState(PRE_DP+'.aktueller_Monat.Sommertage').val +1; setState(PRE_DP+'.aktueller_Monat.Sommertage', Sommertage, true);
+                    Sommertage_Jahr = getState(PRE_DP+'.Jahreswerte.Gradtage_Sommertage').val +1; setState(PRE_DP+'.Jahreswerte.Gradtage_Sommertage', Sommertage_Jahr, true);}
+   if (heisse_Tage) {heisse_Tage = getState(PRE_DP+'.aktueller_Monat.heisse_Tage').val +1; setState(PRE_DP+'.aktueller_Monat.heisse_Tage', heisse_Tage, true);
+                    heisse_Tage_Jahr = getState(PRE_DP+'.Jahreswerte.Gradtage_heisseTage').val +1; setState(PRE_DP+'.Jahreswerte.Gradtage_heisseTage', heisse_Tage_Jahr, true);}
+   if (Frost_Tage) {Frost_Tage = getState(PRE_DP+'.aktueller_Monat.Frost_Tage').val +1; setState(PRE_DP+'.aktueller_Monat.Frost_Tage', Frost_Tage, true);
+                    Frosttage_Jahr = getState(PRE_DP+'.Jahreswerte.Gradtage_Frosttage').val +1; setState(PRE_DP+'.Jahreswerte.Gradtage_Frosttage', Frosttage_Jahr, true);}
    if (kalte_Tage) {kalte_Tage = getState(PRE_DP+'.aktueller_Monat.kalte_Tage').val +1; setState(PRE_DP+'.aktueller_Monat.kalte_Tage', kalte_Tage, true);
                     kalte_Tage_Jahr = getState(PRE_DP+'.Jahreswerte.Gradtage_kalteTage').val +1; setState(PRE_DP+'.Jahreswerte.Gradtage_kalteTage', kalte_Tage_Jahr, true);}
-   if (Eistage) {Eistage = getState(PRE_DP+'.aktueller_Monat.Eistage').val +1; setState(PRE_DP+'.aktueller_Monat.Eistage', Eistage, true);}
-   if (sehr_kalte_Tage) {sehr_kalte_Tage = getState(PRE_DP+'.aktueller_Monat.sehr_kalte_Tage').val +1; setState(PRE_DP+'.aktueller_Monat.sehr_kalte_Tage', sehr_kalte_Tage, true);}
+   if (Eistage) {Eistage = getState(PRE_DP+'.aktueller_Monat.Eistage').val +1; setState(PRE_DP+'.aktueller_Monat.Eistage', Eistage, true);
+                Eistage_Jahr = getState(PRE_DP+'.Jahreswerte.Gradtage_Eistage').val +1; setState(PRE_DP+'.Jahreswerte.Gradtage_Eistage', Eistage_Jahr, true);}
+   if (sehr_kalte_Tage) {sehr_kalte_Tage = getState(PRE_DP+'.aktueller_Monat.sehr_kalte_Tage').val +1; setState(PRE_DP+'.aktueller_Monat.sehr_kalte_Tage', sehr_kalte_Tage, true);
+                        sehrkalte_Tage_Jahr = getState(PRE_DP+'.Jahreswerte.Gradtage_sehrkalteTage').val +1; setState(PRE_DP+'.Jahreswerte.Gradtage_sehrkalteTage', sehrkalte_Tage_Jahr, true);}
     //VorTag
     setState(PRE_DP+'.VorTag.Temperatur_Tiefstwert', Tiefstwert, true);
     setState(PRE_DP+'.VorTag.Temperatur_Hoechstwert', Hoechstwert, true);
@@ -258,6 +268,11 @@ function Reset_Jahresstatistik() {
         setState(PRE_DP+'.Jahreswerte.Regenmengetag',           0,    true);
         setState(PRE_DP+'.Jahreswerte.Gradtage_kalteTage',      0,    true);
         setState(PRE_DP+'.Jahreswerte.Gradtage_warmeTage',      0,    true);
+        setState(PRE_DP+'.Jahreswerte.Gradtage_Sommertage',     0,    true);
+        setState(PRE_DP+'.Jahreswerte.Gradtage_heisseTage',     0,    true);
+        setState(PRE_DP+'.Jahreswerte.Gradtage_Frosttage',      0,    true);
+        setState(PRE_DP+'.Jahreswerte.Gradtage_Eistage',        0,    true);
+        setState(PRE_DP+'.Jahreswerte.Gradtage_sehrkalteTage',  0,    true);
 
         setState(PRE_DP+'.Control.Reset_Jahresstatistik', false, true);
 } //end function
@@ -511,7 +526,8 @@ function Backup_Jahresstatistik() {
     let json = JSON.stringify({"Temperatur Tiefstwert": Temperatur_Tiefstwert, "Temperatur Höchstwert": Temperatur_Hoechstwert, "Temperatur Durchschnitt": Temperatur_Durchschnitt,
         "Regenmengetag": Regenmengetag,
         "Trockenperiode": Trockenperiode,
-        "kalte Tage": kalte_Tage_Jahr, "warme Tage": warme_Tage_Jahr});
+        "kalte Tage": kalte_Tage_Jahr, "warme Tage": warme_Tage_Jahr, "Sommertage": Sommertage_Jahr, "heiße Tage": heisse_Tage_Jahr, "Frosttage": Frosttage_Jahr, "Eistage": Eistage_Jahr,
+        "sehr kalte Tage": sehrkalte_Tage_Jahr});
     createState(PRE_DP+'.Jahreswerte.VorJahre.'+(new Date().getFullYear()-1), '', { name: "Jahresstatistik", type: "json", role: "state"}, () => { setState(PRE_DP+'.Jahreswerte.VorJahre.'+(new Date().getFullYear()-1), json, true) });
 } // end function
 
@@ -622,6 +638,11 @@ async function createDP(DP_Check) {
     createState(PRE_DP+'.Jahreswerte.Regenmengetag',              0,     { name: "höchste Regenmenge an einem Tag",             type: "number", role: "state", unit: "l/m²" });
     createState(PRE_DP+'.Jahreswerte.Gradtage_kalteTage',         0,     { name: "Tage mit einer Höchsttemperatur unter 10°",   type: "number", role: "state", unit: "Tage" });
     createState(PRE_DP+'.Jahreswerte.Gradtage_warmeTage',         0,     { name: "Tage mit einer Höchsttemperatur über 20°",    type: "number", role: "state", unit: "Tage" });
+    createState(PRE_DP+'.Jahreswerte.Gradtage_Sommertage',        0,     { name: "Tage mit einer Höchsttemperatur über 25°",    type: "number", role: "state", unit: "Tage" });
+    createState(PRE_DP+'.Jahreswerte.Gradtage_heisseTage',        0,     { name: "Tage mit einer Höchsttemperatur über 30°",    type: "number", role: "state", unit: "Tage" });
+    createState(PRE_DP+'.Jahreswerte.Gradtage_Frosttage',         0,     { name: "Tage mit einer Tiefsttemperatur unter 0°",    type: "number", role: "state", unit: "Tage" });
+    createState(PRE_DP+'.Jahreswerte.Gradtage_Eistage',           0,     { name: "Tage mit einer Höchsttemperatur unter 0°",    type: "number", role: "state", unit: "Tage" });
+    createState(PRE_DP+'.Jahreswerte.Gradtage_sehrkalteTage',     0,     { name: "Tage mit einer Tiefsttemperatur unter -10°",  type: "number", role: "state", unit: "Tage" });
 
     createState(PRE_DP+'.Rekordwerte.value.Temp_Max',             -100,  { name: "Max. Tagestemperatur",                        type: "number", role: "state", unit: "°C" });
     createState(PRE_DP+'.Rekordwerte.value.Temp_Min',             100,   { name: "Min. Tagestemperatur",                        type: "number", role: "state", unit: "°C" });

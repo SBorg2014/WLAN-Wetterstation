@@ -55,6 +55,14 @@ Wer möchte kann mir gerne einen Kaffee ausgeben und mich bei den Projekten unte
 
 ## Versionen ##
 
+
+**V2.0.0 - 15.12.2020**
+```
+    + Unterstützung des Gateways und Zusatzsensoren (@a200)
+    + Protokoll (wunderground oder ecowitt) wählbar
+```
+
+
 **V1.6.0 - 06.12.2020**
 ```
     + Patch (@a200) für neuere Firmwareversionen (V1.6.3) speziell bei Nutzung eines Gateways

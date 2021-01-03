@@ -12,6 +12,7 @@
  
  Die Wetterstation muss dazu in der Lage sein ihre Daten im "Wunderground"-Format zu senden.<br><br>
  Bisher getestete Stationen:
+- DNT Weatherscreen PRO
 - ELV WS980WiFi
 - Eurochron EFWS 2900 (baugleich zu Sainlogic 10in1 Wifi, Ambient Weather WS-2902, Chilitec CTW-902 Wifi)
 - Froggit
@@ -53,6 +54,14 @@ Wer möchte kann mir gerne einen Kaffee ausgeben und mich bei den Projekten unte
 <br><br>
 
 ## Versionen ##
+
+
+**V2.0.0 - 15.12.2020**
+```
+    + Unterstützung des Gateways und Zusatzsensoren (@a200)
+    + Protokoll (wunderground oder ecowitt) wählbar
+```
+
 
 **V1.6.0 - 06.12.2020**
 ```
@@ -150,7 +159,7 @@ Wer möchte kann mir gerne einen Kaffee ausgeben und mich bei den Projekten unte
 ## :scroll: License ## 
  MIT License
 
-Copyright (c) 2019-2020 SBorg2014
+Copyright (c) 2019-2021 SBorg2014
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

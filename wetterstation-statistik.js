@@ -4,7 +4,8 @@
    Rekordwerte-Statistik
    Wichtig: funktioniert nur mit der Default-Datenstruktur des WLAN-Wetterstation-Skriptes!
 
-   (c)2020 by SBorg
+   (c)2020-2021 by SBorg
+   V0.1.7 - 03.01.2021  ~Fix für fehlerhafte/fehlende Speicherung Jahreswerte + Trockenperiode
    V0.1.6 - 30.12.2020  +Summe "Sommertage", "heiße Tage", "Frosttage", "Eistage" und "sehr kalte Tage" für das gesamte Jahr
    V0.1.5 - 29.12.2020  +Summe "kalte Tage" und "warme Tage" für das gesamte Jahr
    V0.1.4 - 26.12.2020  +max. Regenmenge pro Tag für Jahres-/Rekordwerte
@@ -60,9 +61,9 @@ const DP_Check='Jahreswerte.Gradtage_sehrkalteTage';
 if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 //Start des Scripts
-    const ScriptVersion = "V0.1.6";
+    const ScriptVersion = "V0.1.7";
     let Tiefstwert, Hoechstwert, Temp_Durchschnitt, Max_Windboe, Max_Regenmenge, Regenmenge_Monat, warme_Tage, Sommertage;
-    let heisse_Tage, Frost_Tage, kalte_Tage, Eistage, sehr_kalte_Tage;
+    let heisse_Tage, Frost_Tage, kalte_Tage, Eistage, sehr_kalte_Tage, Trockenperiode_akt;
     let kalte_Tage_Jahr, warme_Tage_Jahr, Sommertage_Jahr, heisse_Tage_Jahr, Frosttage_Jahr, Eistage_Jahr, sehrkalte_Tage_Jahr;
     let monatstage = [31,28,31,30,31,30,31,31,30,31,30,31];
     let monatsname = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
@@ -246,7 +247,7 @@ async function main() {
        //Regenmenge
        if (getState(PRE_DP+'.Jahreswerte.Regenmengetag').val < Max_Regenmenge) {setState(PRE_DP+'.Jahreswerte.Regenmengetag', Max_Regenmenge, true);}
     if (getState(WET_DP+'.Info.Letzter_Regen').val.match(/Tag/g)) { //nur setzen bei [Tag]en, nicht bei Stunden
-        let Trockenperiode_akt=parseInt(getState(WET_DP+'.Info.Letzter_Regen').val.replace(/[^0-9\.]/g, ''), 10);
+        Trockenperiode_akt=parseInt(getState(WET_DP+'.Info.Letzter_Regen').val.replace(/[^0-9\.]/g, ''), 10);
         let Trockenperiode_alt=getState(PRE_DP+'.Jahreswerte.Trockenperiode').val;
         if (Trockenperiode_akt >= Trockenperiode_alt) { setState(PRE_DP+'.Jahreswerte.Trockenperiode', Trockenperiode_akt, true); }
     }
@@ -523,6 +524,12 @@ function Backup_Jahresstatistik() {
     let Trockenperiode = getState(PRE_DP+'.Jahreswerte.Trockenperiode').val;
     let kalte_Tage_Jahr = getState(PRE_DP+'.Jahreswerte.Gradtage_kalteTage').val;
     let warme_Tage_Jahr = getState(PRE_DP+'.Jahreswerte.Gradtage_warmeTage').val;
+    let Sommertage_Jahr = getState(PRE_DP+'.Jahreswerte.Gradtage_Sommertage').val;
+    let heisse_Tage_Jahr = getState(PRE_DP+'.Jahreswerte.Gradtage_heisseTage').val;
+    let Frosttage_Jahr = getState(PRE_DP+'.Jahreswerte.Gradtage_Frosttage').val;
+    let Eistage_Jahr = getState(PRE_DP+'.Jahreswerte.Gradtage_Eistage').val;
+    let sehrkalte_Tage_Jahr = getState(PRE_DP+'.Jahreswerte.Gradtage_sehrkalteTage').val;
+
     let json = JSON.stringify({"Temperatur Tiefstwert": Temperatur_Tiefstwert, "Temperatur Höchstwert": Temperatur_Hoechstwert, "Temperatur Durchschnitt": Temperatur_Durchschnitt,
         "Regenmengetag": Regenmengetag,
         "Trockenperiode": Trockenperiode,
@@ -535,18 +542,27 @@ function Backup_Jahresstatistik() {
 function Rekordwerte() {
     //max Temp
     if (getState(PRE_DP+'.Rekordwerte.value.Temp_Max').val <= Hoechstwert) {
-        setState(PRE_DP+'.Rekordwerte.value.Temp_Max', Hoechstwert, true, () => { Template_Rekordwerte('Temp_Max','Rekordwerte.Temperatur_Spitzenhoechstwert'); });
+        setState(PRE_DP+'.Rekordwerte.value.Temp_Max', Hoechstwert, true);
+        setState(PRE_DP+'.Rekordwerte.Temperatur_Spitzenhoechstwert', Hoechstwert+' °C für '+(new Date().getFullYear()-1), true);
+        //, () => { Template_Rekordwerte('Temp_Max','Rekordwerte.Temperatur_Spitzenhoechstwert'); });
     }
 
     //min Temp
     if (getState(PRE_DP+'.Rekordwerte.value.Temp_Min').val >= Tiefstwert) {
-        setState(PRE_DP+'.Rekordwerte.value.Temp_Min', Tiefstwert, true, () => { Template_Rekordwerte('Temp_Min','Rekordwerte.Temperatur_Spitzentiefstwert'); });
+        setState(PRE_DP+'.Rekordwerte.value.Temp_Min', Tiefstwert, true);
+        setState(PRE_DP+'.Rekordwerte.Temperatur_Spitzentiefstwert', Tiefstwert+' °C für '+(new Date().getFullYear()-1), true);
+        //, () => { Template_Rekordwerte('Temp_Min','Rekordwerte.Temperatur_Spitzentiefstwert'); });
     }  
 
     //Regenmenge
     if (getState(PRE_DP+'.Rekordwerte.value.Regenmengetag').val <= Max_Regenmenge) {
         setState(PRE_DP+'.Rekordwerte.value.Regenmengetag', Max_Regenmenge, true, () => { Template_Rekordwerte('Regenmengetag','Rekordwerte.Regenmengetag'); });
     }
+
+    //Trockenperiode
+    if (getState(PRE_DP+'.Rekordwerte.value.Trockenperiode').val <= Trockenperiode_akt) {
+        setState(PRE_DP+'.Rekordwerte.value.Trockenperiode', Trockenperiode_akt, true, () => { Template_Rekordwerte('Trockenperiode','Rekordwerte.Trockenperiode'); });
+    }  
 
 } // end function
 

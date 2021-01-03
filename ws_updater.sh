@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V2.0.0
+UPDATE_VER=V2.1.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -61,6 +61,15 @@ PATCH160() {
  echo -e " Fertig...\n"
 }
 
+#Patch Version V2.0.0 auf V2.1.0
+PATCH210() {
+ backup
+ echo -e "\n Patche wetterstation.conf auf V2.1.0 ..."
+ sed -i 's/#Protokoll der Wetterstation \[1\/2\] \/ 1=Wunderground ; 2=Ecowitt \/ default: 1/#Protokoll der Wetterstation \[1\/2\/9\] \/ 1=Wunderground ; 2=Ecowitt ; 9=Sainlogic Profi \/ default: 1/' ./wetterstation.conf
+ sed -i 's/### Settings V2.0.0/### Settings V2.1.0/' ./wetterstation.conf
+ echo -e " Fertig...\n"
+}
+
 
 
  VERSION=$(cat ./wetterstation.conf|grep "### Settings V"|cut -d" " -f3)
@@ -70,6 +79,7 @@ PATCH160() {
            V1.4.0) PATCH140 ;;
            V1.5.0) PATCH150 ;;
            V1.6.0) PATCH160 ;;
+           V2.0.0) PATCH210 ;;
            *)      FEHLER
  esac
  exit 0

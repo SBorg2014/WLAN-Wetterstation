@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V2.0.0 --------------------------------------------------------
+### Subroutinen V2.1.0 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -136,7 +136,13 @@ debuging() {
    echo -e "\nDebug VAR:"
    echo -e "Installationsverzeichnis: $GE$DIR$WE"
    echo -e "IPP: $GE${IPP}$WE\tWS_PORT: $GE${WS_PORT}$WE\t\tWS_POLL: $GE${WS_POLL}$WE\t\tPRE_DP: $GE${PRE_DP}$WE"
-   echo -en "WEB: $GE${WEB}\t\t${WE}WS_PROT: $GE"; if [ $WS_PROTOKOLL = 1 ]; then echo -en "Wunderground"; else echo -en "Ecowitt"; fi
+   echo -en "WEB: $GE${WEB}\t\t${WE}WS_PROT: $GE";
+    case $WS_PROTOKOLL in
+     1) echo -en "Wunderground";;
+     2) echo -en "Ecowitt";;
+     9) echo -en "Sainlogic Pro";;
+     *) echo -en "unbekannt"
+    esac
    echo -e "$WE\tDP50/100: $GE${ANZAHL_DP50} $WE| $GE${ANZAHL_DP100}$WE"
    echo -e "Script-Version: $GE$SH_VER$WE\tConfig-Version: $GE${CONF_V}$WE\tSub-Version: $GE${SUBVER}$WE"
 
@@ -199,23 +205,28 @@ iob_send() {
 
 ### Daten holen und Integritätscheck
 get_DATA() {
-  #auf Daten der Wetterstation warten
-   if [ $WS_PROTOKOLL = "1" ]; then
-     DATA=$(timeout ${WARTE} nc -nlvw 1 -p ${WS_PORT}|sed -n '1 p')
-     STRLEN=$(echo -n $DATA | wc -m)
-     #haben wir eine Jahresregenmenge?
-     if [[ ! "$DATA" =~ "yearlyrainin" ]]; then DATA=$(echo $DATA| sed -e 's/solarradiation/yearlyrainin=0\&solarradiation/' ); fi
-     #check auf Datenintigrität
-     if [ "$STRLEN" -gt "400" ] && [[ "$DATA" =~ "/weatherstation/updateweatherstation.php?ID=${WS_ID}" ]]; then return 0; else return 1; fi
-   elif [ $WS_PROTOKOLL = "2" ]; then
-     DATA=$(timeout ${WARTE} nc -nlvw 1 -p ${WS_PORT}|tail -1)
-     STRLEN=$(echo -n $DATA | wc -m)
-     if [ "$STRLEN" -gt "400" ] && [[ "$DATA" =~ "PASSKEY=" ]]; then return 0; else return 1; fi
-   else
-     echo -e "\n${RE}Die Angabe: WS_PROTOKOLL=$WS_PROTOKOLL ist ungültig. Bitte die Einagbe in wetterstation.conf  korrigieren$WE\n"
-     #Shell-Skript mit Fehler beenden
-     exit 1
-   fi
+  case $WS_PROTOKOLL in
+   1|9) DATA=$(timeout ${WARTE} nc -nlvw 1 -p ${WS_PORT}|sed -n '1 p')
+        STRLEN=$(echo -n $DATA | wc -m)
+       #haben wir eine Jahresregenmenge?
+        if [[ ! "$DATA" =~ "yearlyrainin" ]]; then DATA=$(echo $DATA| sed -e 's/solarradiation/yearlyrainin=0\&solarradiation/' ); fi
+       #haben wir überhaupt eine Regenmenge?
+        if [[ ! "$DATA" =~ "rainin" ]]; then DATA=$(echo $DATA| sed -e 's/solarradiation/rainin=0\&solarradiation/' ); fi
+       #check auf Datenintigrität
+        if [ "$STRLEN" -gt "400" ] && [[ "$DATA" =~ "/weatherstation/updateweatherstation.php?ID=${WS_ID}" ]]; then return 0; else return 1; fi
+       ;;
+
+   2) DATA=$(timeout ${WARTE} nc -nlvw 1 -p ${WS_PORT}|tail -1)
+      STRLEN=$(echo -n $DATA | wc -m)
+      if [ "$STRLEN" -gt "400" ] && [[ "$DATA" =~ "PASSKEY=" ]]; then return 0; else return 1; fi
+      ;;
+
+   *) echo -e "\n${RE}Die Angabe: WS_PROTOKOLL=$WS_PROTOKOLL ist ungültig. Bitte die Eingabe in der wetterstation.conf korrigieren!$WE\n"
+      #Shell-Skript mit Fehler beenden
+      exit 1
+
+  esac
+
 }
 
 
@@ -552,13 +563,13 @@ reset_zaehler() {
 		SAPI "Single" "set/${DP_SONNENSCHEIN_VORJAHR}?value=${SONNENSCHEIN_JAHR}"
 		SAPI "Single" "set/${DP_SOLARENERGIE_VORJAHR}?value=${SOLAR_JAHR}"
 		REGENMENGE=0
+	        SAPI "Single" "set/${DP_REGEN_JAHR_KUM}?value=${REGENMENGE}"
 		SONNENSCHEIN_JAHR=0
 		SOLAR_JAHR=0
 	  fi
 	fi
 
 	MIDNIGHTRUN=1; sonnenpuls 16
-
 }
 
 setup() {
@@ -577,14 +588,13 @@ setup() {
   if [ ${WS_POLL} -lt "16" ]; then WS_POLL=16; fi
 
  #Anzahl der DP Berechnen
-  if [ $WS_PROTOKOLL = "1" ]; then
-     MAXDEVICES=22
-  else
-     MAXDEVICES=$(( 31 + $ANZAHL_DP50 * 6 + ANZAHL_DP100 * 4 ))
-  fi
+  case $WS_PROTOKOLL in
+   1) MAXDEVICES=22;;
+   *) MAXDEVICES=$(( 31 + $ANZAHL_DP50 * 6 + $ANZAHL_DP100 * 4 ))
+  esac
 
  #falls reboot warten bis der ioB wieder läuft...
-  while ! nc -v -z $(echo $IPP|sed -e 's/:/ /'); do sleep 30; done
+  while ! nc -nvz $(echo $IPP|sed -e 's/:/ /'); do sleep 30; done
 
  #Fehlermeldungen resetten
   SAPI "Single" "set/${DP_KOMFEHLER}?value=false&ack=true"

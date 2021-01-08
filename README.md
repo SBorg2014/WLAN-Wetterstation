@@ -10,7 +10,7 @@
 
  schafft eine Verbindung von einer WLAN-Wetterstation zum ioBroker und kann die Wetterdaten in [openSenseMap](https://opensensemap.org) zur Verfügung stellen (__Projekt läuft nur unter Linux__)<br>
  
- Die Wetterstation muss dazu in der Lage sein ihre Daten im "Wunderground"-Format zu senden.<br><br>
+ Die Wetterstation muss dazu in der Lage sein ihre Daten im "Wunderground/Ecowitt"-Format zu senden.<br><br>
  Bisher getestete Stationen:
 - DNT Weatherscreen PRO
 - ELV WS980WiFi

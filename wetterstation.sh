@@ -201,7 +201,7 @@ while true
         let "j++"
         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
      fi
-     if [[ ${MESSWERTERAWIN[$i]} =~ ^soilmoisture1[1-8]= ]]
+     if [[ ${MESSWERTERAWIN[$i]} =~ ^soilmoisture[1-8]= ]]
         then let "j++"
         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
         let "j++"

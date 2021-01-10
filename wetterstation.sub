@@ -185,7 +185,7 @@ iob_send() {
          if [[ "${MESSWERTE[$i]}" =~ ^humidity[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP50.${MESSWERTE[$i]:8:1}.Feuchtigkeit=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" =~ ^batt[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP50.${MESSWERTE[$i]:4:1}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" =~ ^soilbatt[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:8:1}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
-         if [[ "${MESSWERTE[$i]}" =~ ^soilmoisture[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:12:1}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soilmoisture[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:12:1}.Bodenfeuchtigkeit=${MESSWERTE[$(($i+1))]}"; fi
       fi
     done
     IOBOUT="${IOBOUT:1}"

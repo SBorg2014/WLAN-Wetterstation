@@ -21,8 +21,12 @@
   * WH4000 SE
 - Sainlogic 7in1 WiFi WS3500
 - Ventus W830
-
 <br><br>
+
+Experimentell:
+- Stationen ohne WS-View-APP wie bspw. *Sainlogic Profi Wlan Wetterstation FT0300*
+<br><br>
+
 Beispiel einer Visualisierung per Grafana (zu finden [hier](https://github.com/SBorg2014/WLAN-Wetterstation/tree/master/Grafana%20Dashboard)):
 ![Grafana](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/Bilder/Grafana-0.png)
 ![Grafana](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/Bilder/Grafana-1.png)

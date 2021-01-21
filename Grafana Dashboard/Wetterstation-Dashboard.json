@@ -416,7 +416,7 @@
               "type": "fill"
             }
           ],
-          "measurement": "javascript.0.Wetterstation.Chillfaktor",
+          "measurement": "javascript.0.Wetterstation.Gefuehlte_Temperatur",
           "orderByTime": "ASC",
           "policy": "default",
           "refId": "A",

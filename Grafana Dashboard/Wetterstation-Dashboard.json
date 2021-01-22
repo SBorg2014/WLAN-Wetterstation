@@ -441,7 +441,7 @@
       "thresholds": "18,22",
       "timeFrom": null,
       "timeShift": null,
-      "title": "Chillfaktor",
+      "title": "gefühlte Temperatur",
       "transparent": true,
       "type": "singlestat",
       "valueFontSize": "80%",

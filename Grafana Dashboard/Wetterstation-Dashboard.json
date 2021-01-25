@@ -416,7 +416,7 @@
               "type": "fill"
             }
           ],
-          "measurement": "javascript.0.Wetterstation.Chillfaktor",
+          "measurement": "javascript.0.Wetterstation.Gefuehlte_Temperatur",
           "orderByTime": "ASC",
           "policy": "default",
           "refId": "A",
@@ -441,7 +441,7 @@
       "thresholds": "18,22",
       "timeFrom": null,
       "timeShift": null,
-      "title": "Chillfaktor",
+      "title": "gefühlte Temperatur",
       "transparent": true,
       "type": "singlestat",
       "valueFontSize": "80%",

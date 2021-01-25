@@ -1,13 +1,14 @@
-//Wetterstation Datenpunkte anlegen V2.0.0
+//Wetterstation Datenpunkte anlegen V2.2.0
  let DP="javascript.0.Wetterstation.";
+ let DP50  = 0;  // Anzahl der DP50 Sensoren 
+ let DP100 = 0;  // Anzahl der DP100 Sensoren
 
-// Bei Nutzung des Gateways und zusätzlichen Sensoren auf "true" setzen
- let GATEWAY=false;
+ //Ende der User-Einstellungen -------------------
 
   createState(DP+"Innentemperatur"             ,"",   {name: "Temperatur im Haus",                type: "number", role: "state", unit: "°C" });
   createState(DP+"Aussentemperatur"            ,"",   {name: "Temperatur Außen",                  type: "number", role: "state", unit: "°C" });
   createState(DP+"Taupunkt"                    ,"",   {name: "Taupunkt",                          type: "number", role: "state", unit: "°C" });
-  createState(DP+"Chillfaktor"                 ,"",   {name: "Chillfaktor",                       type: "number", role: "state", unit: "°C" });
+  createState(DP+"Gefuehlte_Temperatur"        ,"",   {name: "Windchill",                         type: "number", role: "state", unit: "°C" });
   createState(DP+"Innenfeuchtigkeit"           ,"",   {name: "Luftfeuchtigkeit Innen",            type: "number", role: "state", unit: "%" });
   createState(DP+"Aussenfeuchtigkeit"          ,"",   {name: "Luftfeuchtigkeit Außen",            type: "number", role: "state", unit: "%" });
   createState(DP+"Wind"                        ,"",   {name: "Windgeschwindigkeit",               type: "number", role: "state", unit: "km/h" });
@@ -56,7 +57,7 @@
   createState(DP+"Info.Solarenergie_VorJahr"   , 0,   {name: "Solarenergie letztes Jahr",         type: "number", role: "state", unit: "kWh/m²" });
   createState(DP+"Info.Letzter_Regen"          ,"",   {name: "letztes Regenereignis",             type: "string", role: "state" });
   createState(DP+"Info.Letzte_Regenmenge"      , 0,   {name: "letzte Regenmenge",                 type: "number", role: "state", unit: "mm" });
-  createState(DP+"Info.Station_Batteriestatus" , 0,   {name: "Batteriestatus",                    type: "string", role: "state" });
+  createState(DP+"Info.Station_Batteriestatus" , 0,   {name: "Batteriestatus [0=OK, 1=Alarm]",    type: "string", role: "state" });
   createState(DP+"Info.Wetterstation_Gateway"  , 0,   {name: "Gateway Informationen",             type: "string", role: "state" });
   createState(DP+"Windboeen_max"               ,"",   {name: "Windböengeschwindigkeit maximal",   type: "number", role: "state", unit: "km/h" });
   createState(DP+"Regen_Event"                 ,"",   {name: "Regenmenge Event",                  type: "number", role: "state", unit: "mm" });
@@ -65,9 +66,8 @@
 
 
 
-if (GATEWAY) {
-  
-  for(var i=1; i<9; i++) {
+if (DP50) {
+  for(var i=1; i<=DP50; i++) {
     if (!getObject(DP + "DP50." + i + ".Temperatur")) {
         createState(DP + "DP50." + i + ".Temperatur", "", {
             "name": "DP50 Kanal " + i + " Temperatur",
@@ -91,6 +91,11 @@ if (GATEWAY) {
             "role": "state",
         });
     }
+  }
+}    
+
+if (DP100) {
+  for(var i=1; i<=DP100; i++) {
     if (!getObject(DP + "DP100." + i + ".Bodenfeuchtigkeit")) {
         createState(DP + "DP100." + i + ".Bodenfeuchtigkeit", "", {
             "name": "DP100 Kanal " + i + " Bodenfeuchtigkeit",
@@ -105,7 +110,6 @@ if (GATEWAY) {
             "type": "string",
             "role": "state",
         });
-    }
+    } 
   }
-} //end if
-
+}

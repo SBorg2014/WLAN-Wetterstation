@@ -1,14 +1,18 @@
 #!/bin/bash
 
-# V2.1.0 - 01.01.2021 (c) 2019-2021 SBorg
+# V2.2.0 - 21.01.2021 (c) 2019-2021 SBorg
 #
 # wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-Format aus, konvertiert dieses und überträgt
 # die Daten an den ioBroker
 #
 # benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq' und 'bc' unter Linux
 #
-# V2.1.0 / 01.01.2021 - + zusätzliches Protokoll "9" für userspezifische Abfrage
+# V2.2.0 / 21.01.2021 - ~ Fix Batteriestatus
+#                       ~ Chillfaktor umbenannt auf Windchill/gefühlte Temperatur
+#                       + Berechnung Windchill + Taupunkt für Ecowitt-Protokoll
+# V2.1.0 / 10.01.2021 - + zusätzliches Protokoll "9" für userspezifische Abfrage
 #                       ~ Fix Reset kumulierte Regenmenge zum Jahresanfang
+#                       ~ Fix für DP100 Bodenfeuchte
 # V2.0.0 / 15.12.2020 - + Unterstützung des Gateways und Zusatzsensoren (@a200)
 #                       + Protokoll (wunderground oder ecowitt) wählbar
 # V1.6.0 / 06.12.2020 - + Patch (@a200) für neuere Firmwareversionen (V1.6.3) speziell bei Nutzung eines Gateways
@@ -47,9 +51,9 @@
 # V0.1.0 / 29.12.2019 - erstes Release
 
 
- SH_VER="V2.1.0"
- CONF_V="V2.1.0"
- SUBVER="V2.1.0"
+ SH_VER="V2.2.0"
+ CONF_V="V2.2.0"
+ SUBVER="V2.2.0"
 
 
  #Installationsverzeichnis feststellen
@@ -121,7 +125,7 @@ while true
    MESSWERTERAWIN=(${DATA//&/ })
    rawinlen=${#MESSWERTERAWIN[@]}
    j=30
-   for ((i=1; i<rawinlen; i++ ))
+   for (( i=1; i<rawinlen; i++ ))
    do
      if [[ ${MESSWERTERAWIN[$i]} == tempinf=* ]] || [[ ${MESSWERTERAWIN[$i]} == indoortempf=* ]]
         then MESSWERTE[0]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); convertFtoC 0; fi
@@ -164,7 +168,7 @@ while true
      if [[ ${MESSWERTERAWIN[$i]} == stationtype=* ]] || [[ ${MESSWERTERAWIN[$i]} == softwaretype=* ]]
         then MESSWERTE[19]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); fi
      if [[ ${MESSWERTERAWIN[$i]} == wh65batt=* ]]
-        then MESSWERTE[20]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); batterie 20; fi
+        then MESSWERTE[20]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); fi
      if [[ ${MESSWERTERAWIN[$i]} == maxdailygust=* ]]
         then MESSWERTE[21]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); convertMPHtoKMH 21; fi
      if [[ ${MESSWERTERAWIN[$i]} == eventrainin=* ]]
@@ -207,8 +211,22 @@ while true
         let "j++"
         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
      fi
-
    done
+
+
+   #Taupunkt und Windchill berechnen
+   if [ -z ${MESSWERTE[3]} ] && [ ! -z ${MESSWERTE[1]} ] && [ ! -z ${MESSWERTE[6]} ]; then
+     if (( $(bc -l <<< "${MESSWERTE[6]} > 0") )); then
+        MESSWERTE[3]=$(echo "scale=2;(13.12 + 0.6215 * ${MESSWERTE[1]} - 11.37 * e(l(${MESSWERTE[6]})*0.16) + 0.3965 * ${MESSWERTE[1]} * e(l(${MESSWERTE[6]})*0.16))/1" | bc -l)
+      else
+        MESSWERTE[3]=$(echo ${MESSWERTE[1]})
+     fi
+   fi
+
+   if [ -z ${MESSWERTE[2]} ] && [ ! -z ${MESSWERTE[1]} ] && [ ! -z ${MESSWERTE[5]} ]; then
+     MESSWERTE[2]=$(echo "scale=2;(e(l(${MESSWERTE[5]}/100)*(1/8.02)) * (109.8 + ${MESSWERTE[1]}) - 109.8)/1" | bc -l)
+   fi
+
 
 
    #Daten an ioB schicken

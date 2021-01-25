@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V2.1.0
+UPDATE_VER=V2.2.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -11,14 +11,14 @@ UPDATE_VER=V2.1.0
 
  #Test ob bc und jq installiert sind
          if [ $(which bc) ]; then
-           echo -e "\n $GR'bc'$WE installiert: $GR\u2713"
+           echo -e "\n $GR'bc'$WE installiert: $GR✓"
           else
-           echo -e "\n $GR'bc'$WE installiert: $RE\u2717"
+           echo -e "\n $GR'bc'$WE installiert: $RE✗"
          fi
          if [ $(which jq) ]; then
-           echo -e " $GR'jq'$WE installiert: $GR\u2713\n"
+           echo -e " $GR'jq'$WE installiert: $GR✓\n"
           else
-           echo -e " $GR'jq'$WE installiert: $RE\u2717\n"
+           echo -e " $GR'jq'$WE installiert: $RE✗\n"
          fi
 
 
@@ -70,6 +70,15 @@ PATCH210() {
  echo -e " Fertig...\n"
 }
 
+#Patch Version V2.1.0 auf V2.2.0
+PATCH220() {
+ backup
+ echo -e "\n Patche wetterstation.conf auf V2.2.0 ..."
+ sed -i 's/Chillfaktor/gefühlte Temperatur/' ./wetterstation.conf
+ sed -i 's/### Settings V2.1.0/### Settings V2.2.0/' ./wetterstation.conf
+ echo -e " Fertig...\n"
+}
+
 
 
  VERSION=$(cat ./wetterstation.conf|grep "### Settings V"|cut -d" " -f3)
@@ -80,6 +89,7 @@ PATCH210() {
            V1.5.0) PATCH150 ;;
            V1.6.0) PATCH160 ;;
            V2.0.0) PATCH210 ;;
+           V2.1.0) PATCH220 ;;
            *)      FEHLER
  esac
  exit 0

@@ -5,7 +5,7 @@
    Wichtig: funktioniert nur mit der Default-Datenstruktur des WLAN-Wetterstation-Skriptes!
 
    (c)2020-2021 by SBorg
-   v0.2.1 - 21.01.2021  ~Bugfixing Rekordwerte Sitzenhöchst-/-tiefstwert
+   v0.2.1 - 21.01.2021  ~Bugfixing Rekordwerte Spitzenhöchst-/-tiefstwert
    v0.2.0 - 15.01.2021  ~Bugfixing Benennung DPs / Korrektur Regenmenge
    V0.1.9 - 09.01.2021  +Regenmenge eines kpl. Monats im Jahr und Rekord
    V0.1.8 - 08.01.2021  +max. Windböe für Gestern und Jahres-/Rekordwerte

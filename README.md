@@ -60,6 +60,14 @@ Wer möchte kann mir gerne einen Kaffee ausgeben und mich bei den Projekten unte
 ## Versionen ##
 
 
+**V2.1.0 - 21.01.2021**
+```
+    + zusätzliches Protokoll "9" für userspezifische Abfrage
+    ~ Fix Reset kumulierte Regenmenge zum Jahresanfang
+    ~ Fix für DP100 Bodenfeuchte
+```
+
+
 **V2.0.0 - 15.12.2020**
 ```
     + Unterstützung des Gateways und Zusatzsensoren (@a200)

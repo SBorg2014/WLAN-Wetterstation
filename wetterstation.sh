@@ -1,12 +1,16 @@
 #!/bin/bash
 
-# V2.2.0 - 21.01.2021 (c) 2019-2021 SBorg
+# V2.3.0 - 26.01.2021 (c) 2019-2021 SBorg
 #
-# wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-Format aus, konvertiert dieses und überträgt
+# wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
 # die Daten an den ioBroker
 #
 # benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq' und 'bc' unter Linux
 #
+# V2.3.0 / 26.01.2021 - ~ Fix Rundungsfehler Windchill/Taupunkt
+#                       + Min/max Aussentemperatur der letzten 24h
+#                       + Unterstützung für DP60 Sensor
+#                       ~ Fix für Protokoll #9 wg. fehlender Regenrate
 # V2.2.0 / 21.01.2021 - ~ Fix Batteriestatus
 #                       ~ Chillfaktor umbenannt auf Windchill/gefühlte Temperatur
 #                       + Berechnung Windchill + Taupunkt für Ecowitt-Protokoll
@@ -51,9 +55,9 @@
 # V0.1.0 / 29.12.2019 - erstes Release
 
 
- SH_VER="V2.2.0"
- CONF_V="V2.2.0"
- SUBVER="V2.2.0"
+ SH_VER="V2.3.0"
+ CONF_V="V2.3.0"
+ SUBVER="V2.3.0"
 
 
  #Installationsverzeichnis feststellen
@@ -179,6 +183,35 @@ while true
         then MESSWERTE[24]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); convertInchtoMM 24; fi
      if [[ ${MESSWERTERAWIN[$i]} == model=* ]]
         then MESSWERTE[25]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); fi
+     #DP60
+     if [[ ${MESSWERTERAWIN[$i]} == lightning=* ]]
+        then let "j++"
+        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+        let "j++"
+        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+     fi
+     if [[ ${MESSWERTERAWIN[$i]} == lightning_num=* ]]
+        then let "j++"
+        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+        let "j++"
+        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+     fi
+     if [[ ${MESSWERTERAWIN[$i]} == lightning_time=* ]]
+        then let "j++"
+        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+        let "j++"
+        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+        #um Nanosekunden erweitern
+        MESSWERTE[$j]=$(echo ${MESSWERTE[$j]}000)
+     fi
+     if [[ ${MESSWERTERAWIN[$i]} == wh57batt=* ]]
+        then let "j++"
+        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+        let "j++"
+        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+     fi
+     #
+     #DP50/100
      if [[ ${MESSWERTERAWIN[$i]} =~ ^temp[1-8]f= ]]
         then let "j++"
         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
@@ -217,14 +250,16 @@ while true
    #Taupunkt und Windchill berechnen
    if [ -z ${MESSWERTE[3]} ] && [ ! -z ${MESSWERTE[1]} ] && [ ! -z ${MESSWERTE[6]} ]; then
      if (( $(bc -l <<< "${MESSWERTE[6]} > 0") )); then
-        MESSWERTE[3]=$(echo "scale=2;(13.12 + 0.6215 * ${MESSWERTE[1]} - 11.37 * e(l(${MESSWERTE[6]})*0.16) + 0.3965 * ${MESSWERTE[1]} * e(l(${MESSWERTE[6]})*0.16))/1" | bc -l)
+        WINDCHILL=$(echo "scale=4;(13.12 + 0.6215 * ${MESSWERTE[1]} - 11.37 * e(l(${MESSWERTE[6]})*0.16) + 0.3965 * ${MESSWERTE[1]} * e(l(${MESSWERTE[6]})*0.16))/1" | bc -l)
+        MESSWERTE[3]=$(round $WINDCHILL 2)
       else
         MESSWERTE[3]=$(echo ${MESSWERTE[1]})
      fi
    fi
 
    if [ -z ${MESSWERTE[2]} ] && [ ! -z ${MESSWERTE[1]} ] && [ ! -z ${MESSWERTE[5]} ]; then
-     MESSWERTE[2]=$(echo "scale=2;(e(l(${MESSWERTE[5]}/100)*(1/8.02)) * (109.8 + ${MESSWERTE[1]}) - 109.8)/1" | bc -l)
+     TAUPUNKT=$(echo "scale=4;(e(l(${MESSWERTE[5]}/100)*(1/8.02)) * (109.8 + ${MESSWERTE[1]}) - 109.8)/1" | bc -l)
+     MESSWERTE[2]=$(round $TAUPUNKT 2)
    fi
 
 
@@ -257,10 +292,26 @@ while true
    if [ `date +%H` -eq "0" ] && [ `date +%M` -le "3" ]; then unset MIDNIGHTRUN; fi
 
 
-  #Wetterprognose
-   DO_IT=`date +%M`
+  #15-Minutenjobs Wetterprognose + min/max Aussentemperatur der letzten 24h
+   DO_IT=$(date +%M)
    DO_IT=${DO_IT#0}
-   if [ $(( $DO_IT % 15 )) -eq "0" ] && [ `date +%s` -ge "$TIMER_SET" ]; then wetterprognose; fi
+   if [ $(( $DO_IT % 15 )) -eq "0" ]; then
+     if [ `date +%s` -ge "$TIMER_SET" ]; then wetterprognose
+      if [ ! -z ${INFLUX_DB} ]; then
+        MIN_TEMP_24H=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
+        --data-urlencode "u=${INFLUX_USER}" --data-urlencode "p=${INFLUX_PASSWORD}" \
+        --data-urlencode "q=SELECT min(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time >= now() - 1d" |\
+        jq -r '.results | .[].series | .[].values[] | .[1]')
+        MAX_TEMP_24H=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
+        --data-urlencode "u=${INFLUX_USER}" --data-urlencode "p=${INFLUX_PASSWORD}" \
+        --data-urlencode "q=SELECT max(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time >= now() - 1d" |\
+        jq -r '.results | .[].series | .[].values[] | .[1]')
+
+        SAPI "Single" "set/${DP_MIN_TEMP_24H}?value=${MIN_TEMP_24H}&ack=true"
+        SAPI "Single" "set/${DP_MAX_TEMP_24H}?value=${MAX_TEMP_24H}&ack=true"
+      fi
+     fi
+   fi
 
   #openSenseMap
    if [ ${openSenseMap} == "true" ]; then opensensemap; fi

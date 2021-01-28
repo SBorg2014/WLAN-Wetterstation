@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V2.2.0
+UPDATE_VER=V2.3.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -79,6 +79,18 @@ PATCH220() {
  echo -e " Fertig...\n"
 }
 
+#Patch Version V2.2.0 auf V2.3.0
+PATCH230() {
+ backup
+ echo -e "\n Patche wetterstation.conf auf V2.3.0 ..."
+ sed -i '/#Anzahl der vorhandenen DP50/,/ANZAHL_DP100=/c\ #Anzahl der vorhandenen Zusatzsensoren \/ default: 0\n  ANZAHL_DP50=0\n  ANZAHL_DP60=0\n  ANZAHL_DP100=0' ./wetterstation.conf
+ sed -i '/^.#letztes Regenereignis/i \ #InfluxDB-Konfiguration \/ ohne InfluxDB alles leer lassen\n  #IP und Port der API [xxx.xxx.xxx.xxx:xxxxx]\n   INFLUX_API=\n  #Name, User und Passwort der InfluxDB-Datenbank\n   INFLUX_DB=\n   INFLUX_USER=\n   INFLUX_PASSWORD=\n' ./wetterstation.conf
+ sed -i 's/### Settings V2.2.0/### Settings V2.3.0/' ./wetterstation.conf
+ echo -e " Fertig...\n"
+ echo -e " ${GE}Eventuelle Zusatzsensoren DP50/60/100 müssen neu eingetragen werden!"
+ echo -e " Neuen Configblock für Influx beachten/konfigurieren!\n"
+}
+
 
 
  VERSION=$(cat ./wetterstation.conf|grep "### Settings V"|cut -d" " -f3)
@@ -90,6 +102,7 @@ PATCH220() {
            V1.6.0) PATCH160 ;;
            V2.0.0) PATCH210 ;;
            V2.1.0) PATCH220 ;;
+           V2.2.0) PATCH230 ;;
            *)      FEHLER
  esac
  exit 0

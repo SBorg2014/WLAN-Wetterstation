@@ -1,7 +1,8 @@
-//Wetterstation Datenpunkte anlegen V2.2.0
+//Wetterstation Datenpunkte anlegen V2.3.0
  let DP="javascript.0.Wetterstation.";
- let DP50  = 0;  // Anzahl der DP50 Sensoren 
- let DP100 = 0;  // Anzahl der DP100 Sensoren
+ let DP50  = 0;  // Anzahl der DP50 Sensoren  (max. 8 Stück)
+ let DP60  = 0;  // Anzahl der DP60 Sensoren  (max. 1 Stück)
+ let DP100 = 0;  // Anzahl der DP100 Sensoren (max. 8 Stück)
 
  //Ende der User-Einstellungen -------------------
 
@@ -59,6 +60,8 @@
   createState(DP+"Info.Letzte_Regenmenge"      , 0,   {name: "letzte Regenmenge",                 type: "number", role: "state", unit: "mm" });
   createState(DP+"Info.Station_Batteriestatus" , 0,   {name: "Batteriestatus [0=OK, 1=Alarm]",    type: "string", role: "state" });
   createState(DP+"Info.Wetterstation_Gateway"  , 0,   {name: "Gateway Informationen",             type: "string", role: "state" });
+  createState(DP+"Info.Temp_Aussen_24h_max"    , 0,   {name: "höchste Aussentemperatur der letzten 24 Stunden",type: "number", role: "state", unit: "°C" });
+  createState(DP+"Info.Temp_Aussen_24h_min"    , 0,   {name: "tiefste Aussentemperatur der letzten 24 Stunden",type: "number", role: "state", unit: "°C" });
   createState(DP+"Windboeen_max"               ,"",   {name: "Windböengeschwindigkeit maximal",   type: "number", role: "state", unit: "km/h" });
   createState(DP+"Regen_Event"                 ,"",   {name: "Regenmenge Event",                  type: "number", role: "state", unit: "mm" });
   createState(DP+"Regen_Stunde"                ,"",   {name: "Regenmenge Stunde",                 type: "number", role: "state", unit: "mm" });
@@ -66,9 +69,9 @@
 
 
 
-if (DP50) {
+if (DP50>0 && DP50<=8)  {
   for(var i=1; i<=DP50; i++) {
-    if (!getObject(DP + "DP50." + i + ".Temperatur")) {
+    if (!existsState(DP + "DP50." + i + ".Temperatur")) {
         createState(DP + "DP50." + i + ".Temperatur", "", {
             "name": "DP50 Kanal " + i + " Temperatur",
             "type": "number",
@@ -76,7 +79,7 @@ if (DP50) {
             "unit": "°C"
         });
     }
-    if (!getObject(DP + "DP50." + i + ".Feuchtigkeit")) {
+    if (!existsState(DP + "DP50." + i + ".Feuchtigkeit")) {
         createState(DP + "DP50." + i + ".Feuchtigkeit", "", {
             "name": "DP50 Kanal " + i + " Feuchtigkeit",
             "type": "number",
@@ -84,7 +87,7 @@ if (DP50) {
             "unit": "%"
         });
     }
-    if (!getObject(DP + "DP50." + i + ".Batterie")) {
+    if (!existsState(DP + "DP50." + i + ".Batterie")) {
         createState(DP + "DP50." + i + ".Batterie", "", {
             "name": "DP50 Kanal " + i + " Batterie",
             "type": "string",
@@ -92,11 +95,45 @@ if (DP50) {
         });
     }
   }
-}    
+}
 
-if (DP100) {
+if (DP60>0 && DP60<=1)  {
+  for(let i=1; i<=DP60; i++) {
+    if (!existsState(DP + "DP60." + i + ".Entfernung")) {
+        createState(DP + "DP60." + i + ".Entfernung", "", {
+            "name": "DP60 Kanal " + i + " Entfernung",
+            "type": "number",
+            "role": "state",
+            "unit": "km"
+        });
+    }
+    if (!existsState(DP + "DP60." + i + ".Zeitpunkt")) {
+        createState(DP + "DP60." + i + ".Zeitpunkt", "", {
+            "name": "DP60 Kanal " + i + " Zeitpunkt (Unix-Timestamp)",
+            "type": "number",
+            "role": "state"
+        });
+    }
+    if (!existsState(DP + "DP60." + i + ".Anzahl")) {
+        createState(DP + "DP60." + i + ".Anzahl", "", {
+            "name": "DP60 Kanal " + i + " Anzahl innerhalb von 24 Stunden",
+            "type": "number",
+            "role": "state"
+        });
+    }
+    if (!existsState(DP + "DP60." + i + ".Batterie")) {
+        createState(DP + "DP60." + i + ".Batterie", "", {
+            "name": "DP60 Kanal " + i + " Batterie (5 = max)",
+            "type": "number",
+            "role": "state",
+        });
+    }
+  }
+}
+
+if (DP100>0 && DP100<=8) {
   for(var i=1; i<=DP100; i++) {
-    if (!getObject(DP + "DP100." + i + ".Bodenfeuchtigkeit")) {
+    if (!existsState(DP + "DP100." + i + ".Bodenfeuchtigkeit")) {
         createState(DP + "DP100." + i + ".Bodenfeuchtigkeit", "", {
             "name": "DP100 Kanal " + i + " Bodenfeuchtigkeit",
             "type": "number",
@@ -104,12 +141,12 @@ if (DP100) {
             "unit": "%"
         });
     }
-    if (!getObject(DP + "DP100." + i + ".Batterie")) {
+    if (!existsState(DP + "DP100." + i + ".Batterie")) {
         createState(DP + "DP100." + i + ".Batterie", "", {
             "name": "DP100 Kanal " + i + " Batterie",
             "type": "string",
             "role": "state",
         });
-    } 
+    }
   }
 }

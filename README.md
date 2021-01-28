@@ -23,6 +23,13 @@
 - Ventus W830
 <br><br>
 
+Zusatzsensoren (mittels Station oder Gateway DP1500/GW1000):
+- bis zu 8 Stück DP50/WH31 Temperatur-/Luftfeuchtigkeit-Sensoren
+- ein DP60/WH57 Blitzsensor
+- bis zu 8 Stück DP100/WH51 Bodenfeuchte-Sensoren
+<br><br>
+
+
 Experimentell:
 - Stationen ohne WS-View-APP wie bspw. *Sainlogic Profi Wlan Wetterstation FT0300*
 <br><br>

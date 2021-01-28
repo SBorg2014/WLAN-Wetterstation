@@ -23,6 +23,13 @@
 - Ventus W830
 <br><br>
 
+Zusatzsensoren (mittels Station oder Gateway DP1500/GW1000):
+- bis zu 8 Stück DP50/WH31 Temperatur-/Luftfeuchtigkeit-Sensoren
+- ein DP60/WH57 Blitzsensor
+- bis zu 8 Stück DP100/WH51 Bodenfeuchte-Sensoren
+<br><br>
+
+
 Experimentell:
 - Stationen ohne WS-View-APP wie bspw. *Sainlogic Profi Wlan Wetterstation FT0300*
 <br><br>
@@ -60,7 +67,15 @@ Wer möchte kann mir gerne einen Kaffee ausgeben und mich bei den Projekten unte
 ## Versionen ##
 
 
-**V2.1.0 - 21.01.2021**
+**V2.2.0 - 21.01.2021**
+```
+    ~ Fix Batteriestatus
+    ~ Chillfaktor umbenannt auf Windchill/gefühlte Temperatur
+    + Berechnung Windchill + Taupunkt für Ecowitt-Protokoll
+```
+
+
+**V2.1.0 - 10.01.2021**
 ```
     + zusätzliches Protokoll "9" für userspezifische Abfrage
     ~ Fix Reset kumulierte Regenmenge zum Jahresanfang

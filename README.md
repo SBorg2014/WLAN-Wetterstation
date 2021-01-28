@@ -67,6 +67,14 @@ Wer möchte kann mir gerne einen Kaffee ausgeben und mich bei den Projekten unte
 ## Versionen ##
 
 
+**V2.2.0 - 21.01.2021**
+```
+    ~ Fix Batteriestatus
+    ~ Chillfaktor umbenannt auf Windchill/gefühlte Temperatur
+    + Berechnung Windchill + Taupunkt für Ecowitt-Protokoll
+```
+
+
 **V2.1.0 - 10.01.2021**
 ```
     + zusätzliches Protokoll "9" für userspezifische Abfrage

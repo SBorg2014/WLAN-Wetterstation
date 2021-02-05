@@ -5,8 +5,9 @@
    Wichtig: funktioniert nur mit der Default-Datenstruktur des WLAN-Wetterstation-Skriptes!
 
    (c)2020-2021 by SBorg
-   v0.2.1 - 21.01.2021  ~Bugfixing Rekordwerte Spitzenhöchst-/-tiefstwert
-   v0.2.0 - 15.01.2021  ~Bugfixing Benennung DPs / Korrektur Regenmenge
+   V0.2.2 - 01.02.2021  ~Bugfixing Regenmenge Jahr + Monat
+   V0.2.1 - 21.01.2021  ~Bugfixing Rekordwerte Spitzenhöchst-/-tiefstwert
+   V0.2.0 - 15.01.2021  ~Bugfixing Benennung DPs / Korrektur Regenmenge
    V0.1.9 - 09.01.2021  +Regenmenge eines kpl. Monats im Jahr und Rekord
    V0.1.8 - 08.01.2021  +max. Windböe für Gestern und Jahres-/Rekordwerte
    V0.1.7 - 03.01.2021  ~Fix für fehlerhafte/fehlende Speicherung Jahreswerte + Trockenperiode
@@ -40,7 +41,7 @@
                                                        [default: javascript.0.Wetterstation]                          */
     const INFLUXDB_INSTANZ='0';                       /* unter welcher Instanz läuft die InfluxDB [default: 0]        */
     const PRE_DP='0_userdata.0.Statistik.Wetter';     /* wo sollen die Statistikwerte abgelegt werden. Nur unter
-                                                       0_userdata oder javascript möglich!                            */
+                                                       0_userdata oder javascript möglich!                            */ 
     let REKORDWERTE_AUSGABEFORMAT="[WERT] im [MONAT] [JAHR]"; /* Wie soll die Ausgabe der Rekordwerte formatiert werden
                                                        (Template-Vorlage)?
                                                        [WERT]    = Messwert (zB. '22.42' bei Temperatur, '12' bei Tagen)
@@ -49,12 +50,13 @@
                                                        [MONAT_ZAHL]=Monat als Zahl (01-12)
                                                        [MONAT_KURZ]=Monatsname kurz (Jan, Feb,..., Dez)
                                                        [JAHR]    = Jahreszahl vierstellig (2020)
-                                                       Die 'Units' wie bspw. "°C" oder "Tage" werden direkt aus dem 
+                                                       Die 'Units' wie bspw. "°C" oder "Tage" werden direkt aus dem
                                                        Datenpunkt ergänzt. [default: [WERT] im [MONAT] [JAHR] ] erzeugt
                                                        als Beispiel im DP die Ausgabe: "22.42 °C im Juni 2020"        */
-    const ZEITPLAN = "3 1 * * *";                     /* wann soll die Statistik erstellt werden (Minuten Stunde * * *) 
+    const ZEITPLAN = "3 1 * * *";                     /* wann soll die Statistik erstellt werden (Minuten Stunde * * *)
                                                        [default 1:03 Uhr]                                             */
 // *** ENDE User-Einstellungen *****************************************************************************************
+
 
 
 
@@ -64,14 +66,13 @@ const DP_Check='Rekordwerte.Regenmengemonat';
 if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 //Start des Scripts
-    const ScriptVersion = "V0.2.1";
+    const ScriptVersion = "V0.2.2";
     let Tiefstwert, Hoechstwert, Temp_Durchschnitt, Max_Windboe, Max_Regenmenge, Regenmenge_Monat, warme_Tage, Sommertage;
     let heisse_Tage, Frost_Tage, kalte_Tage, Eistage, sehr_kalte_Tage, Trockenperiode_akt;
     let kalte_Tage_Jahr, warme_Tage_Jahr, Sommertage_Jahr, heisse_Tage_Jahr, Frosttage_Jahr, Eistage_Jahr, sehrkalte_Tage_Jahr;
     let monatstage = [31,28,31,30,31,30,31,31,30,31,30,31];
     let monatsname = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
     let monatsname_kurz = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
-    let result = [], temps = [], wind = [], regen = [];
     console.log('Wetterstation-Statistiken gestartet...');
     setTimeout(Statusmeldung, 500);
 
@@ -82,16 +83,15 @@ if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 // ### Funktionen ###############################################################################################
 async function main() {
-    let start, end;
-    let zeitstempel = new Date();
+    let result = [], temps = [], wind = [], regen = [], start, end, zeitstempel = new Date();
     start = new Date(zeitstempel.getFullYear(),zeitstempel.getMonth(),zeitstempel.getDate()-1,0,0,0);
     start = start.getTime();
     end = new Date(zeitstempel.getFullYear(),zeitstempel.getMonth(),zeitstempel.getDate()-1,23,59,59);
     end = end.getTime();
 
     //Jobs Monatserster
- if (zeitstempel.getDate() == 1) {
-     if (zeitstempel.getMonth() == 0) { //heute ist der 01.01.
+ if (zeitstempel.getDate() == 1) { 
+     if (zeitstempel.getMonth() == 0) { //heute ist der 01.01. 
 
         //Rekordwerte (Temperatur-Durchschnitt) setzen
             //max Jahrestemperaturdurchschnitt
@@ -160,13 +160,16 @@ async function main() {
     sleep(3000);
     
    if (getState(PRE_DP+'.Control.AutoDelete_Data').val >0) { AutoDelete_Data(); }
+   //nun beenden
+   return;
+
  }//End Jobs Monatserster
 
             //InfluxDB abfragen (Regen +1min Startverzögerung wg. ev. Ungenauigkeit der Systemzeit des Wetterstation-Displays)
             sendTo('influxdb.'+INFLUXDB_INSTANZ, 'query', 
             'select * FROM "' + WET_DP + '.Aussentemperatur" WHERE time >= ' + (start *1000000) + ' AND time <= ' + (end *1000000)
              + '; select * FROM "' + WET_DP + '.Wind_max" WHERE time >= '  + (start *1000000) + ' AND time <= ' + (end *1000000)
-             + '; select * FROM "' + WET_DP + '.Regen_Tag" WHERE time >= ' + ((start+60000) *1000000) + ' AND time <= ' + (end *1000000)
+             + '; select * FROM "' + WET_DP + '.Regen_Tag" WHERE time >= ' + ((start+72000) *1000000) + ' AND time <= ' + (end *1000000)
          , function (result) {
              //Anlegen der Arrays + befüllen mit den relevanten Daten
             if (result.error) {

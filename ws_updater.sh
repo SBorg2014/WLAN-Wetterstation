@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V2.3.0
+UPDATE_VER=V2.4.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -44,6 +44,7 @@ PATCH140() {
  echo -e " Fertig...\n"
 }
 
+
 #Patch Version V1.5.0 auf V1.6.0
 PATCH150() {
  backup
@@ -51,6 +52,7 @@ PATCH150() {
  sed -i 's/### Settings V1.5.0/### Settings V1.6.0/' ./wetterstation.conf
  echo -e " Fertig...\n"
 }
+
 
 #Patch Version V1.6.0 auf V2.0.0
 PATCH160() {
@@ -61,6 +63,7 @@ PATCH160() {
  echo -e " Fertig...\n"
 }
 
+
 #Patch Version V2.0.0 auf V2.1.0
 PATCH210() {
  backup
@@ -70,6 +73,7 @@ PATCH210() {
  echo -e " Fertig...\n"
 }
 
+
 #Patch Version V2.1.0 auf V2.2.0
 PATCH220() {
  backup
@@ -78,6 +82,7 @@ PATCH220() {
  sed -i 's/### Settings V2.1.0/### Settings V2.2.0/' ./wetterstation.conf
  echo -e " Fertig...\n"
 }
+
 
 #Patch Version V2.2.0 auf V2.3.0
 PATCH230() {
@@ -92,6 +97,17 @@ PATCH230() {
 }
 
 
+#Patch Version V2.3.0 auf V2.4.0
+PATCH240() {
+ backup
+ echo -e "\n Patche wetterstation.conf auf V2.4.0 ..."
+ sed -i '/^.*ANZAHL_DP100=.*/a \  ANZAHL_DP200=0' ./wetterstation.conf
+ sed -i 's/### Settings V2.3.0/### Settings V2.4.0/' ./wetterstation.conf
+ echo -e " Fertig...\n"
+ echo -e " ${GE}Eventuelle Zusatzsensoren DP200 müssen eingetragen werden!\n"
+}
+
+
 
  VERSION=$(cat ./wetterstation.conf|grep "### Settings V"|cut -d" " -f3)
 
@@ -103,6 +119,7 @@ PATCH230() {
            V2.0.0) PATCH210 ;;
            V2.1.0) PATCH220 ;;
            V2.2.0) PATCH230 ;;
+           V2.3.0) PATCH240 ;;
            *)      FEHLER
  esac
  exit 0

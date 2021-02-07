@@ -1,12 +1,14 @@
 #!/bin/bash
 
-# V2.3.0 - 26.01.2021 (c) 2019-2021 SBorg
+# V2.4.0 - 03.02.2021 (c) 2019-2021 SBorg
 #
 # wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
 # die Daten an den ioBroker
 #
 # benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq' und 'bc' unter Linux
 #
+# V2.4.0 / 03.02.2021 - + Hitzeindex (>20°C)
+#                       + Unterstützung von max. 4 DP200 Sensoren
 # V2.3.0 / 26.01.2021 - ~ Fix Rundungsfehler Windchill/Taupunkt
 #                       + Min/max Aussentemperatur der letzten 24h
 #                       + Unterstützung für DP60 Sensor
@@ -55,9 +57,9 @@
 # V0.1.0 / 29.12.2019 - erstes Release
 
 
- SH_VER="V2.3.0"
- CONF_V="V2.3.0"
- SUBVER="V2.3.0"
+ SH_VER="V2.4.0"
+ CONF_V="V2.4.0"
+ SUBVER="V2.4.0"
 
 
  #Installationsverzeichnis feststellen
@@ -244,6 +246,26 @@ while true
         let "j++"
         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
      fi
+     #
+     #DP200
+     if [[ ${MESSWERTERAWIN[$i]} =~ ^pm25_ch[1-4]= ]]
+        then let "j++"
+        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+        let "j++"
+        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+     fi
+     if [[ ${MESSWERTERAWIN[$i]} =~ ^pm25_avg_24h_ch[1-4]= ]]
+        then let "j++"
+        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+        let "j++"
+        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+     fi
+     if [[ ${MESSWERTERAWIN[$i]} =~ ^pm25batt[1-4]= ]]
+        then let "j++"
+        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+        let "j++"
+        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+     fi
    done
 
 
@@ -292,7 +314,7 @@ while true
    if [ `date +%H` -eq "0" ] && [ `date +%M` -le "3" ]; then unset MIDNIGHTRUN; fi
 
 
-  #15-Minutenjobs Wetterprognose + min/max Aussentemperatur der letzten 24h
+  #15-Minutenjobs: Wetterprognose; min/max Aussentemperatur der letzten 24h
    DO_IT=$(date +%M)
    DO_IT=${DO_IT#0}
    if [ $(( $DO_IT % 15 )) -eq "0" ]; then
@@ -310,6 +332,14 @@ while true
         SAPI "Single" "set/${DP_MIN_TEMP_24H}?value=${MIN_TEMP_24H}&ack=true"
         SAPI "Single" "set/${DP_MAX_TEMP_24H}?value=${MAX_TEMP_24H}&ack=true"
       fi
+     fi
+   fi
+  #5-Minutenjobs: Hitzeindex
+   if [ $(( $DO_IT % 5 )) -eq "0" ]; then
+     if (( $(bc -l <<< "${MESSWERTE[1]} > 20") )); then
+       HITZEINDEX=$(round $(hitzeindex ${MESSWERTE[1]} ${MESSWERTE[5]}) 2)
+      else
+       HITZEINDEX=0
      fi
    fi
 

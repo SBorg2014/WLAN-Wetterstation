@@ -1,9 +1,9 @@
-//Wetterstation Datenpunkte anlegen V2.3.0
+//Wetterstation Datenpunkte anlegen V2.4.0
  let DP="javascript.0.Wetterstation.";
  let DP50  = 0;  // Anzahl der DP50 Sensoren  (max. 8 Stück)
  let DP60  = 0;  // Anzahl der DP60 Sensoren  (max. 1 Stück)
  let DP100 = 0;  // Anzahl der DP100 Sensoren (max. 8 Stück)
-
+ let DP200 = 0;  // Anzahl der DP200 Sensoren (max. 4 Stück)
  //Ende der User-Einstellungen -------------------
 
   createState(DP+"Innentemperatur"             ,"",   {name: "Temperatur im Haus",                type: "number", role: "state", unit: "°C" });
@@ -38,6 +38,7 @@
   createState(DP+"tempData.Solarenergie"       ,"0",  {name: "temporäre Daten Tag, Woche, Monat, Jahr",type: "string",role: "state" });
   createState(DP+"Info.FW_Upgrade"             ,"",   {name: "neue Firmware für die Station",     type: "boolean",role: "state" });
   createState(DP+"Info.FW_Version"             ,"",   {name: "Firmwareversion der Station",       type: "string", role: "state" });
+  createState(DP+"Info.Hitzeindex"             , 0,   {name: "Hitzeindex (erst ab 20°C)",         type: "number", role: "state", unit: "°C" });
   createState(DP+"Info.openSenseMap"           ,"",   {name: "Datenübertragung openSenseMap erfolgreich",type: "boolean",role: "state" });
   createState(DP+"Info.Sonnenschein_VorTag"    , 0,   {name: "Sonnenscheindauer Gestern",         type: "number", role: "state", unit: "Sek." });
   createState(DP+"Info.Sonnenschein_Tag"       ,"",   {name: "Sonnenscheindauer Heute",           type: "number", role: "state", unit: "Sek." });
@@ -90,7 +91,7 @@ if (DP50>0 && DP50<=8)  {
     if (!existsState(DP + "DP50." + i + ".Batterie")) {
         createState(DP + "DP50." + i + ".Batterie", "", {
             "name": "DP50 Kanal " + i + " Batterie",
-            "type": "string",
+            "type": "number",
             "role": "state",
         });
     }
@@ -144,7 +145,35 @@ if (DP100>0 && DP100<=8) {
     if (!existsState(DP + "DP100." + i + ".Batterie")) {
         createState(DP + "DP100." + i + ".Batterie", "", {
             "name": "DP100 Kanal " + i + " Batterie",
-            "type": "string",
+            "type": "number",
+            "role": "state",
+        });
+    }
+  }
+}
+
+if (DP200>0 && DP200<=4) {
+  for(var i=1; i<=DP200; i++) {
+    if (!existsState(DP + "DP200." + i + ".PM25")) {
+        createState(DP + "DP200." + i + ".PM25", "", {
+            "name": "DP200 Kanal " + i + " 2.5µm Partikel",
+            "type": "number",
+            "role": "state",
+            "unit": "Anzahl"
+        });
+    }
+    if (!existsState(DP + "DP200." + i + ".PM25_24h")) {
+        createState(DP + "DP200." + i + ".PM25_24h", "", {
+            "name": "DP200 Kanal " + i + " Durchschnitt per 24h",
+            "type": "number",
+            "role": "state",
+            "unit": "Anzahl"
+        });
+    }
+    if (!existsState(DP + "DP200." + i + ".Batterie")) {
+        createState(DP + "DP200." + i + ".Batterie", "", {
+            "name": "DP200 Kanal " + i + " Batterie (5 = max)",
+            "type": "number",
             "role": "state",
         });
     }

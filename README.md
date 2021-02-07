@@ -31,8 +31,8 @@ Zusatzsensoren (mittels Station oder Gateway DP1500/GW1000):
 <br><br>
 
 
-Experimentell:
-- Stationen ohne WS-View-APP wie bspw. *Sainlogic Profi Wlan Wetterstation FT0300*
+Experimentell (über eigenen DNS-Server):
+- Stationen ohne Möglichkeit der Konfiguration mittels App *WS View* wie bspw. *Sainlogic Profi Wlan Wetterstation FT0300*
 <br><br>
 
 Beispiel einer Visualisierung per Grafana (zu finden [hier](https://github.com/SBorg2014/WLAN-Wetterstation/tree/master/Grafana%20Dashboard)):

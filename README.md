@@ -8,7 +8,7 @@
 [![Commits since last release](https://img.shields.io/github/commits-since/SBorg2014/WLAN-Wetterstation/latest.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/releases/latest)
 [![License](https://img.shields.io/github/license/SBorg2014/WLAN-Wetterstation.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/LICENSE)
 
- schafft eine Verbindung von einer WLAN-Wetterstation zum ioBroker und kann die Wetterdaten in [openSenseMap](https://opensensemap.org) zur Verfügung stellen (__Projekt läuft nur unter Linux__)<br>
+ schafft eine Verbindung von einer WLAN-Wetterstation zum ioBroker und kann optional die Wetterdaten in [openSenseMap](https://opensensemap.org) zur Verfügung stellen (__Projekt läuft nur unter Linux__)<br>
  
  Die Wetterstation muss dazu in der Lage sein ihre Daten im "Wunderground/Ecowitt"-Format zu senden.<br><br>
  Bisher getestete Stationen:
@@ -27,11 +27,13 @@ Zusatzsensoren (mittels Station oder Gateway DP1500/GW1000):
 - bis zu 8 Stück DP50/WH31 Temperatur-/Luftfeuchtigkeit-Sensoren
 - ein DP60/WH57 Blitzsensor
 - bis zu 8 Stück DP100/WH51 Bodenfeuchte-Sensoren
+- bis zu 4 Stück DP200/WH43 PM2.5 Feinstaub-Sensoren
 <br><br>
 
 
-Experimentell:
-- Stationen ohne WS-View-APP wie bspw. *Sainlogic Profi Wlan Wetterstation FT0300*
+Experimentell (über eigenen DNS-Server):
+- Stationen ohne Möglichkeit der Konfiguration mittels App *WS View* wie bspw. *Sainlogic Profi Wlan Wetterstation FT0300*
+- Installation siehe [WiKi](https://github.com/SBorg2014/WLAN-Wetterstation/wiki/Installation---eigener-DNS-Server)
 <br><br>
 
 Beispiel einer Visualisierung per Grafana (zu finden [hier](https://github.com/SBorg2014/WLAN-Wetterstation/tree/master/Grafana%20Dashboard)):
@@ -65,6 +67,15 @@ Wer möchte kann mir gerne einen Kaffee ausgeben und mich bei den Projekten unte
 <br><br>
 
 ## Versionen ##
+
+
+**V2.3.0 - 26.01.2021**
+```
+    ~ Fix Rundungsfehler Windchill/Taupunkt
+    + Min/max Aussentemperatur der letzten 24h
+    + Unterstützung für DP60 Sensor
+    ~ Fix für Protokoll #9 wg. fehlender Regenrate
+```
 
 
 **V2.2.0 - 21.01.2021**

@@ -205,7 +205,7 @@ Wer möchte kann mir gerne einen Kaffee ausgeben und mich bei den Projekten unte
 ## :scroll: License ## 
  MIT License
 
-Copyright (c) 2019-2021 SBorg2014
+Copyright (c)2019-2021 by SBorg
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

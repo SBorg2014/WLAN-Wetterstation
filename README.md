@@ -26,6 +26,7 @@
 Zusatzsensoren (mittels Station oder Gateway DP1500/GW1000):
 - bis zu 8 Stück DP50/WH31 Temperatur-/Luftfeuchtigkeit-Sensoren
 - ein DP60/WH57 Blitzsensor
+- bis zu 4 Stück DP70/WH55 Wasserleckage-Sensoren
 - bis zu 8 Stück DP100/WH51 Bodenfeuchte-Sensoren
 - bis zu 4 Stück DP200/WH43 PM2.5 Feinstaub-Sensoren
 <br><br>
@@ -67,6 +68,13 @@ Wer möchte kann mir gerne einen Kaffee ausgeben und mich bei den Projekten unte
 <br><br>
 
 ## Versionen ##
+
+
+**V2.4.0 - 03.02.2021**
+```
+    + Hitzeindex (>20°C)
+    + Unterstützung von max. 4 DP200 Sensoren
+```
 
 
 **V2.3.0 - 26.01.2021**

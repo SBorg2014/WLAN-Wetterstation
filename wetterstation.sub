@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V2.4.0 --------------------------------------------------------
+### Subroutinen V2.5.0 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -64,6 +64,9 @@
   DP_MIN_TEMP_24H=${PRE_DP}.Info.Temp_Aussen_24h_min
   DP_MAX_TEMP_24H=${PRE_DP}.Info.Temp_Aussen_24h_max
   DP_HITZEINDEX=${PRE_DP}.Info.Hitzeindex
+  DP_MIN_TEMP_365D=${PRE_DP}.Info.Temp_Aussen_365t_min
+  DP_MAX_TEMP_365D=${PRE_DP}.Info.Temp_Aussen_365t_max
+  DP_AVG_TEMP_365D=${PRE_DP}.Info.Temp_Aussen_365t_avg
 
 ###  Ende Usereinstellungen
 
@@ -147,7 +150,7 @@ debuging() {
      9) echo -en "Sainlogic Pro";;
      *) echo -en "unbekannt"
     esac
-   echo -e "$WE\tDP50/60/100/200: $GE${ANZAHL_DP50} $WE| $GE${ANZAHL_DP60} $WE| $GE${ANZAHL_DP100} $WE| $GE${ANZAHL_DP200} $WE"
+   echo -e "$WE\tDP50/60/70/100/200: $GE${ANZAHL_DP50} $WE| $GE${ANZAHL_DP60} $WE| $GE${ANZAHL_DP70} $WE| $GE${ANZAHL_DP100} $WE| $GE${ANZAHL_DP200} $WE"
    echo -e "Script-Version: $GE$SH_VER$WE\tConfig-Version: $GE${CONF_V}$WE\tSub-Version: $GE${SUBVER}$WE"
 
    if [ ! -z "$KOMFEHLER" ]; then echo -e "\n${RE}Kommunikationsfehler!$WE\n"; fi
@@ -201,6 +204,8 @@ iob_send() {
          if [[ "${MESSWERTE[$i]}" =~ ^pm25_ch[1-4] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP200.${MESSWERTE[$i]:7:1}.PM25=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" =~ ^pm25_avg_24h_ch[1-4] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP200.${MESSWERTE[$i]:15:1}.PM25_24h=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" =~ ^pm25batt[1-4] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP200.${MESSWERTE[$i]:8:1}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^leak_ch[1-4] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP70.${MESSWERTE[$i]:7:1}.Status=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^leakbatt[1-4] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP70.${MESSWERTE[$i]:8:1}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
       fi
     done
     IOBOUT="${IOBOUT:1}"
@@ -266,10 +271,12 @@ convertLuftdruck() {
 }
 
 convertInchtoMM() {
-	MESSWERTE[$1]=`echo "scale=1;${MESSWERTE[$1]}*254/10" | bc -l`
-	#Regenstatus bestimmen (#11)
+     MESSWERTE[$1]=`echo "scale=1;${MESSWERTE[$1]}*254/10" | bc -l`
+      #Protokoll #9 liefert keine Regenrate(11); also alle Regenberechnungen überspringen
+      if [ "$WS_PROTOKOLL" -ne "9" ]; then
+
+        #Regenstatus bestimmen (#11)
 	if [ "$1" -eq "11" ]; then
-         #Protokoll #9 liefert keine Regenrate(11); also auf "0" setzen
          if [ "$WS_PROTOKOLL" -eq "9" ] && [ -z ${MESSWERTE[11]} ]; then MESSWERTE[11]=0; fi
 	 REGEN=$(round ${MESSWERTE[11]} 0)
 	 if [ "$REGEN" -ge "10" ]; then REGENSTATUS="Starkregen"; fi
@@ -278,6 +285,7 @@ convertInchtoMM() {
 	 if [ "$REGEN" -eq "1" ]; then REGENSTATUS="leichter Regen"; fi
 	 if [ "$REGEN" -eq "0" ]; then REGENSTATUS="kein Regen"; fi
 	fi
+
 	#letztes Regenereignis + letzte Regenmenge
 	if [ "$REGEN" -gt "0" ] && [ "$1" -eq "12" ]; then
 	 AKT_TIMESTAMP=`date +%s`
@@ -285,6 +293,7 @@ convertInchtoMM() {
 	 if [ $LAST_RAIN == "UNIX" ]; then LASTRAINMSG=${AKT_TIMESTAMP}; fi
 	 SAPI "Bulk" "setBulk" "${DP_LETZTER_REGEN}=${LASTRAINMSG}&${DP_LETZTE_REGENMENGE}=${MESSWERTE[12]}"
 	fi
+
 	if [ $LAST_RAIN == "DIFF" ]; then
            SAPI "Single" "get/${DP_REGENRATE}?prettyPrint"
            LC=$(echo ${retval} | jq -r '.lc')
@@ -306,6 +315,7 @@ convertInchtoMM() {
            SAPI "Bulk" "setBulk" "${DP_LETZTER_REGEN}=${LASTRAINMSG}"
 	fi
 
+      fi
 }
 
 convertTime() {
@@ -343,10 +353,22 @@ winddir() {
    WINDRICHTUNG=${WINDDIRS[$(round ${MESSWERTE[$1]}/22.5 0)]}
 }
 
+
 ### Batteriestatus als Text
 batterie() {
    if [[ "MESSWERTE[$1]" -eq 0 ]]; then
       MESSWERTE[$1]="OK";
+   else
+      MESSWERTE[$1]="Alarm";
+   fi
+}
+
+
+
+### Wasserleckalarm als Text
+leakalarm() {
+   if [[ "MESSWERTE[$1]" -eq 0 ]]; then
+      MESSWERTE[$1]="normal";
    else
       MESSWERTE[$1]="Alarm";
    fi
@@ -606,7 +628,7 @@ setup() {
  #Anzahl der DP Berechnen
   case $WS_PROTOKOLL in
    1) MAXDEVICES=22;;
-   *) MAXDEVICES=$(( 31 + $ANZAHL_DP50 * 6 + $ANZAHL_DP100 * 4 + $ANZAHL_DP60 * 8 + $ANZAHL_DP200 * 6))
+   *) MAXDEVICES=$(( 31 + $ANZAHL_DP50 * 6 + $ANZAHL_DP100 * 4 + $ANZAHL_DP60 * 8 + $ANZAHL_DP200 * 6 + $ANZAHL_DP70 * 4))
   esac
 
  #falls reboot warten bis der ioB wieder läuft...
@@ -673,7 +695,7 @@ usage() {
 }
 
 version() {
-	echo -e "\n$BL ${SH_VER} - (c) 2019-2021 SBorg"
+	echo -e "\n$BL ${SH_VER} - (c)2019-2021 by SBorg"
 	echo -e " Config-Version: ${CONF_V}"
 	echo -e " Sub-Version   : ${SUBVER}\n"
 
@@ -707,7 +729,7 @@ opensensemap() {
         if [[ "$OSEM_TRANSMIT" == "\"Measurements saved in box\"" ]]; then
           SAPI "Single" "set/${DP_OSEM_TRANSMIT}?value=true"
         else
-          curl "http://${IPP}/set/${DP_OSEM_TRANSMIT}?value=false&ack=true" >/dev/null 2>&1
+          SAPI "Single" "set/${DP_OSEM_TRANSMIT}?value=false"
         fi
 }
 
@@ -911,5 +933,164 @@ hitzeindex() {
 END_BC
 }
 
+
+minmax24h() {
+        MIN_TEMP_24H=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
+        --data-urlencode "u=${INFLUX_USER}" --data-urlencode "p=${INFLUX_PASSWORD}" \
+        --data-urlencode "q=SELECT min(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time >= now() - 1d" |\
+        jq -r '.results | .[].series | .[].values[] | .[1]')
+        MAX_TEMP_24H=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
+        --data-urlencode "u=${INFLUX_USER}" --data-urlencode "p=${INFLUX_PASSWORD}" \
+        --data-urlencode "q=SELECT max(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time >= now() - 1d" |\
+        jq -r '.results | .[].series | .[].values[] | .[1]')
+
+        SAPI "Single" "set/${DP_MIN_TEMP_24H}?value=${MIN_TEMP_24H}&ack=true"
+        SAPI "Single" "set/${DP_MAX_TEMP_24H}?value=${MAX_TEMP_24H}&ack=true"
+}
+
+
+minmaxavg365d() {
+     if [ ! -z ${INFLUX_DB} ]; then
+        MIN_TEMP_365D=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
+        --data-urlencode "u=${INFLUX_USER}" --data-urlencode "p=${INFLUX_PASSWORD}" \
+        --data-urlencode "q=SELECT min(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time >= now() - 366d AND time <= now() - 365d" |\
+        jq -r '.results | .[].series | .[].values[] | .[1]' 2> /dev/null)
+        if [ -z "${MIN_TEMP_365D}" ]; then
+          SAPI "Single" "set/${DP_MIN_TEMP_365D}?value=-99.99&ack=true"
+         else
+          SAPI "Single" "set/${DP_MIN_TEMP_365D}?value=${MIN_TEMP_365D}&ack=true"
+        fi
+
+        MAX_TEMP_365D=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
+        --data-urlencode "u=${INFLUX_USER}" --data-urlencode "p=${INFLUX_PASSWORD}" \
+        --data-urlencode "q=SELECT max(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time >= now() - 366d AND time <= now() - 365d" |\
+        jq -r '.results | .[].series | .[].values[] | .[1]' 2> /dev/null)
+        if [ -z "${MAX_TEMP_365D}" ]; then
+          SAPI "Single" "set/${DP_MAX_TEMP_365D}?value=99.99&ack=true"
+         else
+          SAPI "Single" "set/${DP_MAX_TEMP_365D}?value=${MAX_TEMP_365D}&ack=true"
+        fi
+
+        AVG_TEMP_365D=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
+        --data-urlencode "u=${INFLUX_USER}" --data-urlencode "p=${INFLUX_PASSWORD}" \
+        --data-urlencode "q=SELECT avg(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time >= now() - 366d AND time <= now() - 365d" |\
+        jq -r '.results | .[].series | .[].values[] | .[1]' 2> /dev/null)
+        if [ -z "${AVG_TEMP_365D}" ]; then
+          SAPI "Single" "set/${DP_AVG_TEMP_365D}?value=99.99&ack=true"
+         else
+          SAPI "Single" "set/${DP_AVG_TEMP_365D}?value=${AVG_TEMP_365D}&ack=true"
+        fi
+
+     fi
+}
+
+
+DP50_100() {
+      #DP50/100-Sensoren
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^temp[1-8]f= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+         convertFtoC $j
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^humidity[1-8]= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^batt[1-8]= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+         batterie $j
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^soilbatt[1-8]= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^soilmoisture[1-8]= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+}
+
+
+DP60() {
+      #DP60-Sensor
+      if [[ ${MESSWERTERAWIN[$i]} == lightning=* ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} == lightning_num=* ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} == lightning_time=* ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+         #um Nanosekunden erweitern
+         MESSWERTE[$j]=$(echo ${MESSWERTE[$j]}000)
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} == wh57batt=* ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+}
+
+
+DP70() {
+      #DP70-Sensoren
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^leak_ch[1-4]= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+         leakalarm $j
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^leakbatt[1-4]= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+}
+
+
+DP200() {
+      #DP200-Sensoren
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^pm25_ch[1-4]= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^pm25_avg_24h_ch[1-4]= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^pm25batt[1-4]= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+}
 
 ###EoF

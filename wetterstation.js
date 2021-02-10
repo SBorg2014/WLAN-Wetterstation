@@ -1,7 +1,8 @@
-//Wetterstation Datenpunkte anlegen V2.4.0
+//Wetterstation Datenpunkte anlegen V2.5.0
  let DP="javascript.0.Wetterstation.";
  let DP50  = 0;  // Anzahl der DP50 Sensoren  (max. 8 Stück)
  let DP60  = 0;  // Anzahl der DP60 Sensoren  (max. 1 Stück)
+ let DP70  = 0;  // Anzahl der DP70 Sensoren  (max. 4 Stück)
  let DP100 = 0;  // Anzahl der DP100 Sensoren (max. 8 Stück)
  let DP200 = 0;  // Anzahl der DP200 Sensoren (max. 4 Stück)
  //Ende der User-Einstellungen -------------------
@@ -63,6 +64,9 @@
   createState(DP+"Info.Wetterstation_Gateway"  , 0,   {name: "Gateway Informationen",             type: "string", role: "state" });
   createState(DP+"Info.Temp_Aussen_24h_max"    , 0,   {name: "höchste Aussentemperatur der letzten 24 Stunden",type: "number", role: "state", unit: "°C" });
   createState(DP+"Info.Temp_Aussen_24h_min"    , 0,   {name: "tiefste Aussentemperatur der letzten 24 Stunden",type: "number", role: "state", unit: "°C" });
+  createState(DP+"Info.Temp_Aussen_365t_min"   , 0,   {name: "tiefste Aussentemperatur vor einem Jahr",type: "number", role: "state", unit: "°C" });
+  createState(DP+"Info.Temp_Aussen_365t_max"   , 0,   {name: "höchste Aussentemperatur vor einem Jahr",type: "number", role: "state", unit: "°C" });
+  createState(DP+"Info.Temp_Aussen_365t_avg"   , 0,   {name: "durchschnittliche Aussentemperatur vor einem Jahr",type: "number", role: "state", unit: "°C" });
   createState(DP+"Windboeen_max"               ,"",   {name: "Windböengeschwindigkeit maximal",   type: "number", role: "state", unit: "km/h" });
   createState(DP+"Regen_Event"                 ,"",   {name: "Regenmenge Event",                  type: "number", role: "state", unit: "mm" });
   createState(DP+"Regen_Stunde"                ,"",   {name: "Regenmenge Stunde",                 type: "number", role: "state", unit: "mm" });
@@ -71,6 +75,7 @@
 
 
 if (DP50>0 && DP50<=8)  {
+  if (!existsState(DP + "DP50")) {createState(DP + "DP50", '', { name: "Mehrkanal Thermo-Hygrometersensoren" });}
   for(var i=1; i<=DP50; i++) {
     if (!existsState(DP + "DP50." + i + ".Temperatur")) {
         createState(DP + "DP50." + i + ".Temperatur", "", {
@@ -99,6 +104,7 @@ if (DP50>0 && DP50<=8)  {
 }
 
 if (DP60>0 && DP60<=1)  {
+  if (!existsState(DP + "DP60")) {createState(DP + "DP60", '', { name: "Blitzdetektor" });}
   for(let i=1; i<=DP60; i++) {
     if (!existsState(DP + "DP60." + i + ".Entfernung")) {
         createState(DP + "DP60." + i + ".Entfernung", "", {
@@ -132,7 +138,28 @@ if (DP60>0 && DP60<=1)  {
   }
 }
 
+if (DP70>0 && DP70<=4) {
+  if (!existsState(DP + "DP70")) {createState(DP + "DP70", '', { name: "Mehrkanal-Wasserlecksensoren" });}
+  for(var i=1; i<=DP70; i++) {
+    if (!existsState(DP + "DP70." + i + ".Status")) {
+        createState(DP + "DP70." + i + ".Status", "", {
+            "name": "DP70 Kanal " + i + " Status (normal/Alarm)",
+            "type": "string",
+            "role": "state"
+        });
+    }
+    if (!existsState(DP + "DP70." + i + ".Batterie")) {
+        createState(DP + "DP70." + i + ".Batterie", "", {
+            "name": "DP70 Kanal " + i + " Batterie",
+            "type": "number",
+            "role": "state",
+        });
+    }
+  }
+}
+
 if (DP100>0 && DP100<=8) {
+  if (!existsState(DP + "DP100")) {createState(DP + "DP100", '', { name: "Mehrkanal Bodenfeuchtesensoren" });}
   for(var i=1; i<=DP100; i++) {
     if (!existsState(DP + "DP100." + i + ".Bodenfeuchtigkeit")) {
         createState(DP + "DP100." + i + ".Bodenfeuchtigkeit", "", {
@@ -153,13 +180,14 @@ if (DP100>0 && DP100<=8) {
 }
 
 if (DP200>0 && DP200<=4) {
+  if (!existsState(DP + "DP200")) {createState(DP + "DP200", '', { name: "Feinstaub Emissionssensoren" });}
   for(var i=1; i<=DP200; i++) {
     if (!existsState(DP + "DP200." + i + ".PM25")) {
         createState(DP + "DP200." + i + ".PM25", "", {
             "name": "DP200 Kanal " + i + " 2.5µm Partikel",
             "type": "number",
             "role": "state",
-            "unit": "Anzahl"
+            "unit": "µg/m³"
         });
     }
     if (!existsState(DP + "DP200." + i + ".PM25_24h")) {
@@ -167,7 +195,7 @@ if (DP200>0 && DP200<=4) {
             "name": "DP200 Kanal " + i + " Durchschnitt per 24h",
             "type": "number",
             "role": "state",
-            "unit": "Anzahl"
+            "unit": "µg/m³"
         });
     }
     if (!existsState(DP + "DP200." + i + ".Batterie")) {

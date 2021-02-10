@@ -1,12 +1,16 @@
 #!/bin/bash
 
-# V2.4.0 - 03.02.2021 (c) 2019-2021 SBorg
+# V2.5.0 - 08.02.2021 (c) 2019-2021 SBorg
 #
 # wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
 # die Daten an den ioBroker
 #
 # benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq' und 'bc' unter Linux
 #
+# V2.5.0 / 08.02.2021 - ~ Fix für Protokoll #9 wg. fehlender Regenrate
+#                       + Min/Max/Avg Aussentemperatur vor einem Jahr
+#                       + Unterstützung von max. 4 DP70 Sensoren
+#                       ~ Codeoptimierungen
 # V2.4.0 / 03.02.2021 - + Hitzeindex (>20°C)
 #                       + Unterstützung von max. 4 DP200 Sensoren
 # V2.3.0 / 26.01.2021 - ~ Fix Rundungsfehler Windchill/Taupunkt
@@ -57,9 +61,9 @@
 # V0.1.0 / 29.12.2019 - erstes Release
 
 
- SH_VER="V2.4.0"
- CONF_V="V2.4.0"
- SUBVER="V2.4.0"
+ SH_VER="V2.5.0"
+ CONF_V="V2.5.0"
+ SUBVER="V2.5.0"
 
 
  #Installationsverzeichnis feststellen
@@ -185,87 +189,15 @@ while true
         then MESSWERTE[24]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); convertInchtoMM 24; fi
      if [[ ${MESSWERTERAWIN[$i]} == model=* ]]
         then MESSWERTE[25]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); fi
-     #DP60
-     if [[ ${MESSWERTERAWIN[$i]} == lightning=* ]]
-        then let "j++"
-        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
-        let "j++"
-        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
-     fi
-     if [[ ${MESSWERTERAWIN[$i]} == lightning_num=* ]]
-        then let "j++"
-        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
-        let "j++"
-        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
-     fi
-     if [[ ${MESSWERTERAWIN[$i]} == lightning_time=* ]]
-        then let "j++"
-        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
-        let "j++"
-        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
-        #um Nanosekunden erweitern
-        MESSWERTE[$j]=$(echo ${MESSWERTE[$j]}000)
-     fi
-     if [[ ${MESSWERTERAWIN[$i]} == wh57batt=* ]]
-        then let "j++"
-        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
-        let "j++"
-        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
-     fi
-     #
-     #DP50/100
-     if [[ ${MESSWERTERAWIN[$i]} =~ ^temp[1-8]f= ]]
-        then let "j++"
-        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
-        let "j++"
-        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
-        convertFtoC $j
-     fi
-     if [[ ${MESSWERTERAWIN[$i]} =~ ^humidity[1-8]= ]]
-        then let "j++"
-        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
-        let "j++"
-        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
-     fi
-     if [[ ${MESSWERTERAWIN[$i]} =~ ^batt[1-8]= ]]
-        then let "j++"
-        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
-        let "j++"
-        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
-        batterie $j
-     fi
-     if [[ ${MESSWERTERAWIN[$i]} =~ ^soilbatt[1-8]= ]]
-        then let "j++"
-        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
-        let "j++"
-        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
-     fi
-     if [[ ${MESSWERTERAWIN[$i]} =~ ^soilmoisture[1-8]= ]]
-        then let "j++"
-        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
-        let "j++"
-        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
-     fi
-     #
-     #DP200
-     if [[ ${MESSWERTERAWIN[$i]} =~ ^pm25_ch[1-4]= ]]
-        then let "j++"
-        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
-        let "j++"
-        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
-     fi
-     if [[ ${MESSWERTERAWIN[$i]} =~ ^pm25_avg_24h_ch[1-4]= ]]
-        then let "j++"
-        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
-        let "j++"
-        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
-     fi
-     if [[ ${MESSWERTERAWIN[$i]} =~ ^pm25batt[1-4]= ]]
-        then let "j++"
-        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
-        let "j++"
-        MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
-     fi
+
+
+     ### zusätzliche DPxxx-Sensoren ############################################################
+      if [ "${ANZAHL_DP50}" -gt "0" ] || [ "${ANZAHL_DP100}" -gt "0" ]; then DP50_100; fi
+      if [ "${ANZAHL_DP60}" -gt "0" ]; then DP60; fi
+      if [ "${ANZAHL_DP70}" -gt "0" ]; then DP70; fi
+      if [ "${ANZAHL_DP200}" -gt "0" ]; then DP200; fi
+     ### zusätzliche DPxxx-Sensoren ################################################### ENDE ###
+
    done
 
 
@@ -283,7 +215,7 @@ while true
      TAUPUNKT=$(echo "scale=4;(e(l(${MESSWERTE[5]}/100)*(1/8.02)) * (109.8 + ${MESSWERTE[1]}) - 109.8)/1" | bc -l)
      MESSWERTE[2]=$(round $TAUPUNKT 2)
    fi
-
+   ##################################
 
 
    #Daten an ioB schicken
@@ -307,9 +239,9 @@ while true
   #Mitternachtjobs
    if [ `date +%H` -ge "23" ] && [ `date +%M` -ge "58" ] && [ -z $MIDNIGHTRUN ]; then
 	rain               #Jahresregenmenge
-	                   #neue Firmware
-        if [ $WS_PROTOKOLL = 1 ]; then firmware_check; fi
+        firmware_check     #neue Firmware
 	reset_zaehler      #Sonnenscheindauer, Solarenergie zurücksetzen (enthällt auch Speicherung Werte VorJahr)
+        minmaxavg365d      #Min-/Max-/Avg-Aussentemperatur vor einem Jahr
    fi
    if [ `date +%H` -eq "0" ] && [ `date +%M` -le "3" ]; then unset MIDNIGHTRUN; fi
 
@@ -319,19 +251,7 @@ while true
    DO_IT=${DO_IT#0}
    if [ $(( $DO_IT % 15 )) -eq "0" ]; then
      if [ `date +%s` -ge "$TIMER_SET" ]; then wetterprognose
-      if [ ! -z ${INFLUX_DB} ]; then
-        MIN_TEMP_24H=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
-        --data-urlencode "u=${INFLUX_USER}" --data-urlencode "p=${INFLUX_PASSWORD}" \
-        --data-urlencode "q=SELECT min(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time >= now() - 1d" |\
-        jq -r '.results | .[].series | .[].values[] | .[1]')
-        MAX_TEMP_24H=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
-        --data-urlencode "u=${INFLUX_USER}" --data-urlencode "p=${INFLUX_PASSWORD}" \
-        --data-urlencode "q=SELECT max(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time >= now() - 1d" |\
-        jq -r '.results | .[].series | .[].values[] | .[1]')
-
-        SAPI "Single" "set/${DP_MIN_TEMP_24H}?value=${MIN_TEMP_24H}&ack=true"
-        SAPI "Single" "set/${DP_MAX_TEMP_24H}?value=${MAX_TEMP_24H}&ack=true"
-      fi
+      if [ ! -z ${INFLUX_DB} ]; then minmax24h; fi
      fi
    fi
   #5-Minutenjobs: Hitzeindex
@@ -343,9 +263,10 @@ while true
      fi
    fi
 
+
   #openSenseMap
    if [ ${openSenseMap} == "true" ]; then opensensemap; fi
- done
 
+ done
 ###EoF
 

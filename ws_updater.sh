@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V2.4.0
+UPDATE_VER=V2.5.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -108,6 +108,17 @@ PATCH240() {
 }
 
 
+#Patch Version V2.4.0 auf V2.5.0
+PATCH250() {
+ backup
+ echo -e "\n Patche wetterstation.conf auf V2.5.0 ..."
+ sed -i '/^.*ANZAHL_DP100=.*/i \  ANZAHL_DP70=0' ./wetterstation.conf
+ sed -i 's/### Settings V2.4.0/### Settings V2.5.0/' ./wetterstation.conf
+ echo -e " Fertig...\n"
+ echo -e " ${GE}Eventuelle Zusatzsensoren DP70 müssen eingetragen werden!\n"
+}
+
+
 
  VERSION=$(cat ./wetterstation.conf|grep "### Settings V"|cut -d" " -f3)
 
@@ -120,6 +131,7 @@ PATCH240() {
            V2.1.0) PATCH220 ;;
            V2.2.0) PATCH230 ;;
            V2.3.0) PATCH240 ;;
+           V2.4.0) PATCH250 ;;
            *)      FEHLER
  esac
  exit 0

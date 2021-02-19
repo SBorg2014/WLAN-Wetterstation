@@ -70,6 +70,15 @@ Wer möchte kann mir gerne einen Kaffee ausgeben und mich bei den Projekten unte
 ## Versionen ##
 
 
+**V2.5.0 - 08.02.2021**
+```
+     ~ Fix für Protokoll #9 wg. fehlender Regenrate
+     + Min/Max/Avg Aussentemperatur vor einem Jahr
+     + Unterstützung von max. 4 DP70 Sensoren
+     ~ Codeoptimierungen
+```
+
+
 **V2.4.0 - 03.02.2021**
 ```
     + Hitzeindex (>20°C)

@@ -973,11 +973,12 @@ minmaxavg365d() {
 
         AVG_TEMP_365D=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
         --data-urlencode "u=${INFLUX_USER}" --data-urlencode "p=${INFLUX_PASSWORD}" \
-        --data-urlencode "q=SELECT avg(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time >= now() - 366d AND time <= now() - 365d" |\
+        --data-urlencode "q=SELECT mean(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time >= now() - 366d AND time <= now() - 365d" |\
         jq -r '.results | .[].series | .[].values[] | .[1]' 2> /dev/null)
         if [ -z "${AVG_TEMP_365D}" ]; then
-          SAPI "Single" "set/${DP_AVG_TEMP_365D}?value=99.99&ack=true"
+          SAPI "Single" "set/${DP_AVG_TEMP_365D}?value=-99.99&ack=true"
          else
+          AVG_TEMP_365D=$(round ${AVG_TEMP_365D} 2)
           SAPI "Single" "set/${DP_AVG_TEMP_365D}?value=${AVG_TEMP_365D}&ack=true"
         fi
 

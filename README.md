@@ -19,6 +19,7 @@
   * HP1000SE Pro
   * WH3000 SE
   * WH4000 SE
+- Renkforce WH2600
 - Sainlogic 7in1 WiFi WS3500
 - Ventus W830
 <br><br>

@@ -203,7 +203,7 @@ while true
 
    #Taupunkt und Windchill berechnen
    if [ -z ${MESSWERTE[3]} ] && [ ! -z ${MESSWERTE[1]} ] && [ ! -z ${MESSWERTE[6]} ]; then
-     if (( $(bc -l <<< "${MESSWERTE[6]} > 0") )); then
+     if (( $(bc -l <<< "${MESSWERTE[6]} > 5") )); then
         WINDCHILL=$(echo "scale=4;(13.12 + 0.6215 * ${MESSWERTE[1]} - 11.37 * e(l(${MESSWERTE[6]})*0.16) + 0.3965 * ${MESSWERTE[1]} * e(l(${MESSWERTE[6]})*0.16))/1" | bc -l)
         MESSWERTE[3]=$(round $WINDCHILL 2)
       else

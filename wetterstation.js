@@ -60,7 +60,7 @@
   createState(DP+"Info.Solarenergie_VorJahr"   , 0,   {name: "Solarenergie letztes Jahr",         type: "number", role: "state", unit: "kWh/m²" });
   createState(DP+"Info.Letzter_Regen"          ,"",   {name: "letztes Regenereignis",             type: "string", role: "state" });
   createState(DP+"Info.Letzte_Regenmenge"      , 0,   {name: "letzte Regenmenge",                 type: "number", role: "state", unit: "mm" });
-  createState(DP+"Info.Station_Batteriestatus" , 0,   {name: "Batteriestatus [0=OK, 1=Alarm]",    type: "string", role: "state" });
+  createState(DP+"Info.Station_Batteriestatus" , 0,   {name: "Batteriestatus [0=OK, 1=Alarm]",    type: "number", role: "state" });
   createState(DP+"Info.Wetterstation_Gateway"  , 0,   {name: "Gateway Informationen",             type: "string", role: "state" });
   createState(DP+"Info.Temp_Aussen_24h_max"    , 0,   {name: "höchste Aussentemperatur der letzten 24 Stunden",type: "number", role: "state", unit: "°C" });
   createState(DP+"Info.Temp_Aussen_24h_min"    , 0,   {name: "tiefste Aussentemperatur der letzten 24 Stunden",type: "number", role: "state", unit: "°C" });

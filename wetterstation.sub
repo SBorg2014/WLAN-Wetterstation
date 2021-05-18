@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V2.5.0 --------------------------------------------------------
+### Subroutinen V2.6.0 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -36,6 +36,7 @@
   DP_FW_UPGRADE=${PRE_DP}.Info.FW_Upgrade
   DP_FW_VERSION=${PRE_DP}.Info.FW_Version
   DP_OSEM_TRANSMIT=${PRE_DP}.Info.openSenseMap
+  DP_WINDY_TRANSMIT=${PRE_DP}.Info.Windy
   DP_SONNENSCHEIN_VORTAG=${PRE_DP}.Info.Sonnenschein_VorTag
   DP_SONNENSCHEIN_TAG=${PRE_DP}.Info.Sonnenschein_Tag
   DP_SONNENSCHEIN_WOCHE=${PRE_DP}.Info.Sonnenschein_Woche
@@ -685,31 +686,62 @@ setup() {
 
 ###Befehlszeilenparameter
 usage() {
-	echo -e "\nusage: wetterstation [[--debug] | [-s|--show] | [-d|--data] | [--osem_reg] | [-v|--version] | [-h|--help]]\n"
+	echo -e "\nusage: wetterstation [[--debug] | [-s|--show] | [-d|--data] | [--osem_reg] | [--windy_reg] | [-v|--version] | [-h|--help]]\n"
 	echo -e " --debug\teinmaliger Testdurchlauf mit Ausgabe"
 	echo -e " --osem_reg\tführt Registrierung bei openSenseMap durch"
+        echo -e " --windy_reg\tführt Registrierung bei Windy durch"
 	echo -e " -s | --show\tzeigt bei der Debug-Ausgabe Passwort und Station-ID im Klartext an"
 	echo -e " -d | --data\tzeigt nur das gesendete Datenpaket der Wetterstation an"
-	echo -e " -v | --version\tAusgabe der Versionsnummer"
+	echo -e " -v | --version\tAusgabe der Versionsnummer und Prüfung der Abhängigkeiten"
 	echo -e " -h | --help\tdieses Hilfemenue\n"
 }
 
 version() {
-	echo -e "\n$BL ${SH_VER} - (c)2019-2021 by SBorg"
+        clear
+	echo -e "\n$BL WLAN-Wetterstation ${SH_VER} - (c)2019-2021 by SBorg"
 	echo -e " Config-Version: ${CONF_V}"
 	echo -e " Sub-Version   : ${SUBVER}\n"
 
-        #Test ob bc und jq installiert sind
+        #Test ob bc,jq und netcat installiert sind
          if [ $(which bc) ]; then
            echo -e " $GR'bc'$WE installiert: $GR\u2713"
           else
            echo -e " $GR'bc'$WE installiert: $RE\u2717"
          fi
          if [ $(which jq) ]; then
-           echo -e " $GR'jq'$WE installiert: $GR\u2713\n"
+           echo -e " $GR'jq'$WE installiert: $GR\u2713"
           else
-           echo -e " $GR'jq'$WE installiert: $RE\u2717\n"
+           echo -e " $GR'jq'$WE installiert: $RE\u2717"
          fi
+         if [[ $(ls -al /etc/alternatives/nc|grep openbsd) ]]; then
+           echo -e " $GR'nc'$WE in der Openbsd-Variante installiert: $GR\u2713"
+           echo -e "\n${WE}  Prüfe ob auch die Openbsd-Variante aktiviert ist..."
+           if [[ $(sudo update-alternatives --config nc|grep "Nichts zu konfigurieren.") ]]; then
+              echo -e "  \"netcat\" in Openbsd-Variante aktiv, alles korrekt $GR\u2713"
+            else
+              echo -e "  \"netcat\" durch Eingabe der entsprechenden Zahl aktivieren."
+              echo -e "  \"/bin/nc.openbsd ... manual.mode\""
+              sudo update-alternatives --config nc
+           fi
+          else
+           echo -e " $GR'nc'$WE in der Openbsd-Variante installiert: $RE\u2717\n"
+           echo -e " ┌────────────────────────────────────────────────────────────┐"
+           echo -e " │                                                            │"
+           echo -e " │  ${WE}\"netcat\" ist nicht in der benötigten Version installiert!${RE} │"
+           echo -e " │                                                            │"
+           echo -e " │    ${WE}Soll er nun installiert werden? [${GR}J/N${WE}]\033[s                  ${RE} │"
+           echo -e " │                                                            │"
+           echo -e " └────────────────────────────────────────────────────────────┘"
+           echo -en "\033[u"
+           read -n 1 -p ": " JN
+           if [ "$JN" = "J" ] || [ "$JN" = "j" ]; then
+             echo -e "\n\n\n"
+             sudo apt-get install netcat-openbsd
+            else
+             echo -e " $RE Abbruch... ${WE}\n\n\n"; exit; fi
+           fi
+         echo -e "\n"
+
 }
 
 
@@ -922,11 +954,11 @@ hitzeindex() {
             number += 1.61139411 * temp
             number += 2.338549 * feuchte
             number -= 0.14611605 * temp * feuchte
-            number -= 0.012308094 * (temp ^ 2)
-            number -= 0.016424828 * (feuchte ^ 2)
+            number -= 0.012308094 * (temp ^2)
+            number -= 0.016424828 * (feuchte ^2)
             number += 0.002211732 * (temp ^2) * feuchte
-            number += 0.00072546 * temp * (feuchte ^ 2)
-            number -= 0.000003582 * (temp ^ 2) * (feuchte ^ 2)
+            number += 0.00072546 * temp * (feuchte ^2)
+            number -= 0.000003582 * (temp ^2) * (feuchte ^2)
             return number
         }
         hitzeindex ($1,$2)
@@ -966,18 +998,19 @@ minmaxavg365d() {
         --data-urlencode "q=SELECT max(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time >= now() - 366d AND time <= now() - 365d" |\
         jq -r '.results | .[].series | .[].values[] | .[1]' 2> /dev/null)
         if [ -z "${MAX_TEMP_365D}" ]; then
-          SAPI "Single" "set/${DP_MAX_TEMP_365D}?value=99.99&ack=true"
+          SAPI "Single" "set/${DP_MAX_TEMP_365D}?value=-99.99&ack=true"
          else
           SAPI "Single" "set/${DP_MAX_TEMP_365D}?value=${MAX_TEMP_365D}&ack=true"
         fi
 
         AVG_TEMP_365D=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
         --data-urlencode "u=${INFLUX_USER}" --data-urlencode "p=${INFLUX_PASSWORD}" \
-        --data-urlencode "q=SELECT avg(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time >= now() - 366d AND time <= now() - 365d" |\
+        --data-urlencode "q=SELECT mean(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time >= now() - 366d AND time <= now() - 365d" |\
         jq -r '.results | .[].series | .[].values[] | .[1]' 2> /dev/null)
         if [ -z "${AVG_TEMP_365D}" ]; then
-          SAPI "Single" "set/${DP_AVG_TEMP_365D}?value=99.99&ack=true"
+          SAPI "Single" "set/${DP_AVG_TEMP_365D}?value=-99.99&ack=true"
          else
+          AVG_TEMP_365D=$(round ${AVG_TEMP_365D} 2)
           SAPI "Single" "set/${DP_AVG_TEMP_365D}?value=${AVG_TEMP_365D}&ack=true"
         fi
 
@@ -1093,4 +1126,148 @@ DP200() {
       fi
 }
 
+
+
+windy_register(){
+      #Registrierung einer Station bei Windy
+      clear
+           echo -e " $GE┌────────────────────────────────────────────────────────────┐"
+           echo -e " │                                                            │"
+           echo -e " │  ${WE}Zur Registrierung einer Station ist vorher ein            ${GE}│"
+           echo -e " │  ${WE}Account bei Windy nötig!                                  ${GE}│"
+           echo -e " │  ${WE}([ENTER] übernimmt immer den Default-Wert)                ${GE}│"
+           echo -e " │                                                            │"
+           echo -e " │  ${WE}Soll nun eine Station registriert werden? [${GR}J/N${WE}]\033[s           ${GE}│"
+           echo -e " │                                                            │"
+           echo -e " └────────────────────────────────────────────────────────────┘"
+           echo -en "\033[u${GR}"
+           read -n 1 -p ": " JN
+           if [ "$JN" = "J" ] || [ "$JN" = "j" ]; then
+             echo -e "\n\n\n"
+            else
+             echo -e "\n\n\n"
+             echo -e " $RE Abbruch... ${WE}\n\n\n"; exit;
+           fi
+
+   #Station anlegen
+           #API-Key
+            echo -en "$WE API-Key von Windy (https://stations.windy.com/stations): $GR\033[s"
+            read windy_apikey
+            if [ ! $windy_apikey ]; then echo -e "\033[u $RE Abbruch..."; echo -e "\n Ohne API-Key kann keine Station angelegt werden!\n\n"; exit 1; fi
+           #Station
+            echo -en "$WE Nummer der Station [${GR}0 - 2147483647${WE}] / default: 0 (für die erste Station): $GR\033[s"
+            read windy_station
+            if [ ! $windy_station ]; then windy_station=0; echo -e "\033[u$windy_station"; fi
+           #shareOption
+            echo -e "\n$WE Daten-Cloud [${GR}1-3${WE}] / default: 1 (Open):"
+            echo -e "   ${GR}1${WE} - Open (Daten für alle zugänglich)"
+            echo -e "   ${GR}2${WE} - Only Windy (Daten nur für Windy zugänglich)"
+            echo -e "   ${GR}3${WE} - Private (Daten nur für einen selbst zugänglich)"
+            echo -en "\n   Auswahl: $GR\033[s"
+            read windy_shareOption
+            case $windy_shareOption in
+             1) windy_shareOption="Open";;
+             2) windy_shareOption="Only Windy";;
+             3) windy_shareOption="Private";;
+             *) windy_shareOption="Open"
+            esac
+            echo -e "\033[u${windy_shareOption}"
+           #Name
+            echo -en "\n$WE Name der Station [${GR}Text${WE}]: $GR"
+            read windy_name
+            echo -e "\n ${GE}Die folgenden Angaben sind nötig, ansonsten kann die Station nicht registriert werden!"
+           #Latitude (Nord-Süd)
+            echo -en "\n$WE Latitude/Breitengrad der Station [${GR}Nummer${WE}] °: $GR\033[s"
+            read windy_lat
+            if [ ! $windy_lat ]; then echo -e "\033[uEingabe notwendig! $RE Abbruch..."; exit 1; fi
+           #Longitude (Ost-West)
+            echo -en "\n$WE Longitude/Längengrad der Station [${GR}Nummer${WE}] °: $GR\033[s"
+            read windy_long
+            if [ ! $windy_long ]; then echo -e "\033[uEingabe notwendig! $RE Abbruch..."; exit 1; fi
+           #Elevation
+            echo -en "\n$WE Höhe der Station über Meereshöhe [${GR}Nummer${WE}] m: $GR\033[s"
+            read windy_elev
+            if [ ! $windy_elev ]; then echo -e "\033[uEingabe notwendig! $RE Abbruch..."; exit 1; fi
+           #Tempheight
+            echo -en "\n$WE Montagehöhe des Temperatursensors über dem Boden [${GR}Nummer${WE}] m: $GR\033[s"
+            read windy_tempheight
+            if [ ! $windy_tempheight ]; then echo -e "\033[uEingabe notwendig! $RE Abbruch..."; exit 1; fi
+           #Windheight
+            echo -en "\n$WE Montagehöhe des Windsensors über dem Boden [${GR}Nummer${WE}] m: $GR\033[s"
+            read windy_windheight
+            if [ ! $windy_windheight ]; then echo -e "\033[uEingabe notwendig! $RE Abbruch..."; exit 1; fi
+
+
+         echo -e "\n\n\n ${WE}Ihre Angaben:\n"
+         echo -e "${BL}  Nummer der Station\t\t: ${GR}$windy_station"
+         echo -e "${BL}  Daten-Cloud\t\t\t: ${GR}$windy_shareOption"
+         echo -e "${BL}  Name der Station\t\t: ${GR}$windy_name"
+         echo -e "${BL}  Latitude der Station\t\t: ${GR}${windy_lat}°"
+         echo -e "${BL}  Longitude der Station\t\t: ${GR}${windy_long}°"
+         echo -e "${BL}  Höhe der Station ÜNN\t\t: ${GR}${windy_elev}m"
+         echo -e "${BL}  Montagehöhe Temperatursensor\t: ${GR}${windy_tempheight}m"
+         echo -e "${BL}  Montagehöhe Windsensor\t: ${GR}${windy_windheight}m"
+         echo -en "\n${WE} Alles richtig und Station nun anlegen? [${GR}J/N${WE}]"
+           read -n 1 -p ": " JN
+           if [ "$JN" = "J" ] || [ "$JN" = "j" ]; then
+             echo -e "\n\n\n"
+            else
+             echo -e "\n\n\n"
+             echo -e " $RE Abbruch... ${WE}\n\n\n"; exit 1;
+           fi
+
+        #Station anlegen
+         windy_data="{\"stations\":[{\"station\":${windy_station}, \"name\":\"${windy_name}\", \"shareOption\":\"${windy_shareOption}\", \"lat\":${windy_lat}, \"lon\":${windy_long}, "
+         windy_data+="\"elevation\":${windy_elev}, \"tempheight\":${windy_tempheight}, \"windheight\":${windy_windheight}}]}"
+         echo ${windy_data}>windy_tmp
+         curl -X POST -H "Content-Type: application/json" https://stations.windy.com/pws/update/${windy_apikey} -d @windy_tmp
+         rm windy_tmp
+
+        #Daten in die Konfiguration übernehmen
+         echo -e "\n$WE ... bearbeite \"wetterstation.conf\"\n"
+         sed -i "s/windy_APIKey=/windy_APIKey=${windy_apikey}/" ./wetterstation.conf
+         sed -i "s/windy_Station=/windy_Station=${windy_station}/" ./wetterstation.conf
+         sed -i "s/windy_Name=/windy_Name=${windy_name}/" ./wetterstation.conf
+         sed -i "s/windy_Latitude=/windy_Latitude=${windy_lat}/" ./wetterstation.conf
+         sed -i "s/windy_Longitude=/windy_Longitude=${windy_long}/" ./wetterstation.conf
+         sed -i "s/windy_Elevation=/windy_Elevation=${windy_elev}/" ./wetterstation.conf
+         sed -i "s/windy_Tempheight=/windy_Tempheight=${windy_tempheight}/" ./wetterstation.conf
+         sed -i "s/windy_Windheight=/windy_Windheight=${windy_windheight}/" ./wetterstation.conf
+
+        #Windy aktivieren
+		echo -en "\n$WE Windy nun aktivieren und den Wetterstation.service neu starten [${GR}Ja/Nein${WE}]? $GE"
+		read JN
+		if [ ! $JN ]; then JN="Nein"; fi
+		if [ $JN == "Ja" ]; then
+		 sed -i "s/use_windy=false/use_windy=true/" ./wetterstation.conf
+		 if [ -f /etc/systemd/system/wetterstation.service ]; then
+			sudo systemctl restart wetterstation
+		  else
+			echo -e "\n$RE Wetterstation läuft nicht als Service. Bitte von Hand neu starten...$WE"
+		 fi
+		 echo -e "\n$GR Done...$WE"
+		fi
+
+}
+
+
+
+windy_update(){
+        #Daten an die Windy-Cloud senden
+         windy_mph=$(echo "scale=2;(${MESSWERTE[6]}*10/36)" | bc -l)
+         windy_boe_mph=$(echo "scale=2;(${MESSWERTE[7]}*10/36)" | bc -l)
+         windy_DATA="station=${windy_Station}&ts=$(date +%s)&temp=${MESSWERTE[1]}&wind=${windy_mph}&mbar=${MESSWERTE[9]}&winddir=${MESSWERTE[8]}"
+         windy_DATA+="&gust=${windy_boe_mph}&rh=${MESSWERTE[5]}&dewpoint=${MESSWERTE[2]}&precip=${MESSWERTE[23]}&uv=${MESSWERTE[17]}"
+         local retval=$(curl -s https://stations.windy.com/pws/update/${windy_APIKey}?${windy_DATA})
+         if echo $retval|grep 'SUCCESS'; then
+             SAPI "Single" "set/${DP_WINDY_TRANSMIT}?value=true&ack=true"
+           else
+             SAPI "Single" "set/${DP_WINDY_TRANSMIT}?value=false&ack=true"
+         fi
+}
+
+
+
 ###EoF
+
+

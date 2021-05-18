@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V2.5.0
+UPDATE_VER=V2.6.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -8,6 +8,8 @@ UPDATE_VER=V2.5.0
       WE='\e[1;37m'
       BL='\e[1;36m'
       RE='\e[1;31m'
+
+echo -e "\n\n\n$BL WS-Updater ${UPDATE_VER}"
 
  #Test ob bc und jq installiert sind
          if [ $(which bc) ]; then
@@ -32,6 +34,34 @@ FEHLER() {
  echo -e "\n  Updater ist ${RE}nur\e[0m für Versionen ab V1.4.0 !\n"
  exit 1
 }
+
+main() {
+
+         echo -en "\n${WE} Soll die ${RE}wetterstation.conf ${WE}nun auf eine neue Version gepatcht werden? [${GR}J/N${WE}]"
+           read -n 1 -p ": " JN
+           if [ "$JN" = "J" ] || [ "$JN" = "j" ]; then
+             echo -e "\n\n\n"
+            else
+             echo -e "\n\n\n"
+             echo -e " $RE Abbruch... ${WE}\n\n\n"; exit 1;
+           fi
+
+ VERSION=$(cat ./wetterstation.conf|grep "### Settings V"|cut -d" " -f3)
+ case ${VERSION} in
+           V1.4.0) PATCH140 ;;
+           V1.5.0) PATCH150 ;;
+           V1.6.0) PATCH160 ;;
+           V2.0.0) PATCH210 ;;
+           V2.1.0) PATCH220 ;;
+           V2.2.0) PATCH230 ;;
+           V2.3.0) PATCH240 ;;
+           V2.4.0) PATCH250 ;;
+           V2.5.0) PATCH260 ;;
+           *)      FEHLER
+ esac
+ exit 0
+}
+
 
 
 ########################################################################################
@@ -119,19 +149,72 @@ PATCH250() {
 }
 
 
+#Patch Version V2.5.0 auf V2.6.0
+PATCH260() {
+ backup
+ echo -e "\n Patche wetterstation.conf auf V2.6.0 ..."
+ patch_260 && patch ./wetterstation.conf < patch
+ rm patch
+ echo -e " ${GE}Windy kann nun mittels \033[30m\033[47m./wetterstation.sh --windy_reg\033[0m ${GE}eingerichtet werden !\n"
+}
 
- VERSION=$(cat ./wetterstation.conf|grep "### Settings V"|cut -d" " -f3)
+
+patch_260() {
+cat <<EoD >patch
+--- wetterstation.conf_250	2021-05-13 13:45:06.297750501 +0200
++++ wetterstation.conf	2021-05-12 18:39:24.358821394 +0200
+@@ -1,4 +1,4 @@
+-### Settings V2.5.0 -----------------------------------------------------------
++### Settings V2.6.0 -----------------------------------------------------------
+  #Debuging einschalten [true/false] / default: false / Ausgabe der Messwerte
+   debug=false
+ 
+@@ -112,5 +112,42 @@
+  #############################################################################################
+ 
+ 
++
++ #############################################################################################
++ ###    Windy - Einstellungen (nur nötig falls Windy benutzt werden soll)                  ###
++ #############################################################################################
++
++  #Windy aktivieren [true/false] / default: false
++   use_windy=false
++
++  #Windy API-Key
++   windy_APIKey=
++
++  #Station [number: 0 - 2147483647] / default: 0
++   windy_Station=
++
++  #Name der Station [Text]
++   windy_Name=
++
++  #Latitude/Breitengrad der Station
++   windy_Latitude=
++
++  #Longitude/Längengrad der Station
++   windy_Longitude=
++
++  #Elevation/Höhe ÜNN
++   windy_Elevation=
++
++  #Montagehöhe Temperatursensor über Boden
++   windy_Tempheight=
++
++  #Montagehöhe Windsensor über Boden
++   windy_Windheight=
++
++ #############################################################################################
++ ###    Windy - Ende der Einstellungen    ####################################################
++ #############################################################################################
++
++
+ ###  Ende Usereinstellungen  
+ ###EoF
+EoD
+}
 
 
- case ${VERSION} in
-           V1.4.0) PATCH140 ;;
-           V1.5.0) PATCH150 ;;
-           V1.6.0) PATCH160 ;;
-           V2.0.0) PATCH210 ;;
-           V2.1.0) PATCH220 ;;
-           V2.2.0) PATCH230 ;;
-           V2.3.0) PATCH240 ;;
-           V2.4.0) PATCH250 ;;
-           *)      FEHLER
- esac
- exit 0
+ main
+

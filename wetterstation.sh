@@ -1,12 +1,16 @@
 #!/bin/bash
 
-# V2.5.0 - 08.02.2021 (c) 2019-2021 SBorg
+# V2.6.0 - 04.05.2021 (c) 2019-2021 SBorg
 #
 # wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
-# die Daten an den ioBroker
+# die Daten an den ioBroker (alternativ auch an OpenSenseMap und/oder Windy)
 #
 # benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq' und 'bc' unter Linux
 #
+# V2.6.0 / 04.05.2021 - ~ Fix Avg Aussentemperatur vor einem Jahr
+#                       ~ Windchill erst ab 5km/h Windgeschwindigkeit
+#                       + Prüfung bei Option "v" ob die netcat-Version korrekt ist
+#                       + Support für Windy
 # V2.5.0 / 08.02.2021 - ~ Fix für Protokoll #9 wg. fehlender Regenrate
 #                       + Min/Max/Avg Aussentemperatur vor einem Jahr
 #                       + Unterstützung von max. 4 DP70 Sensoren
@@ -61,9 +65,9 @@
 # V0.1.0 / 29.12.2019 - erstes Release
 
 
- SH_VER="V2.5.0"
- CONF_V="V2.5.0"
- SUBVER="V2.5.0"
+ SH_VER="V2.6.0"
+ CONF_V="V2.6.0"
+ SUBVER="V2.6.0"
 
 
  #Installationsverzeichnis feststellen
@@ -99,6 +103,9 @@
         --osem_reg )            osem_register
                                 exit
                                 ;;
+        --windy_reg )           windy_register
+                                exit
+                                ;;
         -s | --show )           show_pwid=true
                                 ;;
         -d | --data )           setup
@@ -120,7 +127,6 @@
 
  #Setup ausführen
   setup
-
 
 #Endlosschleife
 while true
@@ -203,7 +209,7 @@ while true
 
    #Taupunkt und Windchill berechnen
    if [ -z ${MESSWERTE[3]} ] && [ ! -z ${MESSWERTE[1]} ] && [ ! -z ${MESSWERTE[6]} ]; then
-     if (( $(bc -l <<< "${MESSWERTE[6]} > 0") )); then
+     if (( $(bc -l <<< "${MESSWERTE[6]} > 5") )); then
         WINDCHILL=$(echo "scale=4;(13.12 + 0.6215 * ${MESSWERTE[1]} - 11.37 * e(l(${MESSWERTE[6]})*0.16) + 0.3965 * ${MESSWERTE[1]} * e(l(${MESSWERTE[6]})*0.16))/1" | bc -l)
         MESSWERTE[3]=$(round $WINDCHILL 2)
       else
@@ -254,13 +260,23 @@ while true
       if [ ! -z ${INFLUX_DB} ]; then minmax24h; fi
      fi
    fi
-  #5-Minutenjobs: Hitzeindex
+
+  #5-Minutenjobs: Hitzeindex, Windy
    if [ $(( $DO_IT % 5 )) -eq "0" ]; then
-     if (( $(bc -l <<< "${MESSWERTE[1]} > 20") )); then
+
+     #Hitzeindex
+     if (( $(bc -l <<< "${MESSWERTE[1]} > 20") )) && [[ -z ${block_Hitzeindex} ]]; then
        HITZEINDEX=$(round $(hitzeindex ${MESSWERTE[1]} ${MESSWERTE[5]}) 2)
+       block_Hitzeindex="true"
       else
-       HITZEINDEX=0
+       HITZEINDEX=0; block_Hitzeindex="true"
      fi
+
+     #Windy
+     if [ ${use_windy} == "true" ] && [[ -z ${block_Windy} ]]; then windy_update; block_Windy="true"; fi
+
+    else
+     unset block_Hitzeindex; unset block_Windy
    fi
 
 

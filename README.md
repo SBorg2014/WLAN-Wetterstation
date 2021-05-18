@@ -19,6 +19,7 @@
   * HP1000SE Pro
   * WH3000 SE
   * WH4000 SE
+- Renkforce WH2600
 - Sainlogic 7in1 WiFi WS3500
 - Ventus W830
 <br><br>
@@ -68,6 +69,15 @@ Wer möchte kann mir gerne einen Kaffee ausgeben und mich bei den Projekten unte
 <br><br>
 
 ## Versionen ##
+
+
+**V2.5.0 - 08.02.2021**
+```
+     ~ Fix für Protokoll #9 wg. fehlender Regenrate
+     + Min/Max/Avg Aussentemperatur vor einem Jahr
+     + Unterstützung von max. 4 DP70 Sensoren
+     ~ Codeoptimierungen
+```
 
 
 **V2.4.0 - 03.02.2021**

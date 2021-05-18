@@ -3,6 +3,7 @@
    holt die Messdaten aus einer InfluxDB und erstellt eine Monats-, Vorjahresmonat- und
    Rekordwerte-Statistik
    Wichtig: funktioniert nur mit der Default-Datenstruktur des WLAN-Wetterstation-Skriptes!
+            Auch keine Alias-ID unter Influx nutzen!
 
    (c)2020-2021 by SBorg
    V0.2.2 - 01.02.2021  ~Bugfixing Regenmenge Jahr + Monat

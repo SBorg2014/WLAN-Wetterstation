@@ -72,7 +72,7 @@
   createState(DP+"Regen_Event"                 ,"",   {name: "Regenmenge Event",                   type: "number", role: "state", unit: "mm" });
   createState(DP+"Regen_Stunde"                ,"",   {name: "Regenmenge Stunde",                  type: "number", role: "state", unit: "mm" });
   createState(DP+"Regen_Total"                 ,"",   {name: "Regenmenge Insgesammt",              type: "number", role: "state", unit: "mm" });
-
+ 
 
 
 if (DP50>0 && DP50<=8)  {

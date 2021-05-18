@@ -8,7 +8,7 @@
 [![Commits since last release](https://img.shields.io/github/commits-since/SBorg2014/WLAN-Wetterstation/latest.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/releases/latest)
 [![License](https://img.shields.io/github/license/SBorg2014/WLAN-Wetterstation.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/LICENSE)
 
- schafft eine Verbindung von einer WLAN-Wetterstation zum ioBroker und kann optional die Wetterdaten in [openSenseMap](https://opensensemap.org) zur Verfügung stellen (__Projekt läuft nur unter Linux__)<br>
+ schafft eine Verbindung von einer WLAN-Wetterstation zum ioBroker und kann optional die Wetterdaten in [openSenseMap](https://opensensemap.org) und [Windy](https://www.windy.com) zur Verfügung stellen (__Projekt läuft nur unter Linux__)<br>
  
  Die Wetterstation muss dazu in der Lage sein ihre Daten im "Wunderground/Ecowitt"-Format zu senden.<br><br>
  Bisher getestete Stationen:
@@ -48,6 +48,9 @@ Datenpunkte im ioBroker:<br>
 Daten in openSenseMap:<br>
 ![Bild openSenseMap](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/Bilder/OSEM_Messwerte.png)
 <br><br>
+Daten in Windy:<br>
+![Bild Windy](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/Bilder/Windy.png)
+<br><br>
 
 ## Weiterführende Informationen ##
 ***[Thread im ioBroker-Forum](https://forum.iobroker.net/topic/28384/linux-shell-skript-wlan-wetterstation)***
@@ -69,6 +72,15 @@ Wer möchte kann mir gerne einen Kaffee ausgeben und mich bei den Projekten unte
 <br><br>
 
 ## Versionen ##
+
+
+**V2.6.0 - 04.05.2021**
+```
+     ~ Fix Avg Aussentemperatur vor einem Jahr
+     ~ Windchill erst ab 5km/h Windgeschwindigkeit
+     + Prüfung bei Option "v" ob die netcat-Version korrekt ist
+     + Support für Windy
+```
 
 
 **V2.5.0 - 08.02.2021**

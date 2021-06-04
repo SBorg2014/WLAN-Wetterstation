@@ -80,6 +80,7 @@ Wer möchte kann mir gerne einen Kaffee ausgeben und mich bei den Projekten unte
      ~ Windchill erst ab 5km/h Windgeschwindigkeit
      + Prüfung bei Option "v" ob die netcat-Version korrekt ist
      + Support für Windy
+     ~ Hitzeindex
 ```
 
 

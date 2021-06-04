@@ -98,7 +98,8 @@
  #gibt es Parameter?
   while [ "$1" != "" ]; do
     case $1 in
-        --debug )               debug=true   #override
+        --debug )               version
+                                debug=true   #override
                                 ;;
         --osem_reg )            osem_register
                                 exit
@@ -244,9 +245,9 @@ while true
 
   #Mitternachtjobs
    if [ `date +%H` -ge "23" ] && [ `date +%M` -ge "58" ] && [ -z $MIDNIGHTRUN ]; then
-	rain               #Jahresregenmenge
+        rain               #Jahresregenmenge
         firmware_check     #neue Firmware
-	reset_zaehler      #Sonnenscheindauer, Solarenergie zurücksetzen (enthällt auch Speicherung Werte VorJahr)
+        reset_zaehler      #Sonnenscheindauer, Solarenergie zurücksetzen (enthällt auch Speicherung Werte VorJahr)
         minmaxavg365d      #Min-/Max-/Avg-Aussentemperatur vor einem Jahr
    fi
    if [ `date +%H` -eq "0" ] && [ `date +%M` -le "3" ]; then unset MIDNIGHTRUN; fi
@@ -261,23 +262,27 @@ while true
      fi
    fi
 
-  #5-Minutenjobs: Hitzeindex, Windy
-   if [ $(( $DO_IT % 5 )) -eq "0" ]; then
-
-     #Hitzeindex
-     if (( $(bc -l <<< "${MESSWERTE[1]} > 20") )) && [[ -z ${block_Hitzeindex} ]]; then
-       HITZEINDEX=$(round $(hitzeindex ${MESSWERTE[1]} ${MESSWERTE[5]}) 2)
-       block_Hitzeindex="true"
-      else
-       HITZEINDEX=0; block_Hitzeindex="true"
-     fi
+  #5-Minutenjobs: Windy
+   if [ $(( $DO_IT % 5 )) -eq "0" ] && [ -z ${run_5minjobs_onlyonce} ]; then
 
      #Windy
-     if [ ${use_windy} == "true" ] && [[ -z ${block_Windy} ]]; then windy_update; block_Windy="true"; fi
+     if [ ${use_windy} == "true" ]; then windy_update; fi
+
+     #run only once
+     run_5minjobs_onlyonce=true
 
     else
-     unset block_Hitzeindex; unset block_Windy
+     unset run_5minjobs_onlyonce
    fi
+
+
+
+   #Hitzeindex
+     if (( $(bc -l <<< "${MESSWERTE[1]} > 20") )); then
+       HITZEINDEX=$(round $(hitzeindex ${MESSWERTE[1]} ${MESSWERTE[5]}) 2)
+      else
+       HITZEINDEX=
+     fi
 
 
   #openSenseMap

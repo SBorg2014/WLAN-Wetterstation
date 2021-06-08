@@ -11,6 +11,7 @@
 #                       ~ Windchill erst ab 5km/h Windgeschwindigkeit
 #                       + Prüfung bei Option "v" ob die netcat-Version korrekt ist
 #                       + Support für Windy
+#                       ~ Hitzeindex
 # V2.5.0 / 08.02.2021 - ~ Fix für Protokoll #9 wg. fehlender Regenrate
 #                       + Min/Max/Avg Aussentemperatur vor einem Jahr
 #                       + Unterstützung von max. 4 DP70 Sensoren

@@ -1257,7 +1257,7 @@ windy_update(){
          windy_mph=$(echo "scale=2;(${MESSWERTE[6]}*10/36)" | bc -l)
          windy_boe_mph=$(echo "scale=2;(${MESSWERTE[7]}*10/36)" | bc -l)
          windy_DATA="station=${windy_Station}&ts=$(date +%s)&temp=${MESSWERTE[1]}&wind=${windy_mph}&mbar=${MESSWERTE[9]}&winddir=${MESSWERTE[8]}"
-         windy_DATA+="&gust=${windy_boe_mph}&rh=${MESSWERTE[5]}&dewpoint=${MESSWERTE[2]}&precip=${MESSWERTE[23]}&uv=${MESSWERTE[17]}"
+         windy_DATA+="&gust=${windy_boe_mph}&humidity=${MESSWERTE[5]}&dewpoint=${MESSWERTE[2]}&precip=${MESSWERTE[23]}&uv=${MESSWERTE[17]}"
          local retval=$(curl -s https://stations.windy.com/pws/update/${windy_APIKey}?${windy_DATA})
          if echo $retval|grep 'SUCCESS'; then
              SAPI "Single" "set/${DP_WINDY_TRANSMIT}?value=true&ack=true"

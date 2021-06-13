@@ -1,4 +1,4 @@
-Ersteller: crunchip@forum.iobroker.net
+Ersteller: crunchip@forum.iobroker.net  
 Modifikationen: sborg@forum.iobroker.net
 
 Das Grafana-Dashboard als JSON-Export.   
@@ -9,9 +9,9 @@ Benötigt :
  * WindRose Plugin
  * Blendstat Panel (by farski) Plugin
  * Table Plugin
-<br>
-<br>
-Vor dem Import in der Datei __DBname__ durch den eigenen Influx-Datenbanknamen ersetzen (40 Treffer[V2.0 45 Treffer]), sonst gibt das
+  
+  
+Vor dem Import in der Datei ***\_\_DBname\_\_*** durch den eigenen Influx-Datenbanknamen ersetzen (40 Treffer bzw. bei V2.0 dann 45 Treffer), sonst gibt das
 später eine Klickorgie 😉
 
 Für die Wetter- und Regenvorhersage werden weitere Datenpunkte aus den Adaptern "Das Wetter" und "Weatherunderground" 
@@ -24,10 +24,10 @@ Mit freundlicher Genehmigung zur Veröffentlichung von crunchip@forum.iobroker.n
 <br>
 <br> 
 <br>
-Creator: crunchip@forum.iobroker.net
+Creator: crunchip@forum.iobroker.net   
 Modifications: sborg@forum.iobroker.net
  
-The Grafana dashboard as a JSON export.
+The Grafana dashboard as a JSON export.  
 V2.0 is adapted for Grafana V8.x and contains numerous fixes for the individual panels.
 
 Requires:
@@ -36,9 +36,9 @@ Requires:
   * Blendstat Panel (by farski) Plugin
   * Table Plugin
 
-Before importing, replace __DBname__ in the file with your own Influx database name (40 hits[V2.0 45 hits]), otherwise you get 
+Before importing, replace ***\_\_DBname\_\_*** in the file with your own Influx database name (40 hits or 45 hits with V2.0), otherwise you get 
 later a click orgy 😉
-
+  
 For the weather and rain forecast, further data points from the adapters "Das Wetter" and "Weatherunderground"
 needed.
 

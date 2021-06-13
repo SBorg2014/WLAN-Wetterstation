@@ -13,7 +13,7 @@
       }
     ]
   },
-  "description": "Anzeige der Daten",
+  "description": "Anzeige der Wetterdaten",
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,

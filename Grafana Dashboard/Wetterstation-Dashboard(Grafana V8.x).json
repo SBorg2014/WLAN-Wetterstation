@@ -259,7 +259,7 @@
       "pluginVersion": "8.0.1",
       "postfix": "",
       "postfixFontSize": "50%",
-      "prefix": "Vorhersage f�r Morgen: ",
+      "prefix": "Vorhersage für Morgen: ",
       "prefixFontSize": "50%",
       "rangeMaps": [
         {
@@ -417,7 +417,7 @@
       "thresholds": "15,28",
       "timeFrom": null,
       "timeShift": null,
-      "title": "gef�hlte Temperatur",
+      "title": "gefühlte Temperatur",
       "transparent": true,
       "type": "farski-blendstat-panel",
       "valueFontSize": "80%",
@@ -537,7 +537,7 @@
       "thresholds": "15,28",
       "timeFrom": null,
       "timeShift": null,
-      "title": "Au�entemperatur",
+      "title": "Außentemperatur",
       "transparent": true,
       "type": "farski-blendstat-panel",
       "valueFontSize": "80%",
@@ -659,7 +659,7 @@
       "thresholds": "35,75",
       "timeFrom": null,
       "timeShift": null,
-      "title": "Au�enfeuchte",
+      "title": "Außenfeuchte",
       "transparent": true,
       "type": "farski-blendstat-panel",
       "valueFontSize": "80%",
@@ -856,7 +856,7 @@
       "pluginVersion": "8.0.1",
       "targets": [
         {
-          "alias": "?? Gestern",
+          "alias": "☂️ Gestern",
           "groupBy": [
             {
               "params": [
@@ -893,7 +893,7 @@
           "tags": []
         },
         {
-          "alias": "?? Heute",
+          "alias": "☂️ Heute",
           "groupBy": [
             {
               "params": [
@@ -930,7 +930,7 @@
           "tags": []
         },
         {
-          "alias": "?? aktuelle Woche",
+          "alias": "☂️ aktuelle Woche",
           "groupBy": [
             {
               "params": [
@@ -967,7 +967,7 @@
           "tags": []
         },
         {
-          "alias": "?? aktueller Monat",
+          "alias": "☂️ aktueller Monat",
           "groupBy": [
             {
               "params": [
@@ -1004,7 +1004,7 @@
           "tags": []
         },
         {
-          "alias": "?? aktuelles Jahr",
+          "alias": "☂️ aktuelles Jahr",
           "groupBy": [
             {
               "params": [
@@ -1041,7 +1041,7 @@
           "tags": []
         },
         {
-          "alias": "?? Vorjahr",
+          "alias": "☂️ Vorjahr",
           "groupBy": [
             {
               "params": [
@@ -1142,7 +1142,7 @@
       "nullPointMode": "connected",
       "nullText": null,
       "pluginVersion": "8.0.1",
-      "postfix": "h/m�",
+      "postfix": "h/m²",
       "postfixFontSize": "70%",
       "prefix": "",
       "prefixFontSize": "50%",
@@ -1259,7 +1259,7 @@
       "nullPointMode": "connected",
       "nullText": null,
       "pluginVersion": "8.0.1",
-      "postfix": "h/m�",
+      "postfix": "h/m²",
       "postfixFontSize": "70%",
       "prefix": "",
       "prefixFontSize": "50%",
@@ -1381,7 +1381,7 @@
       "nullPointMode": "connected",
       "nullText": null,
       "pluginVersion": "8.0.1",
-      "postfix": "h/m�",
+      "postfix": "h/m²",
       "postfixFontSize": "70%",
       "prefix": "",
       "prefixFontSize": "50%",
@@ -1497,7 +1497,7 @@
       "nullPointMode": "connected",
       "nullText": null,
       "pluginVersion": "8.0.1",
-      "postfix": "h/m�",
+      "postfix": "h/m²",
       "postfixFontSize": "70%",
       "prefix": "",
       "prefixFontSize": "50%",
@@ -1613,7 +1613,7 @@
       "nullPointMode": "connected",
       "nullText": null,
       "pluginVersion": "8.0.1",
-      "postfix": "h/m�",
+      "postfix": "h/m²",
       "postfixFontSize": "70%",
       "prefix": "",
       "prefixFontSize": "50%",
@@ -4001,7 +4001,7 @@
       "pluginVersion": "8.0.1",
       "targets": [
         {
-          "alias": "?? Gestern",
+          "alias": "☀️ Gestern",
           "groupBy": [
             {
               "params": [
@@ -4038,7 +4038,7 @@
           "tags": []
         },
         {
-          "alias": "?? Heute",
+          "alias": "☀️ Heute",
           "groupBy": [
             {
               "params": [
@@ -4075,7 +4075,7 @@
           "tags": []
         },
         {
-          "alias": "?? aktuelle Woche",
+          "alias": "☀️ aktuelle Woche",
           "groupBy": [
             {
               "params": [
@@ -4112,7 +4112,7 @@
           "tags": []
         },
         {
-          "alias": "?? aktueller Monat",
+          "alias": "☀️ aktueller Monat",
           "groupBy": [
             {
               "params": [
@@ -4149,7 +4149,7 @@
           "tags": []
         },
         {
-          "alias": "?? aktuelles Jahr",
+          "alias": "☀️ aktuelles Jahr",
           "groupBy": [
             {
               "params": [
@@ -4186,7 +4186,7 @@
           "tags": []
         },
         {
-          "alias": "?? Vorjahr",
+          "alias": "☀️ Vorjahr",
           "groupBy": [
             {
               "params": [
@@ -4413,15 +4413,15 @@
         },
         {
           "$$hashKey": "object:774",
-          "from": "-0.1",
+          "from": "-1",
           "text": "&#8665;",
-          "to": "-1"
+          "to": "-0.1"
         },
         {
           "$$hashKey": "object:776",
-          "from": "-1.1",
+          "from": "-9",
           "text": "&#8659;",
-          "to": "-9"
+          "to": "-1.1"
         }
       ],
       "sparkline": {
@@ -4742,7 +4742,7 @@
       "pluginVersion": "6.7.3",
       "postfix": "",
       "postfixFontSize": "30%",
-      "prefix": "N�chster Regen in:",
+      "prefix": "Nächster Regen in:",
       "prefixFontSize": "50%",
       "rangeMaps": [
         {
@@ -4985,7 +4985,7 @@
     {
       "aliasColors": {
         "Aussen": "dark-blue",
-        "Böen": "dark-purple",
+        "BÃ¶en": "dark-purple",
         "Innen": "super-light-blue",
         "Wind": "super-light-purple"
       },
@@ -5039,7 +5039,7 @@
         },
         {
           "$$hashKey": "object:1012",
-          "alias": "B�en",
+          "alias": "Böen",
           "yaxis": 2
         }
       ],
@@ -5085,7 +5085,7 @@
           "tags": []
         },
         {
-          "alias": "B�en",
+          "alias": "Böen",
           "groupBy": [
             {
               "params": [
@@ -5145,7 +5145,7 @@
         {
           "$$hashKey": "object:1033",
           "format": "velocitykmh",
-          "label": "B�en",
+          "label": "Böen",
           "logBase": 1,
           "max": null,
           "min": "0",
@@ -5219,7 +5219,7 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Energie pro m�"
+                "value": "Energie pro m²"
               },
               {
                 "id": "unit",
@@ -5250,7 +5250,7 @@
       "pluginVersion": "8.0.1",
       "targets": [
         {
-          "alias": "? Gestern",
+          "alias": "⚡ Gestern",
           "groupBy": [
             {
               "params": [
@@ -5293,7 +5293,7 @@
           "tags": []
         },
         {
-          "alias": "? Heute",
+          "alias": "⚡ Heute",
           "groupBy": [
             {
               "params": [
@@ -5336,7 +5336,7 @@
           "tags": []
         },
         {
-          "alias": "? aktuelle Woche",
+          "alias": "⚡ aktuelle Woche",
           "groupBy": [
             {
               "params": [
@@ -5373,7 +5373,7 @@
           "tags": []
         },
         {
-          "alias": "? aktueller Monat",
+          "alias": "⚡ aktueller Monat",
           "groupBy": [
             {
               "params": [
@@ -5410,7 +5410,7 @@
           "tags": []
         },
         {
-          "alias": "? aktuelles Jahr",
+          "alias": "⚡ aktuelles Jahr",
           "groupBy": [
             {
               "params": [
@@ -5447,7 +5447,7 @@
           "tags": []
         },
         {
-          "alias": "? Vorjahr",
+          "alias": "⚡ Vorjahr",
           "groupBy": [
             {
               "params": [
@@ -5923,7 +5923,7 @@
             }
           ],
           "hide": false,
-          "measurement": "javascript.0.Statistik.Temperatur.Au�en.Min_24h",
+          "measurement": "javascript.0.Statistik.Temperatur.Außen.Min_24h",
           "orderByTime": "ASC",
           "policy": "default",
           "refId": "A",
@@ -5960,7 +5960,7 @@
               "type": "fill"
             }
           ],
-          "measurement": "javascript.0.Statistik.Temperatur.Au�en.Max_24h",
+          "measurement": "javascript.0.Statistik.Temperatur.Außen.Max_24h",
           "orderByTime": "ASC",
           "policy": "default",
           "refId": "B",
@@ -6412,7 +6412,7 @@
       "pluginVersion": "8.0.1",
       "targets": [
         {
-          "alias": "Au�entemperatur",
+          "alias": "Außentemperatur",
           "groupBy": [
             {
               "params": [
@@ -6525,7 +6525,7 @@
           "tags": []
         },
         {
-          "alias": "Feuchte Au�en",
+          "alias": "Feuchte Außen",
           "groupBy": [
             {
               "params": [
@@ -6580,7 +6580,7 @@
           "measurement": "javascript.0.Wetterstation.Druck_relativ",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "SELECT mean(\"value\") AS \"�C\" FROM \"javascript.0.Wetterstation.Druck_relativ\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+          "query": "SELECT mean(\"value\") AS \"°C\" FROM \"javascript.0.Wetterstation.Druck_relativ\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
           "rawQuery": false,
           "refId": "E",
           "resultFormat": "time_series",
@@ -6858,5 +6858,5 @@
   "timezone": "",
   "title": "Wetterstation",
   "uid": "oNYohoEZk",
-  "version": 354
+  "version": 357
 }

@@ -9,8 +9,8 @@ Benötigt :
  * WindRose Plugin
  * Blendstat Panel (by farski) Plugin
  * Table Plugin
-
-
+<br>
+<br>
 Vor dem Import in der Datei __DBname__ durch den eigenen Influx-Datenbanknamen ersetzen (40 Treffer[V2.0 45 Treffer]), sonst gibt das
 später eine Klickorgie 😉
 
@@ -20,10 +20,10 @@ benötigt.
 KEIN Support zu Fragen bzgl. Influx, Grafana oder dem Import etc. des DashBoardes!
  
 Mit freundlicher Genehmigung zur Veröffentlichung von crunchip@forum.iobroker.net
-
-
- 
-
+<br>
+<br>
+<br> 
+<br>
 Creator: crunchip@forum.iobroker.net
 Modifications: sborg@forum.iobroker.net
  
@@ -44,5 +44,11 @@ needed.
 
 NO support for questions regarding Influx, Grafana or the import etc. of the DashBoard!
 
-Courtesy of crunchip@forum.iobroker.net for posting
+Courtesy of crunchip@forum.iobroker.net for posting   
+   
+   
+---   
  
+Bilder V2.0 / Pictures from V2.0:<br>
+![Pic1](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/Bilder/Grafana-Dashboard_V8.png)
+![Pic2](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/Bilder/Grafana-Dashboard_V8a.png)

@@ -1,0 +1,20 @@
+version: "3"
+services:
+    wetterstation:
+        network_mode: host
+        restart: always
+        image: ubuntu:xenial-20210611
+        container_name: wetterstation
+        hostname: wetterstation
+        volumes:
+        - ./wetterstation:/opt/wetterstation
+        ports:
+            - 1080:1080
+        command: >
+            /bin/bash -c 
+            "
+                apt-get update &&
+                apt-get install -y apt-transport-https ca-certificates gnupg netcat-openbsd bc jq nano sudo curl &&
+                cd /opt/wetterstation && chmod +x wetterstation.sh && /opt/wetterstation/wetterstation.sh
+            "
+

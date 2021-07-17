@@ -1,12 +1,14 @@
 #!/bin/bash
 
-# V2.6.0 - 04.05.2021 (c) 2019-2021 SBorg
+# V2.7.0 - 15.07.2021 (c) 2019-2021 SBorg
 #
 # wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
 # die Daten an den ioBroker (alternativ auch an OpenSenseMap und/oder Windy)
 #
 # benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq' und 'bc' unter Linux
 #
+# V2.7.0 / 15.08.2021 - + Bei bereits eingetragenem OSEM-User erfolgt Abbruch der OSEM-Registrierung
+#                       + Unterstützung für DP250/WH45 Sensor
 # V2.6.0 / 04.05.2021 - ~ Fix Avg Aussentemperatur vor einem Jahr
 #                       ~ Windchill erst ab 5km/h Windgeschwindigkeit
 #                       + Prüfung bei Option "v" ob die netcat-Version korrekt ist
@@ -66,9 +68,9 @@
 # V0.1.0 / 29.12.2019 - erstes Release
 
 
- SH_VER="V2.6.0"
- CONF_V="V2.6.0"
- SUBVER="V2.6.0"
+ SH_VER="V2.7.0"
+ CONF_V="V2.7.0"
+ SUBVER="V2.7.0"
 
 
  #Installationsverzeichnis feststellen
@@ -204,6 +206,7 @@ while true
       if [ "${ANZAHL_DP60}" -gt "0" ]; then DP60; fi
       if [ "${ANZAHL_DP70}" -gt "0" ]; then DP70; fi
       if [ "${ANZAHL_DP200}" -gt "0" ]; then DP200; fi
+      if [ "${ANZAHL_DP250}" -gt "0" ]; then DP250; fi
      ### zusätzliche DPxxx-Sensoren ################################################### ENDE ###
 
    done

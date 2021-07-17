@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V2.6.0 --------------------------------------------------------
+### Subroutinen V2.7.0 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -117,7 +117,7 @@ debuging() {
    echo -e "Regen Gesamt\t\t: $GR${MESSWERTE[24]}$WE mm"
    echo -e "Sonnenstrahlung\t\t: $GR${MESSWERTE[16]}$WE W/m²"
    echo -e "UV-Index\t\t: $GR${MESSWERTE[17]}$WE"
-   echo -e "Zeitstempel\t\t: $GR${MESSWERTE[18]}$WE"
+   echo -e "Zeitstempel\t\t: $GR${MESSWERTE[18]}$WE" | sed -e 's/%20/ /g'
    echo -e "Firmware\t\t: $GR${MESSWERTE[19]}$WE"
    echo -e "Batteriestand:\t\t: $GR${MESSWERTE[20]}$WE"
    echo -e "Gateway-Modell\t\t: $GR${MESSWERTE[25]}$WE"
@@ -151,7 +151,7 @@ debuging() {
      9) echo -en "Sainlogic Pro";;
      *) echo -en "unbekannt"
     esac
-   echo -e "$WE\tDP50/60/70/100/200: $GE${ANZAHL_DP50} $WE| $GE${ANZAHL_DP60} $WE| $GE${ANZAHL_DP70} $WE| $GE${ANZAHL_DP100} $WE| $GE${ANZAHL_DP200} $WE"
+   echo -e "$WE\tDP50/60/70/100/200/250: $GE${ANZAHL_DP50} $WE| $GE${ANZAHL_DP60} $WE| $GE${ANZAHL_DP70} $WE| $GE${ANZAHL_DP100} $WE| $GE${ANZAHL_DP200} $WE| $GE${ANZAHL_DP250} $WE"
    echo -e "Script-Version: $GE$SH_VER$WE\tConfig-Version: $GE${CONF_V}$WE\tSub-Version: $GE${SUBVER}$WE"
 
    if [ ! -z "$KOMFEHLER" ]; then echo -e "\n${RE}Kommunikationsfehler!$WE\n"; fi
@@ -207,6 +207,15 @@ iob_send() {
          if [[ "${MESSWERTE[$i]}" =~ ^pm25batt[1-4] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP200.${MESSWERTE[$i]:8:1}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" =~ ^leak_ch[1-4] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP70.${MESSWERTE[$i]:7:1}.Status=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" =~ ^leakbatt[1-4] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP70.${MESSWERTE[$i]:8:1}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^tf_co2 ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP250.1.Temperatur=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^humi_co2 ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP250.1.Luftfeuchtigkeit=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^pm25_co2 ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP250.1.PM25=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^pm25_24h_co2 ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP250.1.PM25_24h=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^pm10_co2 ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP250.1.PM10=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^pm10_24h_co2 ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP250.1.PM10_24h=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" = "co2" ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP250.1.CO2=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" = "co2_24h" ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP250.1.CO2_24h=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^co2_batt ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP250.1.Batterie=${MESSWERTE[$(($i+1))]}"; fi
       fi
     done
     IOBOUT="${IOBOUT:1}"
@@ -629,7 +638,7 @@ setup() {
  #Anzahl der DP Berechnen
   case $WS_PROTOKOLL in
    1) MAXDEVICES=22;;
-   *) MAXDEVICES=$(( 31 + $ANZAHL_DP50 * 6 + $ANZAHL_DP100 * 4 + $ANZAHL_DP60 * 8 + $ANZAHL_DP200 * 6 + $ANZAHL_DP70 * 4))
+   *) MAXDEVICES=$(( 31 + $ANZAHL_DP50 * 6 + $ANZAHL_DP100 * 4 + $ANZAHL_DP60 * 8 + $ANZAHL_DP200 * 6 + $ANZAHL_DP70 * 4 + $ANZAHL_DP250 * 18 ))
   esac
 
  #falls reboot warten bis der ioB wieder läuft...
@@ -776,6 +785,8 @@ osem_register() {
         if [ $JN != "J" ]; then echo -e " \n$RE Abbruch... ${WE}\n\n"; exit; fi
         sudo apt-get install jq
    fi
+  #bereits ein User angelegt
+   if $OSEM_USER; then echo -e "\n${RE} [FEHLER:]   ABBRUCH! Es ist bereits ein Username für OpenSenseMap in der Konfiguration gesetzt!\n"; exit 1; fi
 
   #Abfragen
    clear
@@ -1126,6 +1137,65 @@ DP200() {
       fi
 }
 
+
+DP250() {
+      #DP250/WH45-Sensor
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^tf_co2= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+         convertFtoC $j
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^humi_co2= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^pm25_co2= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^pm25_24h_co2= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^pm10_co2= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^pm10_24h_co2= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^co2= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^co2_24h= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^co2_batt= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+}
 
 
 windy_register(){

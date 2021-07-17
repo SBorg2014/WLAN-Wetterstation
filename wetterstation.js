@@ -1,10 +1,11 @@
-//Wetterstation Datenpunkte anlegen V2.6.0
+//Wetterstation Datenpunkte anlegen V2.7.0
  let DP="javascript.0.Wetterstation.";
  let DP50  = 0;  // Anzahl der DP50 Sensoren  (max. 8 Stück)
  let DP60  = 0;  // Anzahl der DP60 Sensoren  (max. 1 Stück)
  let DP70  = 0;  // Anzahl der DP70 Sensoren  (max. 4 Stück)
  let DP100 = 0;  // Anzahl der DP100 Sensoren (max. 8 Stück)
  let DP200 = 0;  // Anzahl der DP200 Sensoren (max. 4 Stück)
+ let DP250 = 0;  // Anzahl der DP250 Sensoren (max. 1 Stück)
  //Ende der User-Einstellungen -------------------
 
   createState(DP+"Innentemperatur"             ,"",   {name: "Temperatur im Haus",                 type: "number", role: "state", unit: "°C" });
@@ -19,7 +20,7 @@
   createState(DP+"Windrichtung_Text"           ,"",   {name: "Windrichtung als Text",              type: "string", role: "state" });
   createState(DP+"Druck_absolut"               ,"",   {name: "Luftdruck absolut",                  type: "number", role: "state", unit: "hPa" });
   createState(DP+"Druck_relativ"               ,"",   {name: "Luftdruck relativ",                  type: "number", role: "state", unit: "hPa" });
-  createState(DP+"Druck_Tendenz"               ,"",   {name: "Luftdrucktendenz",                   type: "number", role: "state" });
+  createState(DP+"Druck_Tendenz"               ,"",   {name: "Luftdrucktendenz",                   type: "mixed",  role: "state" });
   createState(DP+"Wetter_Trend"                ,"",   {name: "Wettertrend",                        type: "string", role: "state" });
   createState(DP+"Wetter_aktuell"              ,"",   {name: "aktuelles Wetter",                   type: "string", role: "state" });
   createState(DP+"Regenrate"                   ,"",   {name: "Regenrate",                          type: "number", role: "state", unit: "mm/h" });
@@ -39,7 +40,7 @@
   createState(DP+"tempData.Solarenergie"       ,"0",  {name: "temporäre Daten Tag, Woche, Monat, Jahr",type: "string",role: "state" });
   createState(DP+"Info.FW_Upgrade"             ,"",   {name: "neue Firmware für die Station",      type: "boolean",role: "state" });
   createState(DP+"Info.FW_Version"             ,"",   {name: "Firmwareversion der Station",        type: "string", role: "state" });
-  createState(DP+"Info.Hitzeindex"             , 0,   {name: "Hitzeindex (erst ab 20°C)",          type: "number", role: "state", unit: "°C" });
+  createState(DP+"Info.Hitzeindex"             , 0,   {name: "Hitzeindex (erst ab 20°C)",          type: "mixed", role: "state", unit: "°C" });
   createState(DP+"Info.openSenseMap"           ,"",   {name: "Datenübertragung openSenseMap erfolgreich",type: "boolean",role: "state" });
   createState(DP+"Info.Windy"                  ,"",   {name: "Datenübertragung Windy erfolgreich", type: "boolean",role: "state" });
   createState(DP+"Info.Sonnenschein_VorTag"    , 0,   {name: "Sonnenscheindauer Gestern",          type: "number", role: "state", unit: "Sek." });
@@ -61,7 +62,7 @@
   createState(DP+"Info.Solarenergie_VorJahr"   , 0,   {name: "Solarenergie letztes Jahr",          type: "number", role: "state", unit: "kWh/m²" });
   createState(DP+"Info.Letzter_Regen"          ,"",   {name: "letztes Regenereignis",              type: "string", role: "state" });
   createState(DP+"Info.Letzte_Regenmenge"      , 0,   {name: "letzte Regenmenge",                  type: "number", role: "state", unit: "mm" });
-  createState(DP+"Info.Station_Batteriestatus" , 0,   {name: "Batteriestatus [0=OK, 1=Alarm]",     type: "number", role: "state" });
+  createState(DP+"Info.Station_Batteriestatus" , 0,   {name: "Batteriestatus [0=OK, 1=Alarm]",     type: "string", role: "state" });
   createState(DP+"Info.Wetterstation_Gateway"  , 0,   {name: "Gateway Informationen",              type: "string", role: "state" });
   createState(DP+"Info.Temp_Aussen_24h_max"    , 0,   {name: "höchste Aussentemperatur der letzten 24 Stunden",type: "number", role: "state", unit: "°C" });
   createState(DP+"Info.Temp_Aussen_24h_min"    , 0,   {name: "tiefste Aussentemperatur der letzten 24 Stunden",type: "number", role: "state", unit: "°C" });
@@ -204,6 +205,83 @@ if (DP200>0 && DP200<=4) {
             "name": "DP200 Kanal " + i + " Batterie (5 = max)",
             "type": "number",
             "role": "state",
+        });
+    }
+  }
+}
+
+if (DP250>0 && DP250<=1)  {
+  if (!existsState(DP + "DP250")) {createState(DP + "DP250", '', { name: "5-In-1 CO2 / PM2.5 / PM10 / Temperatur / Luftfeuchte Innenraumsensor" });}
+  for(let i=1; i<=DP250; i++) {
+    if (!existsState(DP + "DP250." + i + ".Temperatur")) {
+        createState(DP + "DP250." + i + ".Temperatur", "", {
+            "name": "DP250 Kanal " + i + " Temperatur",
+            "type": "number",
+            "role": "value",
+            "unit": "°C"
+        });
+    }
+    if (!existsState(DP + "DP250." + i + ".Luftfeuchtigkeit")) {
+        createState(DP + "DP250." + i + ".Luftfeuchtigkeit", "", {
+            "name": "DP250 Kanal " + i + " Luftfeuchtigkeit",
+            "type": "number",
+            "role": "value",
+            "unit": "%"
+        });
+    }
+    if (!existsState(DP + "DP250." + i + ".PM25")) {
+        createState(DP + "DP250." + i + ".PM25", "", {
+            "name": "DP250 Kanal " + i + " 2.5µm Partikel",
+            "type": "number",
+            "role": "value",
+            "unit": "µg/m³"
+        });
+    }
+    if (!existsState(DP + "DP250." + i + ".PM25_24h")) {
+        createState(DP + "DP250." + i + ".PM25_24h", "", {
+            "name": "DP250 Kanal " + i + " Durchschnitt per 24h",
+            "type": "number",
+            "role": "state",
+            "unit": "µg/m³"
+        });
+    }
+    if (!existsState(DP + "DP250." + i + ".PM10")) {
+        createState(DP + "DP250." + i + ".PM10", "", {
+            "name": "DP250 Kanal " + i + " 10µm Partikel",
+            "type": "number",
+            "role": "value",
+            "unit": "µg/m³"
+        });
+    }
+    if (!existsState(DP + "DP250." + i + ".PM10_24h")) {
+        createState(DP + "DP250." + i + ".PM10_24h", "", {
+            "name": "DP250 Kanal " + i + " Durchschnitt per 24h",
+            "type": "number",
+            "role": "value",
+            "unit": "µg/m³"
+        });
+    }
+    if (!existsState(DP + "DP250." + i + ".CO2")) {
+        createState(DP + "DP250." + i + ".CO2", "", {
+            "name": "DP250 Kanal " + i + " CO2-Konzentration",
+            "type": "number",
+            "role": "value",
+            "unit": "ppm"
+        });
+    }
+    if (!existsState(DP + "DP250." + i + ".CO2_24h")) {
+        createState(DP + "DP250." + i + ".CO2_24h", "", {
+            "name": "DP250 Kanal " + i + " Durchschnitt per 24h",
+            "type": "number",
+            "role": "value",
+            "unit": "ppm"
+        });
+    }
+    if (!existsState(DP + "DP250." + i + ".Batterie")) {
+        createState(DP + "DP250." + i + ".Batterie", "", {
+            "name": "DP250 Kanal " + i + " Batterie (6 = max)",
+            "type": "number",
+            "role": "value",
         });
     }
   }

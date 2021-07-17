@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V2.6.0
+UPDATE_VER=V2.7.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -57,6 +57,7 @@ main() {
            V2.3.0) PATCH240 ;;
            V2.4.0) PATCH250 ;;
            V2.5.0) PATCH260 ;;
+           V2.6.0) PATCH270 ;;
            *)      FEHLER
  esac
  exit 0
@@ -156,6 +157,17 @@ PATCH260() {
  patch_260 && patch ./wetterstation.conf < patch
  rm patch
  echo -e " ${GE}Windy kann nun mittels \033[30m\033[47m./wetterstation.sh --windy_reg\033[0m ${GE}eingerichtet werden !\n"
+}
+
+
+#Patch Version V2.6.0 auf V2.7.0
+PATCH270() {
+ backup
+ echo -e "\n Patche wetterstation.conf auf V2.7.0 ..."
+ sed -i '/^.*ANZAHL_DP200=.*/a \  ANZAHL_DP250=0' ./wetterstation.conf
+ sed -i 's/### Settings V2.6.0/### Settings V2.7.0/' ./wetterstation.conf
+ echo -e " Fertig...\n"
+ echo -e " ${GE}Eventueller Zusatzsensor DP250/WH45 muss eingetragen werden!\n"
 }
 
 

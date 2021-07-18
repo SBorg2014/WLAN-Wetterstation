@@ -30,6 +30,7 @@ Zusatzsensoren (mittels Station oder Gateway DP1500/GW1000):
 - bis zu 4 Stück DP70/WH55 Wasserleckage-Sensoren
 - bis zu 8 Stück DP100/WH51 Bodenfeuchte-Sensoren
 - bis zu 4 Stück DP200/WH43 PM2.5 Feinstaub-Sensoren
+- ein DP250/WH45 5-In-1 CO2 / PM2.5 / PM10 / Temperatur / Luftfeuchte Innenraumsensor
 <br><br>
 
 

@@ -718,37 +718,38 @@ version() {
            echo -e " $GR'bc'$WE installiert: $RE\u2717"
          fi
          if [ $(which jq) ]; then
-           echo -e " $GR'jq'$WE installiert: $GR\u2713"
+           echo -e " $GR'jq'$WE installiert: $GR\u2713 \n"
           else
-           echo -e " $GR'jq'$WE installiert: $RE\u2717"
+           echo -e " $GR'jq'$WE installiert: $RE\u2717 \n"
          fi
-         if [[ $(ls -al /etc/alternatives/nc|grep openbsd) ]]; then
-           echo -e " $GR'nc'$WE in der Openbsd-Variante installiert: $GR\u2713"
-           echo -e "\n${WE}  Prüfe ob auch die Openbsd-Variante aktiviert ist..."
-           if [[ $(sudo update-alternatives --config nc|grep "Nichts zu konfigurieren.") ]]; then
-              echo -e "  \"netcat\" in Openbsd-Variante aktiv, alles korrekt $GR\u2713"
-            else
-              echo -e "  \"netcat\" durch Eingabe der entsprechenden Zahl aktivieren."
-              echo -e "  \"/bin/nc.openbsd ... manual.mode\""
-              sudo update-alternatives --config nc
-           fi
+
+         if [[ $(sudo update-alternatives --query nc|grep Value) =~ openbsd ]]; then
+              echo -e " $GR'nc'$WE in der Openbsd-Variante installiert: $GR\u2713"
+              echo -e " $WE\"netcat\" in Openbsd-Variante aktiv, alles korrekt $GR\u2713"
           else
-           echo -e " $GR'nc'$WE in der Openbsd-Variante installiert: $RE\u2717\n"
-           echo -e " ┌────────────────────────────────────────────────────────────┐"
-           echo -e " │                                                            │"
-           echo -e " │  ${WE}\"netcat\" ist nicht in der benötigten Version installiert!${RE} │"
-           echo -e " │                                                            │"
-           echo -e " │    ${WE}Soll er nun installiert werden? [${GR}J/N${WE}]\033[s                  ${RE} │"
-           echo -e " │                                                            │"
-           echo -e " └────────────────────────────────────────────────────────────┘"
-           echo -en "\033[u"
-           read -n 1 -p ": " JN
-           if [ "$JN" = "J" ] || [ "$JN" = "j" ]; then
-             echo -e "\n\n\n"
-             sudo apt-get install netcat-openbsd
-            else
-             echo -e " $RE Abbruch... ${WE}\n\n\n"; exit; fi
-           fi
+           if [[ $(sudo update-alternatives --query nc|grep openbsd) ]]; then
+            echo -e " $GR'nc'$WE in der Openbsd-Variante installiert aber nicht aktiviert.\n"
+            echo -e " Auswahl über die entsprechende Nummer aktivieren: \n"
+            sudo update-alternatives --config nc
+           else
+            echo -e "${RE} ┌────────────────────────────────────────────────────────────┐"
+            echo -e " │                                                            │"
+            echo -e " │  ${WE}\"netcat\" ist nicht in der benötigten Version installiert!${RE} │"
+            echo -e " │                                                            │"
+            echo -e " │    ${WE}Soll er nun installiert werden? [${GR}J/N${WE}]\033[s                  ${RE} │"
+            echo -e " │                                                            │"
+            echo -e " └────────────────────────────────────────────────────────────┘"
+            echo -en "\033[u"
+             read -n 1 -p ": " JN
+             if [ "$JN" = "J" ] || [ "$JN" = "j" ]; then
+               echo -e "\n\n\n"
+               sudo apt-get install netcat-openbsd
+             else
+               echo -e " $RE Abbruch... ${WE}\n\n\n"
+               exit
+             fi
+            fi
+          fi
          echo -e "\n"
 
 }

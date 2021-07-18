@@ -9,6 +9,7 @@
 #
 # V2.7.0 / 15.08.2021 - + Bei bereits eingetragenem OSEM-User erfolgt Abbruch der OSEM-Registrierung
 #                       + Unterstützung für DP250/WH45 Sensor
+#                       ~ Fix Prüfung netcat-Version
 # V2.6.0 / 04.05.2021 - ~ Fix Avg Aussentemperatur vor einem Jahr
 #                       ~ Windchill erst ab 5km/h Windgeschwindigkeit
 #                       + Prüfung bei Option "v" ob die netcat-Version korrekt ist

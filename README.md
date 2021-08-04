@@ -75,6 +75,15 @@ Wer möchte kann mir gerne einen Kaffee ausgeben und mich bei den Projekten unte
 ## Versionen ##
 
 
+**V2.7.0 - 15.07.2021**
+```
+     + Bei bereits eingetragenem OSEM-User erfolgt Abbruch der OSEM-Registrierung
+     + Unterstützung für DP250/WH45 Sensor
+     ~ Fix Prüfung netcat-Version
+     ~ Berechnung Windchill nur bis 11°C
+```
+
+     
 **V2.6.0 - 04.05.2021**
 ```
      ~ Fix Avg Aussentemperatur vor einem Jahr

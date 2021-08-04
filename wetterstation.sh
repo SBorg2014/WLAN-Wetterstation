@@ -7,9 +7,10 @@
 #
 # benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq' und 'bc' unter Linux
 #
-# V2.7.0 / 15.08.2021 - + Bei bereits eingetragenem OSEM-User erfolgt Abbruch der OSEM-Registrierung
+# V2.7.0 / 15.07.2021 - + Bei bereits eingetragenem OSEM-User erfolgt Abbruch der OSEM-Registrierung
 #                       + Unterstützung für DP250/WH45 Sensor
 #                       ~ Fix Prüfung netcat-Version
+#                       ~ Berechnung Windchill nur bis 11°C
 # V2.6.0 / 04.05.2021 - ~ Fix Avg Aussentemperatur vor einem Jahr
 #                       ~ Windchill erst ab 5km/h Windgeschwindigkeit
 #                       + Prüfung bei Option "v" ob die netcat-Version korrekt ist
@@ -215,7 +216,7 @@ while true
 
    #Taupunkt und Windchill berechnen
    if [ -z ${MESSWERTE[3]} ] && [ ! -z ${MESSWERTE[1]} ] && [ ! -z ${MESSWERTE[6]} ]; then
-     if (( $(bc -l <<< "${MESSWERTE[6]} > 5") )); then
+     if (( $(bc -l <<< "${MESSWERTE[6]} > 5") )) && (( $(bc -l <<< "${MESSWERTE[1]} < 11") )); then
         WINDCHILL=$(echo "scale=4;(13.12 + 0.6215 * ${MESSWERTE[1]} - 11.37 * e(l(${MESSWERTE[6]})*0.16) + 0.3965 * ${MESSWERTE[1]} * e(l(${MESSWERTE[6]})*0.16))/1" | bc -l)
         MESSWERTE[3]=$(round $WINDCHILL 2)
       else

@@ -167,7 +167,7 @@ PATCH270() {
  sed -i '/^.*ANZAHL_DP200=.*/a \  ANZAHL_DP250=0' ./wetterstation.conf
  sed -i 's/### Settings V2.6.0/### Settings V2.7.0/' ./wetterstation.conf
  echo -e " Fertig...\n"
- echo -e " ${GE}Eventueller Zusatzsensor DP250/WH45 muss eingetragen werden!\n"
+ echo -e " ${GE}Eventuelle Zusatzsensoren DP250/WH45 müssen eingetragen werden!\n"
 }
 
 

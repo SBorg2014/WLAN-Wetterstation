@@ -31,9 +31,9 @@ Zusatzsensoren (mittels Station oder Gateway DP1500/GW1000):
 - bis zu 8 Stück DP100/WH51 Bodenfeuchte-Sensoren
 - bis zu 4 Stück DP200/WH43 PM2.5 Feinstaub-Sensoren
 - ein DP250/WH45 5-In-1 CO2 / PM2.5 / PM10 / Temperatur / Luftfeuchte Innenraumsensor
-<br><br>
-
-
+<br><br>*__Die mögliche Anzahl der Zusatzsensoren ist nicht durch das Skript begrenzt, sondern wird vom Display und/oder Gateway bestimmt.__*
+<br><br>    
+     
 Experimentell (über eigenen DNS-Server):
 - Stationen ohne Möglichkeit der Konfiguration mittels App *WS View* wie bspw. *Sainlogic Profi Wlan Wetterstation FT0300*
 - Installation siehe [WiKi](https://github.com/SBorg2014/WLAN-Wetterstation/wiki/Installation---eigener-DNS-Server)

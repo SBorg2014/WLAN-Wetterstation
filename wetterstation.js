@@ -241,7 +241,7 @@ if (DP250>0 && DP250<=1)  {
         createState(DP + "DP250." + i + ".PM25_24h", "", {
             "name": "DP250 Kanal " + i + " Durchschnitt per 24h",
             "type": "number",
-            "role": "state",
+            "role": "value",
             "unit": "µg/m³"
         });
     }

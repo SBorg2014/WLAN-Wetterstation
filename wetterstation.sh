@@ -1,12 +1,13 @@
 #!/bin/bash
 
-# V2.7.0 - 15.07.2021 (c) 2019-2021 SBorg
+# V2.8.0 - 14.08.2021 (c) 2019-2021 SBorg
 #
 # wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
 # die Daten an den ioBroker (alternativ auch an OpenSenseMap und/oder Windy)
 #
 # benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq' und 'bc' unter Linux
 #
+# V2.8.0 / 14.08.2021 - ~ Änderung am Messverfahren der Solarenergie (festes Poll-Intervall --> Zeitstempel)
 # V2.7.0 / 15.07.2021 - + Bei bereits eingetragenem OSEM-User erfolgt Abbruch der OSEM-Registrierung
 #                       + Unterstützung für DP250/WH45 Sensor
 #                       ~ Fix Prüfung netcat-Version
@@ -70,9 +71,9 @@
 # V0.1.0 / 29.12.2019 - erstes Release
 
 
- SH_VER="V2.7.0"
+ SH_VER="V2.8.0"
  CONF_V="V2.7.0"
- SUBVER="V2.7.0"
+ SUBVER="V2.8.0"
 
 
  #Installationsverzeichnis feststellen

@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V2.7.0 --------------------------------------------------------
+### Subroutinen V2.8.0 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -493,15 +493,23 @@ sonnenpuls() {
 
 	###Solarenergie
     if [ "$SONNEN_STRAHLUNG" -gt "0" ] || [ ! -z "$MIDNIGHTRUN" ]; then
-	#Array bilden
+	#Arrays bilden / TS=Zeitstempel
 	SOLARENERGIE=(${SOLARENERGIE[@]:1})
+	SOLARENERGIE_TS=(${SOLARENERGIE_TS[@]:1})
 	SOLARENERGIE[1]=$SONNEN_STRAHLUNG
+	SOLARENERGIE_TS[1]=$(date +%s)
 
 	#Mittelwert berechnen
 	SOL_TMP=$(echo "scale=2;(${SOLARENERGIE[0]}+${SOLARENERGIE[1]})/2" | bc -l)
 
+        #Zeitdifferenz zwischen 2 Messungen ermitteln
+        let "ZEIT_DIFF = ${SOLARENERGIE_TS[1]} - ${SOLARENERGIE_TS[0]}"
+
+        #bei einer Differenz >= 5 Minuten gehen wir von einem "fail" aus (Start des Skriptes, Wolken...)
+        if [ "$ZEIT_DIFF" -ge "300" ]; then ZEIT_DIFF=${WS_POLL}; fi
+
 	#Leistung berechnen
-	SOL_TMP=$(echo "scale=3;${SOL_TMP}/(3600/${WS_POLL})" | bc -l)
+	SOL_TMP=$(echo "scale=3;${SOL_TMP}/(3600/${ZEIT_DIFF})" | bc -l)
 	SOLARENERGIE_TAG=`echo "scale=3;${SOLARENERGIE_TAG}+${SOL_TMP}" | bc -l`
 	SOLAR_WOCHE=`echo "scale=5;(${SOLAR_WOCHE}+${SOL_TMP})" | bc -l`
 	SOLARENERGIE_WOCHE=`echo "scale=3;${SOLAR_WOCHE}/1000" | bc -l` #Umrechnung in kWh
@@ -593,6 +601,7 @@ reset_zaehler() {
 	SONNENSCHEIN_TAG=0
 	SOLARENERGIE_TAG=0
 	SOLARENERGIE=(0 0)
+	SOLARENERGIE_TS=(0 0)
 	TIMER_START=0
 
 	#Wochenzähler resetten (Sonntags um 0:00 Uhr)
@@ -629,6 +638,7 @@ setup() {
 
   declare -a MESSWERTE
   SOLARENERGIE=(0 0)
+  SOLARENERGIE_TS=(0 0)
   DRUCKWERTE=(12 11 10 9 8 7 6 5 4 3 2 1)
   WINDDIRS=(N NNO NO ONO O OSO SO SSO S SSW SW WSW W WNW NW NNW N)
 

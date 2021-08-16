@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V2.7.0
+UPDATE_VER=V2.8.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -31,7 +31,7 @@ backup() {
 
 FEHLER() {
  if [ "$UPDATE_VER" == "$VERSION" ]; then echo -e "\n$WE Version ist aktuell, nothing to do...\n"; exit 0; fi
- echo -e "\n  Updater ist ${RE}nur\e[0m für Versionen ab V1.4.0 !\n"
+ echo -e "\n  Updater ist ${RE}nur${GR} für Versionen ab V1.4.0 !\n"
  exit 1
 }
 
@@ -58,6 +58,7 @@ main() {
            V2.4.0) PATCH250 ;;
            V2.5.0) PATCH260 ;;
            V2.6.0) PATCH270 ;;
+           V2.7.0) PATCH280 ;;
            *)      FEHLER
  esac
  exit 0
@@ -167,7 +168,18 @@ PATCH270() {
  sed -i '/^.*ANZAHL_DP200=.*/a \  ANZAHL_DP250=0' ./wetterstation.conf
  sed -i 's/### Settings V2.6.0/### Settings V2.7.0/' ./wetterstation.conf
  echo -e " Fertig...\n"
- echo -e " ${GE}Eventuelle Zusatzsensoren DP250/WH45 müssen eingetragen werden!\n"
+ echo -e " ${GE}Eventueller Zusatzsensor DP250/WH45 muss eingetragen werden!\n"
+}
+
+
+#Patch Version V2.7.0 auf V2.8.0
+PATCH280() {
+ backup
+ echo -e "\n Patche wetterstation.conf auf V2.8.0 ..."
+ sed -i '/^.*SONNENSCHEIN_TXTFORMAT=.*/a \ \n\n  #Daten an Wetter.com senden (leer lassen falls nicht gewünscht)?\n   WETTERCOM_ID=\n   WETTERCOM_PW=' ./wetterstation.conf
+ sed -i 's/### Settings V2.7.0/### Settings V2.8.0/' ./wetterstation.conf
+ echo -e " Fertig...\n"
+ echo -e " ${GE}Falls die Übertragung der Wetterdaten an wetter.com erfolgen soll, nun aktivieren durch eintragen von User-ID und Passwort!\n"
 }
 
 
@@ -180,11 +192,11 @@ cat <<EoD >patch
 +### Settings V2.6.0 -----------------------------------------------------------
   #Debuging einschalten [true/false] / default: false / Ausgabe der Messwerte
    debug=false
- 
+
 @@ -112,5 +112,42 @@
   #############################################################################################
- 
- 
+
+
 +
 + #############################################################################################
 + ###    Windy - Einstellungen (nur nötig falls Windy benutzt werden soll)                  ###
@@ -222,7 +234,7 @@ cat <<EoD >patch
 + #############################################################################################
 +
 +
- ###  Ende Usereinstellungen  
+ ###  Ende Usereinstellungen
  ###EoF
 EoD
 }

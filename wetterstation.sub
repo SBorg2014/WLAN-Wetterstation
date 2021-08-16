@@ -37,6 +37,7 @@
   DP_FW_VERSION=${PRE_DP}.Info.FW_Version
   DP_OSEM_TRANSMIT=${PRE_DP}.Info.openSenseMap
   DP_WINDY_TRANSMIT=${PRE_DP}.Info.Windy
+  DP_WCOM_TRANSMIT=${PRE_DP}.Info.Wetter_com
   DP_SONNENSCHEIN_VORTAG=${PRE_DP}.Info.Sonnenschein_VorTag
   DP_SONNENSCHEIN_TAG=${PRE_DP}.Info.Sonnenschein_Tag
   DP_SONNENSCHEIN_WOCHE=${PRE_DP}.Info.Sonnenschein_Woche
@@ -779,9 +780,9 @@ opensensemap() {
           -d "[ ${OSeM_DATA} ]" https://api.opensensemap.org/boxes/${senseBox_ID}/data)
 
         if [[ "$OSEM_TRANSMIT" == "\"Measurements saved in box\"" ]]; then
-          SAPI "Single" "set/${DP_OSEM_TRANSMIT}?value=true"
+          SAPI "Single" "set/${DP_OSEM_TRANSMIT}?value=true&ack=true"
         else
-          SAPI "Single" "set/${DP_OSEM_TRANSMIT}?value=false"
+          SAPI "Single" "set/${DP_OSEM_TRANSMIT}?value=false&ack=true"
         fi
 }
 
@@ -1348,6 +1349,22 @@ windy_update(){
 }
 
 
+
+wettercom_update(){
+        #Daten an wetter.com senden
+        WC_URL="http://www.wetterarchiv.de/interface/http/input.php?benutzername=${WETTERCOM_ID}&passwort=${WETTERCOM_PW}"
+        local TIMESTAMP=$(date +%Y%m%d%H%M)
+        WC_URL="${WC_URL}&datum=${TIMESTAMP}&temperatur=${MESSWERTE[1]}&feuchtigkeit=${MESSWERTE[5]}&windrichtung=${MESSWERTE[8]}"
+        WC_URL="${WC_URL}&windstaerke=${MESSWERTE[6]}&luftdruck=${MESSWERTE[10]}&niederschlagsmenge=${MESSWERTE[11]}"
+        local MESSAGE=$(wget -qO- "${WC_URL}")
+
+        #alles Ok?
+        if echo ${MESSAGE}|grep 'SUCCESS'; then
+           SAPI "Single" "set/${DP_WCOM_TRANSMIT}?value=true&ack=true"
+         else
+           SAPI "Single" "set/${DP_WCOM_TRANSMIT}?value=false&ack=true"
+        fi
+}
 
 ###EoF
 

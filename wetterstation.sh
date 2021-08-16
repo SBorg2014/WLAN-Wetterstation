@@ -8,6 +8,7 @@
 # benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq' und 'bc' unter Linux
 #
 # V2.8.0 / 14.08.2021 - ~ Änderung am Messverfahren der Solarenergie (festes Poll-Intervall --> Zeitstempel)
+#                       + Support für wetter.com
 # V2.7.0 / 15.07.2021 - + Bei bereits eingetragenem OSEM-User erfolgt Abbruch der OSEM-Registrierung
 #                       + Unterstützung für DP250/WH45 Sensor
 #                       ~ Fix Prüfung netcat-Version
@@ -72,7 +73,7 @@
 
 
  SH_VER="V2.8.0"
- CONF_V="V2.7.0"
+ CONF_V="V2.8.0"
  SUBVER="V2.8.0"
 
 
@@ -272,8 +273,9 @@ while true
   #5-Minutenjobs: Windy
    if [ $(( $DO_IT % 5 )) -eq "0" ] && [ -z ${run_5minjobs_onlyonce} ]; then
 
-     #Windy
+     #Windy / wetter.com
      if [ ${use_windy} == "true" ]; then windy_update; fi
+     if [ ! -z ${WETTERCOM_ID} ]; then wettercom_update; fi
 
      #run only once
      run_5minjobs_onlyonce=true
@@ -290,6 +292,7 @@ while true
       else
        HITZEINDEX=
      fi
+
 
 
   #openSenseMap

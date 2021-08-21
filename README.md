@@ -78,6 +78,14 @@ Daten in Wetter.com:<br>
 ## Versionen ##
 
 
+
+**V2.8.0 - 14.08.2021**
+```
+     ~ Änderung am Messverfahren der Solarenergie (festes Poll-Intervall --> Zeitstempel)
+     + Support für wetter.com
+```
+
+
 **V2.7.0 - 15.07.2021**
 ```
      + Bei bereits eingetragenem OSEM-User erfolgt Abbruch der OSEM-Registrierung

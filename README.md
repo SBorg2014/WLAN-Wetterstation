@@ -8,7 +8,7 @@
 [![Commits since last release](https://img.shields.io/github/commits-since/SBorg2014/WLAN-Wetterstation/latest.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/releases/latest)
 [![License](https://img.shields.io/github/license/SBorg2014/WLAN-Wetterstation.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/LICENSE)
 
- schafft eine Verbindung von einer WLAN-Wetterstation zum ioBroker und kann optional die Wetterdaten in [openSenseMap](https://opensensemap.org) und [Windy](https://www.windy.com) zur Verfügung stellen (__Projekt läuft nur unter Linux__)<br>
+ schafft eine Verbindung von einer WLAN-Wetterstation zum ioBroker und kann optional die Wetterdaten in [openSenseMap](https://opensensemap.org), [Windy](https://www.windy.com) und [wetter.com](https://www.wetter.com) zur Verfügung stellen (__Projekt läuft nur unter Linux__)<br>
  
  Die Wetterstation muss dazu in der Lage sein ihre Daten im "Wunderground/Ecowitt"-Format zu senden.<br><br>
  Bisher getestete Stationen:
@@ -38,7 +38,12 @@ Experimentell (über eigenen DNS-Server):
 - Stationen ohne Möglichkeit der Konfiguration mittels App *WS View* wie bspw. *Sainlogic Profi Wlan Wetterstation FT0300*
 - Installation siehe [WiKi](https://github.com/SBorg2014/WLAN-Wetterstation/wiki/Installation---eigener-DNS-Server)
 <br><br>
-
+   
+## Unterstützung für dieses/zukünftige Projekte ##
+Wer möchte kann mir gerne einen Kaffee ausgeben und mich bei den Projekten unterstützen. Ich freue mich über jedweden Support.<br><br>
+[![paypal](https://www.paypalobjects.com/de_DE/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=RR76AEZHPJ7H4&source=url)
+<br><br>
+   
 Beispiel einer Visualisierung per Grafana (zu finden [hier](https://github.com/SBorg2014/WLAN-Wetterstation/tree/master/Grafana%20Dashboard)):
 ![Grafana](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/Bilder/Grafana-0.png)
 ![Grafana](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/Bilder/Grafana-1.png)
@@ -52,14 +57,12 @@ Daten in openSenseMap:<br>
 Daten in Windy:<br>
 ![Bild Windy](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/Bilder/Windy.png)
 <br><br>
+Daten in Wetter.com:<br>
+![Bild Wetter.com](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/Bilder/wettercom.gif)
+<br><br>
 
 ## Weiterführende Informationen ##
 ***[Thread im ioBroker-Forum](https://forum.iobroker.net/topic/28384/linux-shell-skript-wlan-wetterstation)***
-<br><br>
-
-## Unterstützung für dieses/zukünftige Projekte ##
-Wer möchte kann mir gerne einen Kaffee ausgeben und mich bei den Projekten unterstützen. Ich freue mich über jedweden Support.<br><br>
-[![paypal](https://www.paypalobjects.com/de_DE/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=RR76AEZHPJ7H4&source=url)
 <br><br>
 
 ## Installation ## 
@@ -73,6 +76,14 @@ Wer möchte kann mir gerne einen Kaffee ausgeben und mich bei den Projekten unte
 <br><br>
 
 ## Versionen ##
+
+
+
+**V2.8.0 - 14.08.2021**
+```
+     ~ Änderung am Messverfahren der Solarenergie (festes Poll-Intervall --> Zeitstempel)
+     + Support für wetter.com
+```
 
 
 **V2.7.0 - 15.07.2021**

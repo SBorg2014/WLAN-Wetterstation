@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V2.8.0 --------------------------------------------------------
+### Subroutinen V2.9.0 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -65,6 +65,8 @@
   DP_GATEWAY_NAME=${PRE_DP}.Info.Wetterstation_Gateway
   DP_MIN_TEMP_24H=${PRE_DP}.Info.Temp_Aussen_24h_min
   DP_MAX_TEMP_24H=${PRE_DP}.Info.Temp_Aussen_24h_max
+  DP_MIN_TEMP_HEUTE=${PRE_DP}.Info.Temp_Aussen_Heute_min
+  DP_MAX_TEMP_HEUTE=${PRE_DP}.Info.Temp_Aussen_Heute_max
   DP_HITZEINDEX=${PRE_DP}.Info.Hitzeindex
   DP_MIN_TEMP_365D=${PRE_DP}.Info.Temp_Aussen_365t_min
   DP_MAX_TEMP_365D=${PRE_DP}.Info.Temp_Aussen_365t_max
@@ -1001,6 +1003,23 @@ minmax24h() {
 
         SAPI "Single" "set/${DP_MIN_TEMP_24H}?value=${MIN_TEMP_24H}&ack=true"
         SAPI "Single" "set/${DP_MAX_TEMP_24H}?value=${MAX_TEMP_24H}&ack=true"
+}
+
+
+minmaxheute() {
+        local TIMESTAMP=$(date +%Y-%m-%d)
+        TIMESTAMP+=" 00:00:00"
+        MIN_TEMP_HEUTE=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
+        --data-urlencode "u=${INFLUX_USER}" --data-urlencode "p=${INFLUX_PASSWORD}" \
+        --data-urlencode "q=SELECT min(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time <= now() and time >= '${TIMESTAMP}'" |\
+        jq -r '.results | .[].series | .[].values[] | .[1]')
+        MAX_TEMP_HEUTE=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
+        --data-urlencode "u=${INFLUX_USER}" --data-urlencode "p=${INFLUX_PASSWORD}" \
+        --data-urlencode "q=SELECT max(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time <= now() and time >= '${TIMESTAMP}'" |\
+        jq -r '.results | .[].series | .[].values[] | .[1]')
+
+        SAPI "Single" "set/${DP_MIN_TEMP_HEUTE}?value=${MIN_TEMP_HEUTE}&ack=true"
+        SAPI "Single" "set/${DP_MAX_TEMP_HEUTE}?value=${MAX_TEMP_HEUTE}&ack=true"
 }
 
 

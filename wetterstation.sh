@@ -1,12 +1,13 @@
 #!/bin/bash
 
-# V2.8.0 - 14.08.2021 (c) 2019-2021 SBorg
+# V2.9.0 - 25.08.2021 (c) 2019-2021 SBorg
 #
 # wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
 # die Daten an den ioBroker (alternativ auch an OpenSenseMap und/oder Windy)
 #
 # benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq' und 'bc' unter Linux
 #
+# V2.9.0 / 25.08.2021 - + Min-/Max-Aussentemperatur des heutigen Tages
 # V2.8.0 / 14.08.2021 - ~ Änderung am Messverfahren der Solarenergie (festes Poll-Intervall --> Zeitstempel)
 #                       + Support für wetter.com
 # V2.7.0 / 15.07.2021 - + Bei bereits eingetragenem OSEM-User erfolgt Abbruch der OSEM-Registrierung
@@ -72,9 +73,9 @@
 # V0.1.0 / 29.12.2019 - erstes Release
 
 
- SH_VER="V2.8.0"
+ SH_VER="V2.9.0"
  CONF_V="V2.8.0"
- SUBVER="V2.8.0"
+ SUBVER="V2.9.0"
 
 
  #Installationsverzeichnis feststellen
@@ -133,8 +134,9 @@
   done
 
 
- #Setup ausführen
+ #Setup + Initial ausführen
   setup
+  minmaxheute
 
 #Endlosschleife
 while true
@@ -261,12 +263,15 @@ while true
    if [ `date +%H` -eq "0" ] && [ `date +%M` -le "3" ]; then unset MIDNIGHTRUN; fi
 
 
-  #15-Minutenjobs: Wetterprognose; min/max Aussentemperatur der letzten 24h
+  #15-Minutenjobs: Wetterprognose; min/max Aussentemperatur der letzten 24h + heute
    DO_IT=$(date +%M)
    DO_IT=${DO_IT#0}
    if [ $(( $DO_IT % 15 )) -eq "0" ]; then
      if [ `date +%s` -ge "$TIMER_SET" ]; then wetterprognose
-      if [ ! -z ${INFLUX_DB} ]; then minmax24h; fi
+      if [ ! -z ${INFLUX_DB} ]; then
+        minmax24h
+        minmaxheute
+      fi
      fi
    fi
 

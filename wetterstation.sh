@@ -3,11 +3,12 @@
 # V2.9.0 - 25.08.2021 (c) 2019-2021 SBorg
 #
 # wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
-# die Daten an den ioBroker (alternativ auch an OpenSenseMap und/oder Windy)
+# die Daten an den ioBroker (alternativ auch an OpenSenseMap, Windy und wetter.com)
 #
 # benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq' und 'bc' unter Linux
 #
 # V2.9.0 / 25.08.2021 - + Min-/Max-Aussentemperatur des heutigen Tages
+#                       ~ Änderung bei Datenübertragung per Simple-API wg. InfluxDB 2.x
 # V2.8.0 / 14.08.2021 - ~ Änderung am Messverfahren der Solarenergie (festes Poll-Intervall --> Zeitstempel)
 #                       + Support für wetter.com
 # V2.7.0 / 15.07.2021 - + Bei bereits eingetragenem OSEM-User erfolgt Abbruch der OSEM-Registrierung
@@ -275,7 +276,7 @@ while true
      fi
    fi
 
-  #5-Minutenjobs: Windy
+  #5-Minutenjobs: Windy; wetter.com
    if [ $(( $DO_IT % 5 )) -eq "0" ] && [ -z ${run_5minjobs_onlyonce} ]; then
 
      #Windy / wetter.com

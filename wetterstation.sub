@@ -71,7 +71,8 @@
   DP_MIN_TEMP_365D=${PRE_DP}.Info.Temp_Aussen_365t_min
   DP_MAX_TEMP_365D=${PRE_DP}.Info.Temp_Aussen_365t_max
   DP_AVG_TEMP_365D=${PRE_DP}.Info.Temp_Aussen_365t_avg
-
+  DP_MET_SOMMER_TEMP=${PRE_DP}.Info.Temp_Met_Sommer_avg
+  DP_MET_SOMMER_REGEN=${PRE_DP}.Info.Regenmenge_Met_Sommer
 ###  Ende Usereinstellungen
 
 
@@ -86,7 +87,7 @@
       WE='\e[1;37m'
       BL='\e[1;36m'
       RE='\e[1;31m'
-
+      NO='\e[0;39m'
 
 ###  Debugging
 debuging() {
@@ -694,8 +695,10 @@ setup() {
 
 ###Befehlszeilenparameter
 usage() {
-	echo -e "\nusage: wetterstation [[--debug] | [-s|--show] | [-d|--data] | [--osem_reg] | [--windy_reg] | [-v|--version] | [-h|--help]]\n"
+	echo -e "\nusage: wetterstation [[--debug] | [-s|--show] | [-d|--data] | [--metsommer]"
+        echo -e "       [--osem_reg] | [--windy_reg] | [-v|--version] | [-h|--help]]\n"
 	echo -e " --debug\teinmaliger Testdurchlauf mit Ausgabe"
+        echo -e " --metsommer\tführt die Berechnung des meteorologischen Sommers durch"
 	echo -e " --osem_reg\tführt Registrierung bei openSenseMap durch"
         echo -e " --windy_reg\tführt Registrierung bei Windy durch"
 	echo -e " -s | --show\tzeigt bei der Debug-Ausgabe Passwort und Station-ID im Klartext an"
@@ -1048,6 +1051,55 @@ minmaxavg365d() {
           SAPI "Single" "set/${DP_AVG_TEMP_365D}?value=${AVG_TEMP_365D}&ack=true"
         fi
 
+     fi
+}
+
+
+metsommer() {
+     if [ ! -z ${INFLUX_DB} ]; then
+      if [ $(date +%m) -ge "6" ] && [ $(date +%m) -le "8" ] || [ ! -z ${metsom_override} ]; then
+        if [ $(date +%m) -le "5" ]; then echo -e "\n ${RE}Eine Berechnung der meteorologischen Sommerwerte kann für das aktuelle Jahr $(date +%Y) erst ab dem 01. Juni durchgeführt werden!${NO}\n";exit 1; fi
+        local TIMESTART=$(date +%Y-06-01)" 00:00:00"
+        local TIMESTOP=$(date +%Y-08-31)" 23:59:59"
+
+        MET_SOMMER_TEMP_AVG=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
+        --data-urlencode "u=${INFLUX_USER}" --data-urlencode "p=${INFLUX_PASSWORD}" \
+        --data-urlencode "q=SELECT mean(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time >= '${TIMESTART}' AND time <= '${TIMESTOP}'" |\
+        jq -r '.results | .[].series | .[].values[] | .[1]' 2> /dev/null)
+        if [ -z "${MET_SOMMER_TEMP_AVG}" ]; then
+          SAPI "Single" "set/${DP_MET_SOMMER_TEMP}?value=99.99&ack=true"
+         else
+          MET_SOMMER_TEMP_AVG=$(round ${MET_SOMMER_TEMP_AVG} 2)
+          SAPI "Single" "set/${DP_MET_SOMMER_TEMP}?value=${MET_SOMMER_TEMP_AVG}&ack=true"
+        fi
+
+        declare -a MET_SOMMER_REGEN_ARR
+        MET_SOMMER_REGEN_ARR=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
+        --data-urlencode "u=${INFLUX_USER}" --data-urlencode "p=${INFLUX_PASSWORD}" \
+        --data-urlencode "q=SELECT max(value) FROM \"${PRE_DP}.Regen_Tag\" WHERE (time >= '${TIMESTART}' AND time <= '${TIMESTOP}') group by time(1d)" |\
+        jq -r '.results | .[].series | .[].values[] | .[1]' 2> /dev/null)
+        #Summe des Arrays bilden
+         MET_SOMMER_REGEN=0
+         for i in ${MET_SOMMER_REGEN_ARR[@]}; do
+          MET_SOMMER_REGEN=$(echo "scale=1; ${MET_SOMMER_REGEN}+$i" | bc -l)
+         done
+
+        if [ -z "${MET_SOMMER_REGEN}" ]; then
+          SAPI "Single" "set/${DP_MET_SOMMER_REGEN}?value=999.9&ack=true"
+         else
+          SAPI "Single" "set/${DP_MET_SOMMER_REGEN}?value=${MET_SOMMER_REGEN}&ack=true"
+        fi
+
+
+        if [ ! -z ${metsom_override} ]; then
+          echo -e "\n Daten vom 01.06.$(date +%Y) bis 31.08.$(date +%Y) wurden ermittelt...\n"
+          echo -e "\t Ø-Temperatur: ${GR}${MET_SOMMER_TEMP_AVG} °C${NO}"
+          echo -e "\t Regenmenge  : ${GR}${MET_SOMMER_REGEN} l/m²${NO}\n"
+        fi
+        unset MET_SOMMER_REGEN_ARR
+        unset metsom_override
+
+      fi
      fi
 }
 

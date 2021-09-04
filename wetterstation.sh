@@ -9,6 +9,8 @@
 #
 # V2.9.0 / 25.08.2021 - + Min-/Max-Aussentemperatur des heutigen Tages
 #                       ~ Änderung bei Datenübertragung per Simple-API wg. InfluxDB 2.x
+#                       + Meteorologischer Sommer Durchschnittstemperatur und Regenmenge
+#                       + neuer Shell-Parameter --metsommer (zur manuellen Berechnung der Werte des meteorologischen Sommers)
 # V2.8.0 / 14.08.2021 - ~ Änderung am Messverfahren der Solarenergie (festes Poll-Intervall --> Zeitstempel)
 #                       + Support für wetter.com
 # V2.7.0 / 15.07.2021 - + Bei bereits eingetragenem OSEM-User erfolgt Abbruch der OSEM-Registrierung
@@ -114,6 +116,10 @@
                                 exit
                                 ;;
         --windy_reg )           windy_register
+                                exit
+                                ;;
+        --metsommer )           metsom_override=true
+                                metsommer
                                 exit
                                 ;;
         -s | --show )           show_pwid=true
@@ -260,6 +266,7 @@ while true
         firmware_check     #neue Firmware
         reset_zaehler      #Sonnenscheindauer, Solarenergie zurücksetzen (enthällt auch Speicherung Werte VorJahr)
         minmaxavg365d      #Min-/Max-/Avg-Aussentemperatur vor einem Jahr
+        metsommer          #meteorologischer Sommer Durchschnittstemperatur und Regenmenge
    fi
    if [ `date +%H` -eq "0" ] && [ `date +%M` -le "3" ]; then unset MIDNIGHTRUN; fi
 

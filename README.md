@@ -79,6 +79,17 @@ Daten in Wetter.com:<br>
 
 
 
+
+
+**V2.9.0 - 25.08.2021**
+```
+     + Min-/Max-Aussentemperatur des heutigen Tages
+     ~ Änderung bei Datenübertragung per Simple-API wg. InfluxDB 2.x
+     + Meteorologischer Sommer Durchschnittstemperatur und Regenmenge
+     + neuer Shell-Parameter --metsommer (zur manuellen Berechnung der Werte des meteorologischen Sommers)
+```
+
+
 **V2.8.0 - 14.08.2021**
 ```
      ~ Änderung am Messverfahren der Solarenergie (festes Poll-Intervall --> Zeitstempel)

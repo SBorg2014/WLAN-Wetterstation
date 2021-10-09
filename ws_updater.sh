@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V2.8.0
+UPDATE_VER=V2.9.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -9,20 +9,27 @@ UPDATE_VER=V2.8.0
       BL='\e[1;36m'
       RE='\e[1;31m'
 
-echo -e "\n\n\n$BL WS-Updater ${UPDATE_VER}"
+            echo -e "\n\n\n${GE} ┌───────────────────────┐"
+            echo -e " │                       │"
+            echo -e " │  ${BL} WS-Updater ${UPDATE_VER}${GE}   │"
+            echo -e " │                       │"
+            echo -e " └───────────────────────┘${WE}"
 
+
+
+checker() {
  #Test ob bc und jq installiert sind
          if [ $(which bc) ]; then
-           echo -e "\n $GR'bc'$WE installiert: $GR✓"
+           echo -e "\n $GR'bc'$WE installiert: [$GR✓$WE]"
           else
-           echo -e "\n $GR'bc'$WE installiert: $RE✗"
+           echo -e "\n $GR'bc'$WE installiert: [$GR$RE✗$WE]"
          fi
          if [ $(which jq) ]; then
-           echo -e " $GR'jq'$WE installiert: $GR✓\n"
+           echo -e " $GR'jq'$WE installiert: [$GR$GR✓$WE]\n"
           else
-           echo -e " $GR'jq'$WE installiert: $RE✗\n"
+           echo -e " $GR'jq'$WE installiert: [$GR$RE✗$WE]\n"
          fi
-
+}
 
 backup() {
  echo -e "\n Lege Sicherungskopie der wetterstation.conf an..."
@@ -31,12 +38,11 @@ backup() {
 
 FEHLER() {
  if [ "$UPDATE_VER" == "$VERSION" ]; then echo -e "\n$WE Version ist aktuell, nothing to do...\n"; exit 0; fi
- echo -e "\n  Updater ist ${RE}nur${GR} für Versionen ab V1.4.0 !\n"
+ echo -e "\n  Updater ist ${RE}nur${WE} für Versionen ab V1.4.0 !\n"
  exit 1
 }
 
-main() {
-
+patch() {
          echo -en "\n${WE} Soll die ${RE}wetterstation.conf ${WE}nun auf eine neue Version gepatcht werden? [${GR}J/N${WE}]"
            read -n 1 -p ": " JN
            if [ "$JN" = "J" ] || [ "$JN" = "j" ]; then
@@ -59,12 +65,52 @@ main() {
            V2.5.0) PATCH260 ;;
            V2.6.0) PATCH270 ;;
            V2.7.0) PATCH280 ;;
+           V2.8.0) echo -e "$GE Version ist bereits aktuell...\n" ;;
            *)      FEHLER
  esac
  exit 0
 }
 
+main() {
+         #Wetterstation im Verzeichnis vorhanden
+         if [ ! -f ./wetterstation.sh ]; then
+          echo -e "\n$RE Keine Version von WLAN-Wetterstation im aktuellen Verzeichnis gefunden...\n"
+          exit 1
+         fi
 
+         #aktuelle Version von GitHub holen
+          GitHub=$(curl -sH "Accept: application/vnd.github.v3+json" https://api.github.com/repos/SBorg2014/WLAN-Wetterstation/releases/latest)
+          akt_ver_long=$(echo ${GitHub} | jq -r '.name' | sed -e 's/-/vom/; s/\"//g')
+          akt_version=$(echo ${GitHub} | jq -r '.tag_name')
+          info_version=$(echo ${GitHub} | jq -r '.body' | tr -d '*\\')
+
+          echo -e " Aktuelle Version (latest) auf GitHub: ${GR}$akt_ver_long$WE"
+          VERSION=$(cat ./wetterstation.sh|grep "SH_VER"|cut -d"=" -f2|tr -d \")
+          echo -e " Version im aktuellen Verzeichnis    : ${GR}$VERSION"
+
+          if [ "$VERSION" == "$akt_version" ]; then echo -e "\n$GE Version ist bereits aktuell..."; exit 0; fi
+
+          echo -e "\n$WE Informationen zum Release $akt_version:"
+          echo -e " ─────────────────────────────────────────────────────────────"
+          echo -e "\n$GE $info_version\n$WE"
+
+          jn_abfrage "\n$WE Soll ein Update von WLAN-Wetterstation durchgeführt werden?"
+          if [ -z $antwort ]; then echo -e "\n"; exit 0; fi
+
+         #Update
+          echo -e "\n\n$WE Führe Update aus...\n"
+          DL_URL=$(echo ${GitHub} | jq -r '.assets | .[].browser_download_url')
+          curl -LJ ${DL_URL} -o tmp.zip
+          unzip -o tmp.zip -x wetterstation.conf
+
+          rm tmp.zip
+          /bin/bash ./ws_updater.sh --patch
+
+          jn_abfrage "\n Update ausgeführt. Soll der Service nun neu gestartet werden?"
+          if [ ! -z $antwort ]; then echo -e "\n"; sudo systemctl restart wetterstation.service; fi
+
+exit
+}
 
 ########################################################################################
 #Patch Version V1.4.0 auf V1.5.0
@@ -239,6 +285,124 @@ cat <<EoD >patch
 EoD
 }
 
+jn_abfrage() {
+         echo -en "\n$1 ${WE}[${GR}J/N${WE}]"
+           read -n 1 -p ": " JN
+           if [ "$JN" = "J" ] || [ "$JN" = "j" ]; then
+             antwort=true
+            else
+             unset antwort
+           fi
 
+}
+
+install() {
+   #WLAN-Wetterstation Installationsroutine
+    jn_abfrage "${WE}\n Möchten Sie ${BL}WLAN-Wetterstation${WE} im aktuellen Verzeichnis installieren?"
+    if [ -z $antwort ]; then echo -e "\n ${RE}Abbruch...${WE}\n\n"; exit 1; fi
+    unset $antwort
+
+    #aktuelle Version feststellen, downloaden und entpacken
+     echo -e "\n\n\n Hole Daten von GitHub..."
+     GitHub=$(curl -sH "Accept: application/vnd.github.v3+json" https://api.github.com/repos/SBorg2014/WLAN-Wetterstation/releases/latest)
+     akt_version=$(echo ${GitHub} | jq -r '.name' | sed -e 's/-/vom/; s/\"//g')
+     echo -e " Aktuelle Version: ${GR}${akt_version}${WE}"
+     DL_URL=$(echo ${GitHub} | jq -r '.assets | .[].browser_download_url')
+     echo -e " Lade Datei von GitHub herunter...\n"
+     curl -LJ ${DL_URL} -o tmp.zip
+     echo -e "\n Entpacke Dateien...\n"
+     unzip tmp.zip
+
+     echo -e "\n Lösche Dateidownload..."
+     rm tmp.zip
+
+     echo -e "\n Dateien ausführbar setzen..."
+     chmod +x ws_updater.sh wetterstation.sh
+
+     jn_abfrage "\n${WE} Soll WLAN-Wetterstation nun als Service eingerichtet werden?"
+     if [ ! -z $antwort ]; then service; fi
+
+    #Konfiguration öffnen
+     jn_abfrage "\n${WE} Konfiguration nun öffnen?"
+     if [ ! -z $antwort ]; then $(cat ~/.selected_editor | grep SELECTED_EDITOR | cut -d"=" -f2 | tr -d \") wetterstation.conf; fi
+
+    #DPs im ioB anlegen...
+     jn_abfrage "\n${BL} Nun mittels des Javascriptes ${GE}'wetterstation.js'${BL} die Datenpunkte im ioBroker anlegen! Fertig [\e[101m Nein=Abbruch \e[0m${BL}]?"
+     if [ -z $antwort ]; then echo -e "\n"; exit 1; fi
+     unset $antwort
+
+    #Testlauf starten
+     jn_abfrage"\n${WE} Einmaligen Testdurchlauf im Debug-Modus starten...(empfiehlt sich)?"
+     if [ ! -z $antwort ]; then ./wetterstation.sh --debug; fi
+
+    #enable Service
+     jn_abfrage"\n${WE} WLAN-Wetterstation Service nun starten?"
+     if [ ! -z $antwort ]; then sudo systemctl start wetterstation.service; fi
+
+    echo -e "\n\n Fertig..."
+    echo -e "Wenn der Testlauf ausgeführt wurde und erfolgreich verlief, sollten nun aktuelle Daten der Wetterstation in den Datenpunkten stehen ;-)\n"
+}
+
+service() {
+      #existiert der Service schon?
+      if [ -f /etc/systemd/system/wetterstation.service ]; then
+         echo -e "\n\n ${RE}Wetterstation-Service existiert bereits!${WE}\n"
+         return 0
+      fi
+
+      #Verzeichnis feststellen
+      DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+        sudo tee -a /etc/systemd/system/wetterstation.service > /dev/null <<-EoD
+	[Unit]
+	Description=Service für ioBroker Wetterstation
+
+	[Service]
+	ExecStart=${DIR}/wetterstation.sh
+
+	[Install]
+	WantedBy=multi-user.target
+	EoD
+
+      sudo chmod +x /etc/systemd/system/wetterstation.service
+      echo -e "\n Aktiviere den Service nun..."
+      sudo systemctl daemon-reload
+      sudo systemctl enable wetterstation.service
+
+}
+
+usage() {
+        echo -e "\nusage: ws_updater [[--install] | [--patch] | [--service] | [-h|--help]]\n"
+        echo -e " --install\tinstalliert WLAN-Wetterstation im aktuellen Verzeichnis"
+        echo -e " --patch\tpatcht die 'wetterstation.conf' auf eine neue Version"
+        echo -e " --service\trichtet WLAN-Wetterstation als Service ein"
+        echo -e " -h | --help\tdieses Hilfemenue\n"
+}
+
+  #gibt es Parameter?
+  while [ "$1" != "" ]; do
+    case $1 in
+        --install )             checker
+                                install
+                                exit 0
+                                ;;
+        --service )             service
+                                exit 0
+                                ;;
+        --patch )               patch
+                                exit 0
+                                ;;
+        -h | --help )           usage
+                                exit 0
+                                ;;
+        * )                     echo -e "\n${RE}\"$1\"${WE} wird nicht unterstüzt...\n\n"
+                                usage
+                                exit 1
+    esac
+    shift
+  done
+
+
+ checker
  main
 

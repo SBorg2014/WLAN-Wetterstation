@@ -18,19 +18,26 @@ UPDATE_VER=V2.9.0
 
 
 checker() {
- #Test ob bc und jq installiert sind
+ #Test ob bc, jq und unzip installiert sind
          if [ $(which bc) ]; then
-           echo -e "\n $GR'bc'$WE installiert: [$GR✓$WE]"
+           echo -e "\n $GR'bc'$WE    installiert: [$GR✓$WE]"
           else
-           echo -e "\n $GR'bc'$WE installiert: [$GR$RE✗$WE]"
-           echo -e "\n\n $RE Bitte zuerst 'bc' installieren [sudo apt install bc]"
+           echo -e "\n $GR'bc'$WE    installiert: [$GR$RE✗$WE]"
+           echo -e "\n\n $RE Bitte zuerst 'bc' installieren [sudo apt install bc]\n"
            exit 1
          fi
          if [ $(which jq) ]; then
-           echo -e " $GR'jq'$WE installiert: [$GR$GR✓$WE]\n"
+           echo -e " $GR'jq'$WE    installiert: [$GR$GR✓$WE]"
           else
-           echo -e " $GR'jq'$WE installiert: [$GR$RE✗$WE]\n"
-           echo -e "\n\n $RE Bitte zuerst 'jq' installieren [sudo apt install jq]"
+           echo -e " $GR'jq'$WE    installiert: [$GR$RE✗$WE]"
+           echo -e "\n\n $RE Bitte zuerst 'jq' installieren [sudo apt install jq]\n"
+           exit 1
+         fi
+         if [ $(which unzip) ]; then
+           echo -e " $GR'unzip'$WE installiert: [$GR$GR✓$WE]\n"
+          else
+           echo -e " $GR'unzip'$WE installiert: [$GR$RE✗$WE]\n"
+           echo -e "\n\n $RE Bitte zuerst 'unzip' installieren [sudo apt install unzip]\n"
            exit 1
          fi
 }

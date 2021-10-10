@@ -23,11 +23,15 @@ checker() {
            echo -e "\n $GR'bc'$WE installiert: [$GR✓$WE]"
           else
            echo -e "\n $GR'bc'$WE installiert: [$GR$RE✗$WE]"
+           echo -e "\n\n $RE Bitte zuerst 'bc' installieren [sudo apt install bc]"
+           exit 1
          fi
          if [ $(which jq) ]; then
            echo -e " $GR'jq'$WE installiert: [$GR$GR✓$WE]\n"
           else
            echo -e " $GR'jq'$WE installiert: [$GR$RE✗$WE]\n"
+           echo -e "\n\n $RE Bitte zuerst 'jq' installieren [sudo apt install jq]"
+           exit 1
          fi
 }
 

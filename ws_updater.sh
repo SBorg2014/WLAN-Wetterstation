@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V2.9.0
+UPDATE_VER=V2.10.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -11,7 +11,7 @@ UPDATE_VER=V2.9.0
 
             echo -e "\n\n\n${GE} ┌───────────────────────┐"
             echo -e " │                       │"
-            echo -e " │  ${BL} WS-Updater ${UPDATE_VER}${GE}   │"
+            echo -e " │  ${BL} WS-Updater ${UPDATE_VER}${GE}\t │"
             echo -e " │                       │"
             echo -e " └───────────────────────┘${WE}"
 
@@ -76,7 +76,8 @@ patch() {
            V2.5.0) PATCH260 ;;
            V2.6.0) PATCH270 ;;
            V2.7.0) PATCH280 ;;
-           V2.8.0) echo -e "$GE Version ist bereits aktuell...\n" ;;
+           V2.8.0) PATCH2100 ;;
+           V2.10.0) echo -e "$GE Version ist bereits aktuell...\n" ;;
            *)      FEHLER
  esac
  exit 0
@@ -240,6 +241,17 @@ PATCH280() {
 }
 
 
+#Patch Version V2.8.0 auf V2.10.0
+PATCH2100() {
+ backup
+ echo -e "\n Patche wetterstation.conf auf V2.10.0 ..."
+ patch_2100 && patch ./wetterstation.conf < patch
+ rm patch
+ echo -e " Fertig...\n"
+ echo -e " ${GE}Eventuelle Zusatzsensoren DP300/WS68, DP40/WH32 oder WH25/WH31 müssen eingetragen werden!\n"
+}
+
+
 patch_260() {
 cat <<EoD >patch
 --- wetterstation.conf_250	2021-05-13 13:45:06.297750501 +0200
@@ -294,6 +306,41 @@ cat <<EoD >patch
  ###  Ende Usereinstellungen
  ###EoF
 EoD
+}
+
+patch_2100() {
+cat <<EofP >patch
+--- wetterstation.conf_org      2021-10-24 11:21:11.969204947 +0200
++++ wetterstation.conf  2021-10-25 12:40:46.210234324 +0200
+@@ -1,7 +1,10 @@
+-### Settings V2.8.0 -----------------------------------------------------------
++### Settings V2.10.0 -----------------------------------------------------------
+  #Debuging einschalten [true/false] / default: false / Ausgabe der Messwerte
+   debug=false
+
++ #Logging einschalten [true/false] / default: false / schreibt die Datenstrings der Station in eine Datei
++  logging=false
++
+  #ioBroker-IP und Port der Simple-Restful-API [xxx.xxx.xxx.xxx:xxxxx]
+   IPP=192.168.1.3:8087
+
+@@ -9,12 +12,15 @@
+   WS_PROTOKOLL=2
+
+  #Anzahl der vorhandenen Zusatzsensoren / default: 0
++  ANZAHL_WH31=0
++  ANZAHL_DP40=0
+   ANZAHL_DP50=0
+   ANZAHL_DP60=0
+   ANZAHL_DP70=0
+   ANZAHL_DP100=0
+   ANZAHL_DP200=0
+   ANZAHL_DP250=0
++  ANZAHL_DP300=0
+
+  #Protokoll (HTTP oder HTTPS) / default: HTTP
+   WEB=HTTP
+EofP
 }
 
 jn_abfrage() {

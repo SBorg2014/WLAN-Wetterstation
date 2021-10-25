@@ -1,11 +1,14 @@
-//Wetterstation Datenpunkte anlegen V2.9.0
+//Wetterstation Datenpunkte anlegen V2.10.0
  let DP="javascript.0.Wetterstation.";
- let DP50  = 0;  // Anzahl der DP50 Sensoren  (max. 8 Stück)
- let DP60  = 0;  // Anzahl der DP60 Sensoren  (max. 1 Stück)
- let DP70  = 0;  // Anzahl der DP70 Sensoren  (max. 4 Stück)
- let DP100 = 0;  // Anzahl der DP100 Sensoren (max. 8 Stück)
- let DP200 = 0;  // Anzahl der DP200 Sensoren (max. 4 Stück)
- let DP250 = 0;  // Anzahl der DP250 Sensoren (max. 1 Stück)
+ let WH31  = 0;  // Anzahl der WH31/WH25 Sensoren  (max. 1 Stück)
+ let DP40  = 0;  // Anzahl der DP40/WH32 Sensoren  (max. 1 Stück)
+ let DP50  = 0;  // Anzahl der DP50/WH31 Sensoren  (max. 8 Stück)
+ let DP60  = 0;  // Anzahl der DP60/WH57 Sensoren  (max. 1 Stück)
+ let DP70  = 0;  // Anzahl der DP70/WH55 Sensoren  (max. 4 Stück)
+ let DP100 = 0;  // Anzahl der DP100/WH51 Sensoren (max. 8 Stück)
+ let DP200 = 0;  // Anzahl der DP200/WH43 Sensoren (max. 4 Stück)
+ let DP250 = 0;  // Anzahl der DP250/WH45 Sensoren (max. 1 Stück)
+ let DP300 = 0;  // Anzahl der DP300/WS68 Sensoren (max. 1 Stück)
  //Ende der User-Einstellungen -------------------
 
   createState(DP+"Innentemperatur"             , 0,    {name: "Temperatur im Haus",                     type: "number", role: "state", unit: "°C" });
@@ -80,6 +83,31 @@
   createState(DP+"Regen_Total"                 , 0,    {name: "Regenmenge Insgesammt",                  type: "number", role: "value", unit: "mm" });
 
 
+if (WH31>0 && WH31<=1)  {
+  if (!existsState(DP + "WH31")) {createState(DP + "WH31", '', { name: "Temp-Luftfeuchte Sensor Innen" });}
+  for(var i=1; i<=WH31; i++) {
+    if (!existsState(DP + "WH31." + i + ".Batterie")) {
+        createState(DP + "WH31." + i + ".Batterie", "", {
+            "name": "WH31 Kanal " + i + " Batteriestatus [0=OK, 1=Alarm]",
+            "type": "number",
+            "role": "value"
+        });
+    }
+  }
+}
+
+if (DP40>0 && DP40<=1)  {
+  if (!existsState(DP + "DP40")) {createState(DP + "DP40", '', { name: "Temp-Luftfeuchte Sensor Außen" });}
+  for(var i=1; i<=DP40; i++) {
+    if (!existsState(DP + "DP40." + i + ".Batterie")) {
+        createState(DP + "DP40." + i + ".Batterie", "", {
+            "name": "DP40 Kanal " + i + " Batteriestatus [0=OK, 1=Alarm]",
+            "type": "number",
+            "role": "value"
+        });
+    }
+  }
+}
 
 if (DP50>0 && DP50<=8)  {
   if (!existsState(DP + "DP50")) {createState(DP + "DP50", '', { name: "Mehrkanal Thermo-Hygrometersensoren" });}
@@ -104,7 +132,7 @@ if (DP50>0 && DP50<=8)  {
         createState(DP + "DP50." + i + ".Batterie", "", {
             "name": "DP50 Kanal " + i + " Batterie",
             "type": "number",
-            "role": "state",
+            "role": "state"
         });
     }
   }
@@ -139,7 +167,7 @@ if (DP60>0 && DP60<=1)  {
         createState(DP + "DP60." + i + ".Batterie", "", {
             "name": "DP60 Kanal " + i + " Batterie (5 = max)",
             "type": "number",
-            "role": "state",
+            "role": "state"
         });
     }
   }
@@ -159,7 +187,7 @@ if (DP70>0 && DP70<=4) {
         createState(DP + "DP70." + i + ".Batterie", "", {
             "name": "DP70 Kanal " + i + " Batterie",
             "type": "number",
-            "role": "state",
+            "role": "state"
         });
     }
   }
@@ -180,7 +208,7 @@ if (DP100>0 && DP100<=8) {
         createState(DP + "DP100." + i + ".Batterie", "", {
             "name": "DP100 Kanal " + i + " Batterie",
             "type": "number",
-            "role": "state",
+            "role": "state"
         });
     }
   }
@@ -209,7 +237,7 @@ if (DP200>0 && DP200<=4) {
         createState(DP + "DP200." + i + ".Batterie", "", {
             "name": "DP200 Kanal " + i + " Batterie (5 = max)",
             "type": "number",
-            "role": "state",
+            "role": "state"
         });
     }
   }
@@ -286,7 +314,21 @@ if (DP250>0 && DP250<=1)  {
         createState(DP + "DP250." + i + ".Batterie", "", {
             "name": "DP250 Kanal " + i + " Batterie (6 = max)",
             "type": "number",
+            "role": "value"
+        });
+    }
+  }
+}
+
+if (DP300>0 && DP300<=1)  {
+  if (!existsState(DP + "DP300")) {createState(DP + "DP300", '', { name: "Solar unterstütztes Anemometer mit UV-Lichtsensor" });}
+  for(let i=1; i<=DP300; i++) {
+    if (!existsState(DP + "DP300." + i + ".Batterie")) {
+        createState(DP + "DP300." + i + ".Batterie", "", {
+            "name": "DP300 Kanal " + i + " Batterie",
+            "type": "number",
             "role": "value",
+            "unit": "Volt"
         });
     }
   }

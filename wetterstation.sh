@@ -1,84 +1,90 @@
 #!/bin/bash
 
-# V2.9.0 - 25.08.2021 (c) 2019-2021 SBorg
+# V2.10.0 - 21.10.2021 (c) 2019-2021 SBorg
 #
 # wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
 # die Daten an den ioBroker (alternativ auch an OpenSenseMap, Windy und wetter.com)
 #
 # benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq' und 'bc' unter Linux
 #
-# V2.9.0 / 25.08.2021 - + Min-/Max-Aussentemperatur des heutigen Tages
+# V2.10.0 / 21.10.2021  ~ Bugfix Option '--data' bei Ecowitt-Protokoll
+#                       ~ Passkey bei Nutzung des Ecowitt-Protokolls maskieren
+#                       + logging des Datenstrings der Wetterstation in eine Datei
+#                       + Unterstützung für DP40/WH32 (bzw. WH26) Sensor
+#                       + Unterstützung für DP300/WS68 Sensor
+#                       + Unterstützung für WH31 (bzw. WH25) Sensor
+# V2.9.0 / 25.08.2021   + Min-/Max-Aussentemperatur des heutigen Tages
 #                       ~ Änderung bei Datenübertragung per Simple-API wg. InfluxDB 2.x
 #                       + Meteorologischer Sommer Durchschnittstemperatur und Regenmenge
 #                       + neuer Shell-Parameter --metsommer (zur manuellen Berechnung der Werte des meteorologischen Sommers)
-# V2.8.0 / 14.08.2021 - ~ Änderung am Messverfahren der Solarenergie (festes Poll-Intervall --> Zeitstempel)
+# V2.8.0 / 14.08.2021   ~ Änderung am Messverfahren der Solarenergie (festes Poll-Intervall --> Zeitstempel)
 #                       + Support für wetter.com
-# V2.7.0 / 15.07.2021 - + Bei bereits eingetragenem OSEM-User erfolgt Abbruch der OSEM-Registrierung
+# V2.7.0 / 15.07.2021   + Bei bereits eingetragenem OSEM-User erfolgt Abbruch der OSEM-Registrierung
 #                       + Unterstützung für DP250/WH45 Sensor
 #                       ~ Fix Prüfung netcat-Version
 #                       ~ Berechnung Windchill nur bis 11°C
-# V2.6.0 / 04.05.2021 - ~ Fix Avg Aussentemperatur vor einem Jahr
+# V2.6.0 / 04.05.2021   ~ Fix Avg Aussentemperatur vor einem Jahr
 #                       ~ Windchill erst ab 5km/h Windgeschwindigkeit
 #                       + Prüfung bei Option "v" ob die netcat-Version korrekt ist
 #                       + Support für Windy
 #                       ~ Hitzeindex
-# V2.5.0 / 08.02.2021 - ~ Fix für Protokoll #9 wg. fehlender Regenrate
+# V2.5.0 / 08.02.2021   ~ Fix für Protokoll #9 wg. fehlender Regenrate
 #                       + Min/Max/Avg Aussentemperatur vor einem Jahr
 #                       + Unterstützung von max. 4 DP70 Sensoren
 #                       ~ Codeoptimierungen
-# V2.4.0 / 03.02.2021 - + Hitzeindex (>20°C)
+# V2.4.0 / 03.02.2021   + Hitzeindex (>20°C)
 #                       + Unterstützung von max. 4 DP200 Sensoren
-# V2.3.0 / 26.01.2021 - ~ Fix Rundungsfehler Windchill/Taupunkt
+# V2.3.0 / 26.01.2021   ~ Fix Rundungsfehler Windchill/Taupunkt
 #                       + Min/max Aussentemperatur der letzten 24h
 #                       + Unterstützung für DP60 Sensor
 #                       ~ Fix für Protokoll #9 wg. fehlender Regenrate
-# V2.2.0 / 21.01.2021 - ~ Fix Batteriestatus
+# V2.2.0 / 21.01.2021   ~ Fix Batteriestatus
 #                       ~ Chillfaktor umbenannt auf Windchill/gefühlte Temperatur
 #                       + Berechnung Windchill + Taupunkt für Ecowitt-Protokoll
-# V2.1.0 / 10.01.2021 - + zusätzliches Protokoll "9" für userspezifische Abfrage
+# V2.1.0 / 10.01.2021   + zusätzliches Protokoll "9" für userspezifische Abfrage
 #                       ~ Fix Reset kumulierte Regenmenge zum Jahresanfang
 #                       ~ Fix für DP100 Bodenfeuchte
-# V2.0.0 / 15.12.2020 - + Unterstützung des Gateways und Zusatzsensoren (@a200)
+# V2.0.0 / 15.12.2020   + Unterstützung des Gateways und Zusatzsensoren (@a200)
 #                       + Protokoll (wunderground oder ecowitt) wählbar
-# V1.6.0 / 06.12.2020 - + Patch (@a200) für neuere Firmwareversionen (V1.6.3) speziell bei Nutzung eines Gateways
+# V1.6.0 / 06.12.2020   + Patch (@a200) für neuere Firmwareversionen (V1.6.3) speziell bei Nutzung eines Gateways
 #                       ~ Reset des Error-Kommunikationszählers
 #                       + Prüfung bei Option "-v" ob 'bc' und 'jq' installiert sind
 #                       ~ Option "n" bei netcat hinzugefügt
-# V1.5.0 / 30.11.2020 - ~ Simple-API per HTTP[S] und Authentifizierung
+# V1.5.0 / 30.11.2020   ~ Simple-API per HTTP[S] und Authentifizierung
 #                       + Update-Routine (beta)
-# V1.4.0 / 30.10.2020 - + Support für openSenseMap
-# V1.3.1 / 08.10.2020 - ~ Fix falls Leerzeichen im Verzeichnisnamen
-# V1.3.0 / 19.06.2020 - + letztes Regenereignis und Regenmenge
+# V1.4.0 / 30.10.2020   + Support für openSenseMap
+# V1.3.1 / 08.10.2020   ~ Fix falls Leerzeichen im Verzeichnisnamen
+# V1.3.0 / 19.06.2020   + letztes Regenereignis und Regenmenge
 #                       + Fehlermeldung bei falscher WS_ID / ID der Wetterstation
 #                       + Sonnenscheindauer + Solarenergie vom Vortag
 #                       ~ Änderung/Fix Sonnenscheindauer
-# V1.2.0 / 20.04.2020 - + Firmwareupgrade verfügbar?
+# V1.2.0 / 20.04.2020   + Firmwareupgrade verfügbar?
 #                       + Firmwareversion
 #                       + Sonnenscheindauer Heute, Woche, Monat, Jahr
 #                       + UV-Belastung
 #                       + Solarenergie Heute, Woche, Monat, Jahr
 #                       + Vorjahreswerte von Regenmenge, Sonnenscheindauer und Solarenergie
-# V1.1.0 / 03.04.2020 - + aktueller Regenstatus
+# V1.1.0 / 03.04.2020   + aktueller Regenstatus
 #                       + Luftdrucktendenz, Wettertrend und aktuelles Wetter
-# V1.0.0 / 12.03.2020 - + Berechnung Jahresregenmenge
+# V1.0.0 / 12.03.2020   + Berechnung Jahresregenmenge
 #                       + Windrichtung zusätzlich als Text
 #                       ~ Änderung "Regen Aktuell" in "Regenrate"
 #                       ~ Splitt in conf- + sub-Datei
-# V0.1.3 / 08.02.2020 - + Unterstützung für Datenpunkt "Regenmenge Jahr", zB. für Froggit WH4000 SE
+# V0.1.3 / 08.02.2020   + Unterstützung für Datenpunkt "Regenmenge Jahr", zB. für Froggit WH4000 SE
 #                       + Shell-Parameter -s (Klartextanzeige Passwort + Station-ID)
 #                       + Shell-Parameter --data (zeigt nur das gesendete Datenpaket der Wetterstation an)
-# V0.1.2 / 31.01.2020 - + Prüfung auf Datenintegrität
+# V0.1.2 / 31.01.2020   + Prüfung auf Datenintegrität
 #                       + neuer Datenpunkt bei Kommunikationsfehler
 #                       + Ausgabe Datenpaket der Wetterstation bei Debug
-# V0.1.1 / 01.01.2020 - + UTC-Korrektur
+# V0.1.1 / 01.01.2020   + UTC-Korrektur
 #                       + Config-Versionscheck
 #                       + Shell-Parameter -v/-h/--debug
-# V0.1.0 / 29.12.2019 - erstes Release
+# V0.1.0 / 29.12.2019   erstes Release
 
 
- SH_VER="V2.9.0"
- CONF_V="V2.8.0"
- SUBVER="V2.9.0"
+ SH_VER="V2.10.0"
+ CONF_V="V2.10.0"
+ SUBVER="V2.10.0"
 
 
  #Installationsverzeichnis feststellen
@@ -215,12 +221,18 @@ while true
 
 
      ### zusätzliche DPxxx-Sensoren ############################################################
+      if [ "${ANZAHL_DP40}" -gt "0" ]; then DP40; fi
       if [ "${ANZAHL_DP50}" -gt "0" ] || [ "${ANZAHL_DP100}" -gt "0" ]; then DP50_100; fi
       if [ "${ANZAHL_DP60}" -gt "0" ]; then DP60; fi
       if [ "${ANZAHL_DP70}" -gt "0" ]; then DP70; fi
       if [ "${ANZAHL_DP200}" -gt "0" ]; then DP200; fi
       if [ "${ANZAHL_DP250}" -gt "0" ]; then DP250; fi
+      if [ "${ANZAHL_DP300}" -gt "0" ]; then DP300; fi
      ### zusätzliche DPxxx-Sensoren ################################################### ENDE ###
+
+     ### zusätzliche WHxxx-Sensoren ############################################################
+      if [ "${ANZAHL_WH31}" -gt "0" ]; then WH31; fi
+     ### zusätzliche WHxxx-Sensoren ################################################### ENDE ###
 
    done
 
@@ -259,6 +271,7 @@ while true
 
   #Debug eingeschaltet?
    if [ $debug == "true" ]; then debuging; fi
+
 
   #Mitternachtjobs
    if [ `date +%H` -ge "23" ] && [ `date +%M` -ge "58" ] && [ -z $MIDNIGHTRUN ]; then
@@ -310,6 +323,12 @@ while true
 
   #openSenseMap
    if [ ${openSenseMap} == "true" ]; then opensensemap; fi
+
+
+
+  #Logging eingeschaltet?
+   if [ $logging == "true" ]; then logging; fi
+
 
  done
 ###EoF

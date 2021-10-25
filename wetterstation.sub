@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V2.9.0 --------------------------------------------------------
+### Subroutinen V2.10.0 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -141,7 +141,7 @@ debuging() {
    if [ "$show_pwid" = "true" ]; then
       DAT=$DATA
     else
-      DAT=$(echo $DATA| sed -e 's/PASSWORD=.*[^&]*&indoort/PASSWORD=xxxxxx\&indoort/; s/\?ID=.*[^&]*&PASS/\?ID=xxxxxx\&PASS/')
+      DAT=$(echo $DATA| sed -e 's/PASSWORD=.*[^&]*&indoort/PASSWORD=xxxxxx\&indoort/; s/\?ID=.*[^&]*&PASS/\?ID=xxxxxx\&PASS/; s/PASSKEY=.*[^&]*&stationtype/PASSKEY=xxxxxx\&stationtype/')
    fi
    echo -e "\nDATA von Wetterstation:\n$GR${DAT}$WE\n"
 
@@ -155,8 +155,9 @@ debuging() {
      9) echo -en "Sainlogic Pro";;
      *) echo -en "unbekannt"
     esac
-   echo -e "$WE\tDP50/60/70/100/200/250: $GE${ANZAHL_DP50} $WE| $GE${ANZAHL_DP60} $WE| $GE${ANZAHL_DP70} $WE| $GE${ANZAHL_DP100} $WE| $GE${ANZAHL_DP200} $WE| $GE${ANZAHL_DP250} $WE"
-   echo -e "Script-Version: $GE$SH_VER$WE\tConfig-Version: $GE${CONF_V}$WE\tSub-Version: $GE${SUBVER}$WE"
+   echo -e "$WE\tDP40/DP50/60/70/100/200/250/300: $GE${ANZAHL_DP40} $WE| $GE${ANZAHL_DP50} $WE| $GE${ANZAHL_DP60} $WE| $GE${ANZAHL_DP70} $WE| $GE${ANZAHL_DP100} $WE| $GE${ANZAHL_DP200} $WE| $GE${ANZAHL_DP250} $WE| $GE${ANZAHL_DP300} $WE"
+   echo -e "${WE}WH31: $GE${ANZAHL_WH31} $WE"
+   echo -e "Script-Version: ${GE}${SH_VER}${WE}\tConfig-Version: $GE${CONF_V}$WE\tSub-Version: $GE${SUBVER}$WE"
 
    if [ ! -z "$KOMFEHLER" ]; then echo -e "\n${RE}Kommunikationsfehler!$WE\n"; fi
   #Shell-Skript mit Fehler beenden
@@ -220,6 +221,9 @@ iob_send() {
          if [[ "${MESSWERTE[$i]}" = "co2" ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP250.1.CO2=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" = "co2_24h" ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP250.1.CO2_24h=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" =~ ^co2_batt ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP250.1.Batterie=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^wh68batt ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP300.1.Batterie=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^wh26batt ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP40.1.Batterie=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^wh25batt ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WH31.1.Batterie=${MESSWERTE[$(($i+1))]}"; fi
       fi
     done
     IOBOUT="${IOBOUT:1}"
@@ -266,7 +270,17 @@ get_DATA() {
 
 ### Datenpaket der Wetterstation anzeigen
 ws_data() {
-   echo -e "\n\nWarte maximal ${WARTE} Sekunden auf Datenpaket der Wetterstation...\n" && timeout ${WARTE} nc -nlvw 1 -p ${WS_PORT} | sed -n '1 p'
+  case $WS_PROTOKOLL in
+   1|9) echo -e "\n\nWarte maximal ${WARTE} Sekunden auf Datenpaket der Wetterstation...\n" && timeout ${WARTE} nc -nlvw 1 -p ${WS_PORT} | sed -n '1 p'
+        ;;
+
+   2)   echo -e "\n\nWarte maximal ${WARTE} Sekunden auf Datenpaket der Wetterstation...\n" && timeout ${WARTE} nc -nlvw 1 -p ${WS_PORT} | tail -1
+        ;;
+
+   *)   echo Protokollfehler...
+        exit 1
+  esac
+  echo -e "\n"
 }
 
 
@@ -640,7 +654,8 @@ setup() {
  #Anzahl der DP Berechnen
   case $WS_PROTOKOLL in
    1) MAXDEVICES=22;;
-   *) MAXDEVICES=$(( 31 + $ANZAHL_DP50 * 6 + $ANZAHL_DP100 * 4 + $ANZAHL_DP60 * 8 + $ANZAHL_DP200 * 6 + $ANZAHL_DP70 * 4 + $ANZAHL_DP250 * 18 ))
+   *) MAXDEVICES=$(( 31 + $ANZAHL_DP40 * 2 + $ANZAHL_DP50 * 6 + $ANZAHL_DP100 * 4 + $ANZAHL_DP60 * 8 + $ANZAHL_DP200 * 6 + $ANZAHL_DP70 * 4 + $ANZAHL_DP250 * 18 + $ANZAHL_DP300 *2 ))
+      MAXDEVICES+=$(( $ANZAHL_WH31 *2 ))
   esac
 
  #falls reboot warten bis der ioB wieder läuft...
@@ -703,7 +718,7 @@ usage() {
         echo -e " --metsommer\tführt die Berechnung des meteorologischen Sommers durch"
 	echo -e " --osem_reg\tführt Registrierung bei openSenseMap durch"
         echo -e " --windy_reg\tführt Registrierung bei Windy durch"
-	echo -e " -s | --show\tzeigt bei der Debug-Ausgabe Passwort und Station-ID im Klartext an"
+	echo -e " -s | --show\tzeigt bei der Debug-Ausgabe Passwort/Station-ID bzw. Passkey im Klartext an"
 	echo -e " -d | --data\tzeigt nur das gesendete Datenpaket der Wetterstation an"
 	echo -e " -v | --version\tAusgabe der Versionsnummer und Prüfung der Abhängigkeiten"
 	echo -e " -h | --help\tdieses Hilfemenue\n"
@@ -717,19 +732,19 @@ version() {
 
         #Test ob bc,jq und netcat installiert sind
          if [ $(which bc) ]; then
-           echo -e " $GR'bc'$WE installiert: $GR\u2713"
+           echo -e " $GR'bc'$WE installiert: $WE[$GR✓$WE]"
           else
-           echo -e " $GR'bc'$WE installiert: $RE\u2717"
+           echo -e " $GR'bc'$WE installiert: $WE[$RE✗$WE]"
          fi
          if [ $(which jq) ]; then
-           echo -e " $GR'jq'$WE installiert: $GR\u2713 \n"
+           echo -e " $GR'jq'$WE installiert: $WE[$GR✓$WE] \n"
           else
-           echo -e " $GR'jq'$WE installiert: $RE\u2717 \n"
+           echo -e " $GR'jq'$WE installiert: $WE[$RE✗$WE] \n"
          fi
 
          if [[ $(sudo update-alternatives --query nc|grep Value) =~ openbsd ]]; then
-              echo -e " $GR'nc'$WE in der Openbsd-Variante installiert: $GR\u2713"
-              echo -e " $GR'netcat'$WE in Openbsd-Variante aktiv, alles korrekt $GR\u2713"
+              echo -e " $GR'nc'$WE in der Openbsd-Variante installiert:  $WE[$GR✓$WE]"
+              echo -e " $GR'netcat'$WE in Openbsd-Variante aktiv, alles korrekt $WE[$GR✓$WE]"
           else
            if [[ $(sudo update-alternatives --query nc|grep openbsd) ]]; then
             echo -e " $GR'nc'$WE in der Openbsd-Variante installiert aber nicht aktiviert.\n"
@@ -1106,6 +1121,34 @@ metsommer() {
 }
 
 
+logging() {
+      local DATUM=$(date '+%Y%m%d')
+      echo -e "\n${DATA}" >> ${DATUM}_station.log
+}
+
+
+WH31() {
+      #WH31-Sensoren
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^wh25batt= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+}
+
+
+DP40() {
+      #DP40-Sensoren
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^wh26batt= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+}
+
+
 DP50_100() {
       #DP50/100-Sensoren
       if [[ ${MESSWERTERAWIN[$i]} =~ ^temp[1-8]f= ]]
@@ -1267,6 +1310,17 @@ DP250() {
          MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
       fi
       if [[ ${MESSWERTERAWIN[$i]} =~ ^co2_batt= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+}
+
+
+DP300() {
+      #DP300-Sensoren
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^wh68batt= ]]
          then let "j++"
          MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
          let "j++"

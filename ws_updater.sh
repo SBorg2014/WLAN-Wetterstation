@@ -53,7 +53,7 @@ FEHLER() {
  exit 1
 }
 
-patch() {
+patcher() {
          echo -en "\n${WE} Soll die ${RE}wetterstation.conf ${WE}nun auf eine neue Version gepatcht werden? [${GR}J/N${WE}]"
            read -n 1 -p ": " JN
            if [ "$JN" = "J" ] || [ "$JN" = "j" ]; then
@@ -245,8 +245,8 @@ PATCH280() {
 PATCH2100() {
  backup
  echo -e "\n Patche wetterstation.conf auf V2.10.0 ..."
- patch_2100 && patch ./wetterstation.conf < patch
- rm patch
+ patch_2100 && patch ./wetterstation.conf < patch.dat
+ rm patch.dat
  echo -e " Fertig...\n"
  echo -e " ${GE}Eventuelle Zusatzsensoren DP300/WS68, DP40/WH32 oder WH25/WH31 müssen eingetragen werden!\n"
 }
@@ -309,24 +309,24 @@ EoD
 }
 
 patch_2100() {
-cat <<EofP >patch
---- wetterstation.conf_org      2021-10-24 11:21:11.969204947 +0200
-+++ wetterstation.conf  2021-10-25 12:40:46.210234324 +0200
+cat <<EofP >patch.dat
+--- wetterstation.org	2021-10-26 20:01:56.772982845 +0200
++++ wetterstation.conf	2021-10-26 20:04:21.625615091 +0200
 @@ -1,7 +1,10 @@
 -### Settings V2.8.0 -----------------------------------------------------------
 +### Settings V2.10.0 -----------------------------------------------------------
   #Debuging einschalten [true/false] / default: false / Ausgabe der Messwerte
    debug=false
-
+ 
 + #Logging einschalten [true/false] / default: false / schreibt die Datenstrings der Station in eine Datei
 +  logging=false
 +
-  #ioBroker-IP und Port der Simple-Restful-API [xxx.xxx.xxx.xxx:xxxxx]
+  #ioBroker-IP und Port der Simple-Restful-API [xxx.xxx.xxx.xxx:xxxxx] 
    IPP=192.168.1.3:8087
-
+ 
 @@ -9,12 +12,15 @@
-   WS_PROTOKOLL=2
-
+   WS_PROTOKOLL=1
+ 
   #Anzahl der vorhandenen Zusatzsensoren / default: 0
 +  ANZAHL_WH31=0
 +  ANZAHL_DP40=0
@@ -337,7 +337,7 @@ cat <<EofP >patch
    ANZAHL_DP200=0
    ANZAHL_DP250=0
 +  ANZAHL_DP300=0
-
+ 
   #Protokoll (HTTP oder HTTPS) / default: HTTP
    WEB=HTTP
 EofP
@@ -447,7 +447,7 @@ usage() {
         --service )             service
                                 exit 0
                                 ;;
-        --patch )               patch
+        --patch )               patcher
                                 exit 0
                                 ;;
         -h | --help )           usage

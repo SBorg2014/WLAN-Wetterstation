@@ -244,7 +244,7 @@ iob_send() {
 ### Daten holen und Integritätscheck
 get_DATA() {
   case $WS_PROTOKOLL in
-   1|9) DATA=$(timeout ${WARTE} nc -nlvw 1 -p ${WS_PORT}|sed -n '1 p')
+   1|9) DATA=$(timeout ${WARTE} nc -nlvw 1 -p ${WS_PORT} 2>/dev/null|sed -n '1 p')
         STRLEN=$(echo -n $DATA | wc -m)
        #haben wir eine Jahresregenmenge?
         if [[ ! "$DATA" =~ "yearlyrainin" ]]; then DATA=$(echo $DATA| sed -e 's/solarradiation/yearlyrainin=0\&solarradiation/' ); fi
@@ -254,7 +254,7 @@ get_DATA() {
         if [ "$STRLEN" -gt "400" ] && [[ "$DATA" =~ "/weatherstation/updateweatherstation.php?ID=${WS_ID}" ]]; then return 0; else return 1; fi
        ;;
 
-   2) DATA=$(timeout ${WARTE} nc -nlvw 1 -p ${WS_PORT}|tail -1)
+   2) DATA=$(timeout ${WARTE} nc -nlvw 1 -p ${WS_PORT} 2>/dev/null|tail -1)
       STRLEN=$(echo -n $DATA | wc -m)
       if [ "$STRLEN" -gt "150" ] && [[ "$DATA" =~ "PASSKEY=" ]]; then return 0; else return 1; fi
       ;;
@@ -1169,7 +1169,6 @@ DP50_100() {
          MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
          let "j++"
          MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
-         batterie $j
       fi
       if [[ ${MESSWERTERAWIN[$i]} =~ ^soilbatt[1-8]= ]]
          then let "j++"
@@ -1460,7 +1459,7 @@ windy_update(){
          windy_DATA="station=${windy_Station}&ts=$(date +%s)&temp=${MESSWERTE[1]}&wind=${windy_mph}&mbar=${MESSWERTE[9]}&winddir=${MESSWERTE[8]}"
          windy_DATA+="&gust=${windy_boe_mph}&humidity=${MESSWERTE[5]}&dewpoint=${MESSWERTE[2]}&precip=${MESSWERTE[23]}&uv=${MESSWERTE[17]}"
          local retval=$(curl -s https://stations.windy.com/pws/update/${windy_APIKey}?${windy_DATA})
-         if echo $retval|grep 'SUCCESS'; then
+         if echo ${retval}|grep -q 'SUCCESS'; then
              SAPI "Single" "set/${DP_WINDY_TRANSMIT}?value=true&ack=true"
            else
              SAPI "Single" "set/${DP_WINDY_TRANSMIT}?value=false&ack=true"
@@ -1478,7 +1477,7 @@ wettercom_update(){
         local MESSAGE=$(wget -qO- "${WC_URL}")
 
         #alles Ok?
-        if echo ${MESSAGE}|grep 'SUCCESS'; then
+        if echo ${MESSAGE}|grep -q 'SUCCESS'; then
            SAPI "Single" "set/${DP_WCOM_TRANSMIT}?value=true&ack=true"
          else
            SAPI "Single" "set/${DP_WCOM_TRANSMIT}?value=false&ack=true"

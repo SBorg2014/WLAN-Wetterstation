@@ -79,9 +79,19 @@ Daten in Wetter.com:<br>
 <br><br>
 
 ## Versionen ##
-
-
-
+  
+  
+**V2.10.0 - 21.10.2021**  
+```
+     ~ Bugfix Option '--data' bei Ecowitt-Protokoll
+     ~ Passkey bei Nutzung des Ecowitt-Protokolls maskieren
+     + logging des Datenstrings der Wetterstation in eine Datei
+     + Unterstützung für DP40/WH32 (bzw. WH26) Sensor
+     + Unterstützung für DP300/WS68 Sensor
+     + Unterstützung für WH31 (bzw. WH25) Sensor
+     + netcat-/Success-Meldungen im Syslog entfernt
+     + Patch Sommer-/Winterzeit für wetter.com
+```
 
 
 **V2.9.0 - 25.08.2021**

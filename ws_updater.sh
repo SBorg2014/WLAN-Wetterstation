@@ -18,7 +18,7 @@ UPDATE_VER=V2.10.0
 
 
 checker() {
- #Test ob bc, jq und unzip installiert sind
+ #Test ob bc, jq, unzip und patch installiert sind
          if [ $(which bc) ]; then
            echo -e "\n $GR'bc'$WE    installiert: [$GR✓$WE]"
           else
@@ -38,6 +38,13 @@ checker() {
           else
            echo -e " $GR'unzip'$WE installiert: [$RE✗$WE]\n"
            echo -e "\n\n $RE Bitte zuerst 'unzip' installieren [sudo apt install unzip]\n"
+           exit 1
+         fi
+         if [ $(which patch) ]; then
+           echo -e " $GR'patch'$WE installiert: [$GR✓$WE]\n"
+          else
+           echo -e " $GR'patch'$WE installiert: [$RE✗$WE]\n"
+           echo -e "\n\n $RE Bitte zuerst 'patch' installieren [sudo apt install patch]\n"
            exit 1
          fi
 }

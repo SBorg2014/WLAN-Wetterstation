@@ -2,9 +2,11 @@
 <br/><br/>
 [![Current Release](https://img.shields.io/github/v/release/SBorg2014/WLAN-Wetterstation.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/SBorg2014/WLAN-Wetterstation/latest/total.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/releases/latest)
+[![GitHub download](https://img.shields.io/github/downloads/SBorg2014/WLAN-Wetterstation/total.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/releases/latest)
 [![Contributors](https://img.shields.io/github/contributors/SBorg2014/WLAN-Wetterstation.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/graphs/contributors)
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/SBorg2014/WLAN-Wetterstation.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/issues)
 [![Percentage of issues still open](http://isitmaintained.com/badge/open/SBorg2014/WLAN-Wetterstation.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/issues)
+[![GitHub issues](https://img.shields.io/github/issues/SBorg2014/WLAN-Wetterstation)](https://github.com/SBorg2014/WLAN-Wetterstation/issues)
 [![Commits since last release](https://img.shields.io/github/commits-since/SBorg2014/WLAN-Wetterstation/latest.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/releases/latest)
 [![License](https://img.shields.io/github/license/SBorg2014/WLAN-Wetterstation.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/LICENSE)
 
@@ -79,9 +81,19 @@ Daten in Wetter.com:<br>
 <br><br>
 
 ## Versionen ##
-
-
-
+  
+  
+**V2.10.0 - 21.10.2021**  
+```
+     ~ Bugfix Option '--data' bei Ecowitt-Protokoll
+     ~ Passkey bei Nutzung des Ecowitt-Protokolls maskieren
+     + logging des Datenstrings der Wetterstation in eine Datei
+     + Unterstützung für DP40/WH32 (bzw. WH26) Sensor
+     + Unterstützung für DP300/WS68 Sensor
+     + Unterstützung für WH31 (bzw. WH25) Sensor
+     + netcat-/Success-Meldungen im Syslog entfernt
+     + Patch Sommer-/Winterzeit für wetter.com
+```
 
 
 **V2.9.0 - 25.08.2021**

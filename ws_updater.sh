@@ -22,21 +22,21 @@ checker() {
          if [ $(which bc) ]; then
            echo -e "\n $GR'bc'$WE    installiert: [$GR✓$WE]"
           else
-           echo -e "\n $GR'bc'$WE    installiert: [$GR$RE✗$WE]"
+           echo -e "\n $GR'bc'$WE    installiert: [$RE✗$WE]"
            echo -e "\n\n $RE Bitte zuerst 'bc' installieren [sudo apt install bc]\n"
            exit 1
          fi
          if [ $(which jq) ]; then
-           echo -e " $GR'jq'$WE    installiert: [$GR$GR✓$WE]"
+           echo -e " $GR'jq'$WE    installiert: [$GR✓$WE]"
           else
-           echo -e " $GR'jq'$WE    installiert: [$GR$RE✗$WE]"
+           echo -e " $GR'jq'$WE    installiert: [$RE✗$WE]"
            echo -e "\n\n $RE Bitte zuerst 'jq' installieren [sudo apt install jq]\n"
            exit 1
          fi
          if [ $(which unzip) ]; then
-           echo -e " $GR'unzip'$WE installiert: [$GR$GR✓$WE]\n"
+           echo -e " $GR'unzip'$WE installiert: [$GR✓$WE]\n"
           else
-           echo -e " $GR'unzip'$WE installiert: [$GR$RE✗$WE]\n"
+           echo -e " $GR'unzip'$WE installiert: [$RE✗$WE]\n"
            echo -e "\n\n $RE Bitte zuerst 'unzip' installieren [sudo apt install unzip]\n"
            exit 1
          fi
@@ -358,7 +358,7 @@ install() {
    #WLAN-Wetterstation Installationsroutine
     jn_abfrage "${WE}\n Möchten Sie ${BL}WLAN-Wetterstation${WE} im aktuellen Verzeichnis installieren?"
     if [ -z $antwort ]; then echo -e "\n ${RE}Abbruch...${WE}\n\n"; exit 1; fi
-    unset $antwort
+    unset antwort
 
     #aktuelle Version feststellen, downloaden und entpacken
      echo -e "\n\n\n Hole Daten von GitHub..."
@@ -387,7 +387,7 @@ install() {
     #DPs im ioB anlegen...
      jn_abfrage "\n${BL} Nun mittels des Javascriptes ${GE}'wetterstation.js'${BL} die Datenpunkte im ioBroker anlegen! Fertig [\e[101m Nein=Abbruch \e[0m${BL}]?"
      if [ -z $antwort ]; then echo -e "\n"; exit 1; fi
-     unset $antwort
+     unset antwort
 
     #Testlauf starten
      jn_abfrage"\n${WE} Einmaligen Testdurchlauf im Debug-Modus starten...(empfiehlt sich)?"

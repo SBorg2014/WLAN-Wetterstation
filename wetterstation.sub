@@ -1471,7 +1471,12 @@ windy_update(){
 wettercom_update(){
         #Daten an wetter.com senden
         WC_URL="http://www.wetterarchiv.de/interface/http/input.php?benutzername=${WETTERCOM_ID}&passwort=${WETTERCOM_PW}"
-        local TIMESTAMP=$(date +%Y%m%d%H%M)
+        #Sommer-/Winterzeit - Patch
+        if date|grep -q 'CET'; then
+          local TIMESTAMP=$(date +%Y%m%d%H%M --date='+1 hour')
+         else
+          local TIMESTAMP=$(date +%Y%m%d%H%M)
+        fi
         WC_URL+="&datum=${TIMESTAMP}&temperatur=${MESSWERTE[1]}&feuchtigkeit=${MESSWERTE[5]}&windrichtung=${MESSWERTE[8]}"
         WC_URL+="&windstaerke=${MESSWERTE[6]}&luftdruck=${MESSWERTE[10]}&niederschlagsmenge=${MESSWERTE[11]}"
         local MESSAGE=$(wget -qO- "${WC_URL}")

@@ -14,6 +14,7 @@
 #                       + Unterstützung für DP300/WS68 Sensor
 #                       + Unterstützung für WH31 (bzw. WH25) Sensor
 #                       + netcat-/Success-Meldungen im Syslog entfernt
+#                       + Patch Sommer-/Winterzeit für wetter.com
 # V2.9.0 / 25.08.2021   + Min-/Max-Aussentemperatur des heutigen Tages
 #                       ~ Änderung bei Datenübertragung per Simple-API wg. InfluxDB 2.x
 #                       + Meteorologischer Sommer Durchschnittstemperatur und Regenmenge

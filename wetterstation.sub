@@ -805,8 +805,6 @@ osem_register() {
         if [ $JN != "J" ]; then echo -e " \n$RE Abbruch... ${WE}\n\n"; exit; fi
         sudo apt-get install jq
    fi
-  #bereits ein User angelegt
-   if [ "$senseBox_USER" != "" ]; then echo -e "\n${RE} [FEHLER:]   ABBRUCH! Es ist bereits ein Username für OpenSenseMap in der Konfiguration gesetzt!\n\e[0m"; exit 1; fi
 
   #Abfragen
    clear
@@ -814,6 +812,9 @@ osem_register() {
         read JN
         if [ ! $JN ]; then JN="Nein"; fi
         if [ $JN == "Ja" ]; then
+         #bereits ein User angelegt
+         if [ "$senseBox_USER" != "" ]; then echo -e "\n${RE} [FEHLER:]   ABBRUCH! Es ist bereits ein Username für OpenSenseMap in der Konfiguration gesetzt!\n\e[0m"; exit 1; fi
+
          echo -e "\n$WE Voller Name oder Nickname. 3-40 Zeichen lang. Erlaubt sind die Zeichen (${GR}a-zA-Z0-9${WE}), Punkte (${GR}.${WE}), Striche (${GR}-${WE}) und Unterstriche (${GR}_${WE})."
          echo -en " Das erste Zeichen muss ein Buchstabe oder eine Ziffer sein: $GE"
          read OSEM_USER

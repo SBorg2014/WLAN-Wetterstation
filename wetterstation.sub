@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V2.10.0 --------------------------------------------------------
+### Subroutinen V2.10.1 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -195,7 +195,7 @@ iob_send() {
        if [[ ! -z "${MESSWERTE[$i]}" ]]; then IOBOUT="${IOBOUT}&${IOBPAR[$i]}=${MESSWERTE[$i]}"; fi
     done
 
-    #Sensoren DP für ioBroker
+    #Sensoren DP/WH für ioBroker
     for (( i = 31; i < $MAXDEVICES; i+=2 )); do
       if [[ ! -z "${MESSWERTE[$i]}" ]]; then
          if [[ "${MESSWERTE[$i]}" =~ ^temp[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP50.${MESSWERTE[$i]:4:1}.Temperatur=${MESSWERTE[$(($i+1))]}"; fi
@@ -370,7 +370,7 @@ rain() {
 	  if [ ${TS_DIFF} -ge "0" ]; then
            SAPI "Single" "getPlainValue/${DP_REGEN_JAHR_KUM}"
 	   REGENMENGE=$(echo "scale=2;${retval}+${MESSWERTE[12]}" | bc -l)
-	   SAPI "Single" "set/${DP_REGEN_JAHR_KUM}?value=${REGENMENGE}"
+	   SAPI "Single" "set/${DP_REGEN_JAHR_KUM}?value=${REGENMENGE}&ack=true"
 	  fi
 }
 
@@ -459,15 +459,15 @@ wetterprognose() {
 ###Check auf Firmwareupgrade
 firmware_check() {
 	#Version auf GitHub holen
-	FW_VER=$(curl https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/firmware.version)
+	FW_VER=$(curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/firmware.version)
 	FW_AKT=${MESSWERTE[19]}
 
 	if [ "$FW_VER" != "$FW_AKT" ]; then
-	  SAPI "Single" "set/${DP_FW_UPGRADE}?value=true"
+	  SAPI "Single" "set/${DP_FW_UPGRADE}?value=true&ack=true"
 	 else
-	  SAPI "Single" "set/${DP_FW_UPGRADE}?value=false"
+	  SAPI "Single" "set/${DP_FW_UPGRADE}?value=false&ack=true"
 	fi
-	SAPI "Single" "set/${DP_FW_VERSION}?value=${FW_AKT}"
+	SAPI "Single" "set/${DP_FW_VERSION}?value=${FW_AKT}&ack=true"
 }
 
 
@@ -655,7 +655,7 @@ setup() {
   case $WS_PROTOKOLL in
    1) MAXDEVICES=22;;
    *) MAXDEVICES=$(( 31 + $ANZAHL_DP40 * 2 + $ANZAHL_DP50 * 6 + $ANZAHL_DP100 * 4 + $ANZAHL_DP60 * 8 + $ANZAHL_DP200 * 6 + $ANZAHL_DP70 * 4 + $ANZAHL_DP250 * 18 + $ANZAHL_DP300 *2 ))
-      MAXDEVICES+=$(( $ANZAHL_WH31 *2 ))
+      MAXDEVICES+=$(( $ANZAHL_WH31 * 2 ))
   esac
 
  #falls reboot warten bis der ioB wieder läuft...
@@ -796,7 +796,7 @@ opensensemap() {
 
 
 osem_register() {
-  if [ ${openSenseMap} == "true" ]; then echo -e "\n${RE} [FEHLER:]   ABBRUCH! \"openSenseMap\" ist in der Konfiguration auf 'true' gesetzt!\n"; exit; fi
+  if [ ${openSenseMap} == "true" ]; then echo -e "\n${RE} [FEHLER:]   ABBRUCH! \"openSenseMap\" ist in der Konfiguration auf 'true' gesetzt!\n\e[0m"; exit; fi
 
   #benötigter jq installiert?
    if [ ! $(which jq) ]; then
@@ -806,7 +806,7 @@ osem_register() {
         sudo apt-get install jq
    fi
   #bereits ein User angelegt
-   if $OSEM_USER; then echo -e "\n${RE} [FEHLER:]   ABBRUCH! Es ist bereits ein Username für OpenSenseMap in der Konfiguration gesetzt!\n"; exit 1; fi
+   if [ "$senseBox_USER" != "" ]; then echo -e "\n${RE} [FEHLER:]   ABBRUCH! Es ist bereits ein Username für OpenSenseMap in der Konfiguration gesetzt!\n\e[0m"; exit 1; fi
 
   #Abfragen
    clear

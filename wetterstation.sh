@@ -1,12 +1,14 @@
 #!/bin/bash
 
-# V2.10.0 - 21.10.2021 (c) 2019-2021 SBorg
+# V2.10.1 - 17.11.2021 (c) 2019-2021 SBorg
 #
 # wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
 # die Daten an den ioBroker (alternativ auch an OpenSenseMap, Windy und wetter.com)
 #
 # benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq' und 'bc' unter Linux
 #
+# V2.10.1 / 17.11.2021  ~ Bugfix 'jq'-Fehlermeldungen von 0:00 Uhr bis 01:00 Uhr
+#                       ~ Bugfix Fehlermeldung "bereits existierender User" bei der OSeM-Registrierung obwohl keiner angelegt
 # V2.10.0 / 21.10.2021  ~ Bugfix Option '--data' bei Ecowitt-Protokoll
 #                       ~ Passkey bei Nutzung des Ecowitt-Protokolls maskieren
 #                       + logging des Datenstrings der Wetterstation in eine Datei
@@ -84,9 +86,9 @@
 # V0.1.0 / 29.12.2019   erstes Release
 
 
- SH_VER="V2.10.0"
+ SH_VER="V2.10.1"
  CONF_V="V2.10.0"
- SUBVER="V2.10.0"
+ SUBVER="V2.10.1"
 
 
  #Installationsverzeichnis feststellen
@@ -96,7 +98,7 @@
   VER_CONFIG=$(cat "${DIR}/wetterstation.conf"|grep '### Setting'|cut -d" " -f3)
   if [ $CONF_V != $VER_CONFIG ]; then
 	echo -e "wetterstation: \e[31mERROR #000 - Config-Version mismatch!\n"
-	echo -e "benutzt: $VER_CONFIG\t benötigt wird: $CONF_V$WE"
+	echo -e "benutzt: $VER_CONFIG\t benötigt wird: $CONF_V \e[0m"
 	exit 1
   fi
 
@@ -104,7 +106,7 @@
   SUB_CONFIG=$(cat "${DIR}/wetterstation.sub"|grep '### Subroutinen'|cut -d" " -f3)
   if [ $SUBVER != $SUB_CONFIG ]; then
 	echo -e "wetterstation: \e[31mERROR #001 - Subroutinen-Version mismatch!\n"
-	echo -e "benutzt: $SUB_CONFIG\t benötigt wird: $SUBVER$WE"
+	echo -e "benutzt: $SUB_CONFIG\t benötigt wird: $SUBVER \e[0m"
 	exit 1
   fi
 
@@ -291,7 +293,7 @@ while true
    DO_IT=${DO_IT#0}
    if [ $(( $DO_IT % 15 )) -eq "0" ]; then
      if [ `date +%s` -ge "$TIMER_SET" ]; then wetterprognose
-      if [ ! -z ${INFLUX_DB} ]; then
+      if [ ! -z ${INFLUX_DB} ] && [ $(date +%H) -gt "1" ]; then
         minmax24h
         minmaxheute
       fi

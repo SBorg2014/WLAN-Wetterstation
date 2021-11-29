@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V2.10.0
+UPDATE_VER=V2.10.1
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -13,38 +13,25 @@ UPDATE_VER=V2.10.0
             echo -e " │                       │"
             echo -e " │  ${BL} WS-Updater ${UPDATE_VER}${GE}\t │"
             echo -e " │                       │"
-            echo -e " └───────────────────────┘${WE}"
+            echo -e " └───────────────────────┘${WE}\n"
 
 
 
 checker() {
  #Test ob bc, jq, unzip und patch installiert sind
-         if [ $(which bc) ]; then
-           echo -e "\n $GR'bc'$WE    installiert: [$GR✓$WE]"
+         check_prog bc
+         check_prog jq
+         check_prog unzip
+         check_prog patch
+         echo -e "\n"
+}
+
+check_prog() {
+         if [ $(which $1) ]; then
+           echo -e " $GR'$1'$WE installiert: [$GR✓$WE]"
           else
-           echo -e "\n $GR'bc'$WE    installiert: [$RE✗$WE]"
-           echo -e "\n\n $RE Bitte zuerst 'bc' installieren [sudo apt install bc]\n"
-           exit 1
-         fi
-         if [ $(which jq) ]; then
-           echo -e " $GR'jq'$WE    installiert: [$GR✓$WE]"
-          else
-           echo -e " $GR'jq'$WE    installiert: [$RE✗$WE]"
-           echo -e "\n\n $RE Bitte zuerst 'jq' installieren [sudo apt install jq]\n"
-           exit 1
-         fi
-         if [ $(which unzip) ]; then
-           echo -e " $GR'unzip'$WE installiert: [$GR✓$WE]\n"
-          else
-           echo -e " $GR'unzip'$WE installiert: [$RE✗$WE]\n"
-           echo -e "\n\n $RE Bitte zuerst 'unzip' installieren [sudo apt install unzip]\n"
-           exit 1
-         fi
-         if [ $(which patch) ]; then
-           echo -e " $GR'patch'$WE installiert: [$GR✓$WE]\n"
-          else
-           echo -e " $GR'patch'$WE installiert: [$RE✗$WE]\n"
-           echo -e "\n\n $RE Bitte zuerst 'patch' installieren [sudo apt install patch]\n"
+           echo -e " $GR'$1'$WE installiert: [$RE✗$WE]"
+           echo -e "\n\n $RE Bitte zuerst '$1' installieren [sudo apt install $1]\n"
            exit 1
          fi
 }
@@ -84,7 +71,9 @@ patcher() {
            V2.6.0) PATCH270 ;;
            V2.7.0) PATCH280 ;;
            V2.8.0) PATCH2100 ;;
-           V2.10.0) echo -e "$GE Version ist bereits aktuell...\n" ;;
+           V2.9.0) echo -e "$GE Kein Patch nötig...\n" ;;
+           V2.10.0) echo -e "$GE Kein Patch nötig...\n" ;;
+           V2.10.1) echo -e "$GE Version ist bereits aktuell...\n" ;;
            *)      FEHLER
  esac
  exit 0
@@ -324,16 +313,16 @@ cat <<EofP >patch.dat
 +### Settings V2.10.0 -----------------------------------------------------------
   #Debuging einschalten [true/false] / default: false / Ausgabe der Messwerte
    debug=false
- 
+
 + #Logging einschalten [true/false] / default: false / schreibt die Datenstrings der Station in eine Datei
 +  logging=false
 +
-  #ioBroker-IP und Port der Simple-Restful-API [xxx.xxx.xxx.xxx:xxxxx] 
+  #ioBroker-IP und Port der Simple-Restful-API [xxx.xxx.xxx.xxx:xxxxx]
    IPP=192.168.1.3:8087
- 
+
 @@ -9,12 +12,15 @@
    WS_PROTOKOLL=1
- 
+
   #Anzahl der vorhandenen Zusatzsensoren / default: 0
 +  ANZAHL_WH31=0
 +  ANZAHL_DP40=0
@@ -344,7 +333,7 @@ cat <<EofP >patch.dat
    ANZAHL_DP200=0
    ANZAHL_DP250=0
 +  ANZAHL_DP300=0
- 
+
   #Protokoll (HTTP oder HTTPS) / default: HTTP
    WEB=HTTP
 EofP
@@ -405,7 +394,7 @@ install() {
      if [ ! -z $antwort ]; then sudo systemctl start wetterstation.service; fi
 
     echo -e "\n\n Fertig..."
-    echo -e "Wenn der Testlauf ausgeführt wurde und erfolgreich verlief, sollten nun aktuelle Daten der Wetterstation in den Datenpunkten stehen ;-)\n"
+    echo -e "Wenn der Testlauf ausgeführt wurde und erfolgreich verlief, sollten nun aktuelle Daten der Wetterstation im ioBroker in den Datenpunkten stehen ;-)\n"
 }
 
 service() {
@@ -429,7 +418,6 @@ service() {
 	WantedBy=multi-user.target
 	EoD
 
-      sudo chmod +x /etc/systemd/system/wetterstation.service
       echo -e "\n Aktiviere den Service nun..."
       sudo systemctl daemon-reload
       sudo systemctl enable wetterstation.service

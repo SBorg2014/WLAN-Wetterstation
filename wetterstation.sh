@@ -1,94 +1,103 @@
 #!/bin/bash
-
-# V2.10.1 - 17.11.2021 (c) 2019-2021 SBorg
-#
-# wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
-# die Daten an den ioBroker (alternativ auch an OpenSenseMap, Windy und wetter.com)
-#
-# benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq' und 'bc' unter Linux
-#
-# V2.10.1 / 17.11.2021  ~ Bugfix 'jq'-Fehlermeldungen von 0:00 Uhr bis 01:00 Uhr
-#                       ~ Bugfix Fehlermeldung "bereits existierender User" bei der OSeM-Registrierung obwohl keiner angelegt
-# V2.10.0 / 21.10.2021  ~ Bugfix Option '--data' bei Ecowitt-Protokoll
-#                       ~ Passkey bei Nutzung des Ecowitt-Protokolls maskieren
-#                       + logging des Datenstrings der Wetterstation in eine Datei
-#                       + Unterstützung für DP40/WH32 (bzw. WH26) Sensor
-#                       + Unterstützung für DP300/WS68 Sensor
-#                       + Unterstützung für WH31 (bzw. WH25) Sensor
-#                       + netcat-/Success-Meldungen im Syslog entfernt
-#                       + Patch Sommer-/Winterzeit für wetter.com
-# V2.9.0 / 25.08.2021   + Min-/Max-Aussentemperatur des heutigen Tages
-#                       ~ Änderung bei Datenübertragung per Simple-API wg. InfluxDB 2.x
-#                       + Meteorologischer Sommer Durchschnittstemperatur und Regenmenge
-#                       + neuer Shell-Parameter --metsommer (zur manuellen Berechnung der Werte des meteorologischen Sommers)
-# V2.8.0 / 14.08.2021   ~ Änderung am Messverfahren der Solarenergie (festes Poll-Intervall --> Zeitstempel)
-#                       + Support für wetter.com
-# V2.7.0 / 15.07.2021   + Bei bereits eingetragenem OSEM-User erfolgt Abbruch der OSEM-Registrierung
-#                       + Unterstützung für DP250/WH45 Sensor
-#                       ~ Fix Prüfung netcat-Version
-#                       ~ Berechnung Windchill nur bis 11°C
-# V2.6.0 / 04.05.2021   ~ Fix Avg Aussentemperatur vor einem Jahr
-#                       ~ Windchill erst ab 5km/h Windgeschwindigkeit
-#                       + Prüfung bei Option "v" ob die netcat-Version korrekt ist
-#                       + Support für Windy
-#                       ~ Hitzeindex
-# V2.5.0 / 08.02.2021   ~ Fix für Protokoll #9 wg. fehlender Regenrate
-#                       + Min/Max/Avg Aussentemperatur vor einem Jahr
-#                       + Unterstützung von max. 4 DP70 Sensoren
-#                       ~ Codeoptimierungen
-# V2.4.0 / 03.02.2021   + Hitzeindex (>20°C)
-#                       + Unterstützung von max. 4 DP200 Sensoren
-# V2.3.0 / 26.01.2021   ~ Fix Rundungsfehler Windchill/Taupunkt
-#                       + Min/max Aussentemperatur der letzten 24h
-#                       + Unterstützung für DP60 Sensor
-#                       ~ Fix für Protokoll #9 wg. fehlender Regenrate
-# V2.2.0 / 21.01.2021   ~ Fix Batteriestatus
-#                       ~ Chillfaktor umbenannt auf Windchill/gefühlte Temperatur
-#                       + Berechnung Windchill + Taupunkt für Ecowitt-Protokoll
-# V2.1.0 / 10.01.2021   + zusätzliches Protokoll "9" für userspezifische Abfrage
-#                       ~ Fix Reset kumulierte Regenmenge zum Jahresanfang
-#                       ~ Fix für DP100 Bodenfeuchte
-# V2.0.0 / 15.12.2020   + Unterstützung des Gateways und Zusatzsensoren (@a200)
-#                       + Protokoll (wunderground oder ecowitt) wählbar
-# V1.6.0 / 06.12.2020   + Patch (@a200) für neuere Firmwareversionen (V1.6.3) speziell bei Nutzung eines Gateways
-#                       ~ Reset des Error-Kommunikationszählers
-#                       + Prüfung bei Option "-v" ob 'bc' und 'jq' installiert sind
-#                       ~ Option "n" bei netcat hinzugefügt
-# V1.5.0 / 30.11.2020   ~ Simple-API per HTTP[S] und Authentifizierung
-#                       + Update-Routine (beta)
-# V1.4.0 / 30.10.2020   + Support für openSenseMap
-# V1.3.1 / 08.10.2020   ~ Fix falls Leerzeichen im Verzeichnisnamen
-# V1.3.0 / 19.06.2020   + letztes Regenereignis und Regenmenge
-#                       + Fehlermeldung bei falscher WS_ID / ID der Wetterstation
-#                       + Sonnenscheindauer + Solarenergie vom Vortag
-#                       ~ Änderung/Fix Sonnenscheindauer
-# V1.2.0 / 20.04.2020   + Firmwareupgrade verfügbar?
-#                       + Firmwareversion
-#                       + Sonnenscheindauer Heute, Woche, Monat, Jahr
-#                       + UV-Belastung
-#                       + Solarenergie Heute, Woche, Monat, Jahr
-#                       + Vorjahreswerte von Regenmenge, Sonnenscheindauer und Solarenergie
-# V1.1.0 / 03.04.2020   + aktueller Regenstatus
-#                       + Luftdrucktendenz, Wettertrend und aktuelles Wetter
-# V1.0.0 / 12.03.2020   + Berechnung Jahresregenmenge
-#                       + Windrichtung zusätzlich als Text
-#                       ~ Änderung "Regen Aktuell" in "Regenrate"
-#                       ~ Splitt in conf- + sub-Datei
-# V0.1.3 / 08.02.2020   + Unterstützung für Datenpunkt "Regenmenge Jahr", zB. für Froggit WH4000 SE
-#                       + Shell-Parameter -s (Klartextanzeige Passwort + Station-ID)
-#                       + Shell-Parameter --data (zeigt nur das gesendete Datenpaket der Wetterstation an)
-# V0.1.2 / 31.01.2020   + Prüfung auf Datenintegrität
-#                       + neuer Datenpunkt bei Kommunikationsfehler
-#                       + Ausgabe Datenpaket der Wetterstation bei Debug
-# V0.1.1 / 01.01.2020   + UTC-Korrektur
-#                       + Config-Versionscheck
-#                       + Shell-Parameter -v/-h/--debug
-# V0.1.0 / 29.12.2019   erstes Release
+: <<'Versionsinfo'
 
 
- SH_VER="V2.10.1"
- CONF_V="V2.10.0"
- SUBVER="V2.10.1"
+ V2.10.1 - 22.11.2021 (c) 2019-2021 SBorg
+
+ wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
+ die Daten an den ioBroker (alternativ auch an OpenSenseMap, Windy und wetter.com)
+
+ benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq' und 'bc' unter Linux
+
+ V2.10.1 / 22.11.2021  ~ Bugfix 'jq'-Fehlermeldungen von 0:00 Uhr bis 01:00 Uhr
+                       ~ Bugfix Fehlermeldung "bereits existierender User" bei der OSeM-Registrierung obwohl keiner angelegt
+                       + bei Option '--debug' werden, sofern aktiviert, nun auch die Daten an den/die Wetter-Dienst(e)
+                         geschickt und deren Meldung(en) ausgegeben
+                       ~ Fix auftretende Fehlermeldung falls SimpleAPI nicht erreichbar war
+                       ~ Codeoptimierungen
+ V2.10.0 / 21.10.2021  ~ Bugfix Option '--data' bei Ecowitt-Protokoll
+                       ~ Passkey bei Nutzung des Ecowitt-Protokolls maskieren
+                       + logging des Datenstrings der Wetterstation in eine Datei
+                       + Unterstützung für DP40/WH32 (bzw. WH26) Sensor
+                       + Unterstützung für DP300/WS68 Sensor
+                       + Unterstützung für WH31 (bzw. WH25) Sensor
+                       + netcat-/Success-Meldungen im Syslog entfernt
+                       + Patch Sommer-/Winterzeit für wetter.com
+ V2.9.0 / 25.08.2021   + Min-/Max-Aussentemperatur des heutigen Tages
+                       ~ Änderung bei Datenübertragung per Simple-API wg. InfluxDB 2.x
+                       + Meteorologischer Sommer Durchschnittstemperatur und Regenmenge
+                       + neuer Shell-Parameter --metsommer (zur manuellen Berechnung der Werte des meteorologischen Sommers)
+ V2.8.0 / 14.08.2021   ~ Änderung am Messverfahren der Solarenergie (festes Poll-Intervall --> Zeitstempel)
+                       + Support für wetter.com
+ V2.7.0 / 15.07.2021   + Bei bereits eingetragenem OSEM-User erfolgt Abbruch der OSEM-Registrierung
+                       + Unterstützung für DP250/WH45 Sensor
+                       ~ Fix Prüfung netcat-Version
+                       ~ Berechnung Windchill nur bis 11°C
+ V2.6.0 / 04.05.2021   ~ Fix Avg Aussentemperatur vor einem Jahr
+                       ~ Windchill erst ab 5km/h Windgeschwindigkeit
+                       + Prüfung bei Option "v" ob die netcat-Version korrekt ist
+                       + Support für Windy
+                       ~ Hitzeindex
+ V2.5.0 / 08.02.2021   ~ Fix für Protokoll #9 wg. fehlender Regenrate
+                       + Min/Max/Avg Aussentemperatur vor einem Jahr
+                       + Unterstützung von max. 4 DP70 Sensoren
+                       ~ Codeoptimierungen
+ V2.4.0 / 03.02.2021   + Hitzeindex (>20°C)
+                       + Unterstützung von max. 4 DP200 Sensoren
+ V2.3.0 / 26.01.2021   ~ Fix Rundungsfehler Windchill/Taupunkt
+                       + Min/max Aussentemperatur der letzten 24h
+                       + Unterstützung für DP60 Sensor
+                       ~ Fix für Protokoll #9 wg. fehlender Regenrate
+ V2.2.0 / 21.01.2021   ~ Fix Batteriestatus
+                       ~ Chillfaktor umbenannt auf Windchill/gefühlte Temperatur
+                       + Berechnung Windchill + Taupunkt für Ecowitt-Protokoll
+ V2.1.0 / 10.01.2021   + zusätzliches Protokoll "9" für userspezifische Abfrage
+                       ~ Fix Reset kumulierte Regenmenge zum Jahresanfang
+                       ~ Fix für DP100 Bodenfeuchte
+ V2.0.0 / 15.12.2020   + Unterstützung des Gateways und Zusatzsensoren (@a200)
+                       + Protokoll (wunderground oder ecowitt) wählbar
+ V1.6.0 / 06.12.2020   + Patch (@a200) für neuere Firmwareversionen (V1.6.3) speziell bei Nutzung eines Gateways
+                       ~ Reset des Error-Kommunikationszählers
+                       + Prüfung bei Option "-v" ob 'bc' und 'jq' installiert sind
+                       ~ Option "n" bei netcat hinzugefügt
+ V1.5.0 / 30.11.2020   ~ Simple-API per HTTP[S] und Authentifizierung
+                       + Update-Routine (beta)
+ V1.4.0 / 30.10.2020   + Support für openSenseMap
+ V1.3.1 / 08.10.2020   ~ Fix falls Leerzeichen im Verzeichnisnamen
+ V1.3.0 / 19.06.2020   + letztes Regenereignis und Regenmenge
+                       + Fehlermeldung bei falscher WS_ID / ID der Wetterstation
+                       + Sonnenscheindauer + Solarenergie vom Vortag
+                       ~ Änderung/Fix Sonnenscheindauer
+ V1.2.0 / 20.04.2020   + Firmwareupgrade verfügbar?
+                       + Firmwareversion
+                       + Sonnenscheindauer Heute, Woche, Monat, Jahr
+                       + UV-Belastung
+                       + Solarenergie Heute, Woche, Monat, Jahr
+                       + Vorjahreswerte von Regenmenge, Sonnenscheindauer und Solarenergie
+ V1.1.0 / 03.04.2020   + aktueller Regenstatus
+                       + Luftdrucktendenz, Wettertrend und aktuelles Wetter
+ V1.0.0 / 12.03.2020   + Berechnung Jahresregenmenge
+                       + Windrichtung zusätzlich als Text
+                       ~ Änderung "Regen Aktuell" in "Regenrate"
+                       ~ Splitt in conf- + sub-Datei
+ V0.1.3 / 08.02.2020   + Unterstützung für Datenpunkt "Regenmenge Jahr", zB. für Froggit WH4000 SE
+                       + Shell-Parameter -s (Klartextanzeige Passwort + Station-ID)
+                       + Shell-Parameter --data (zeigt nur das gesendete Datenpaket der Wetterstation an)
+ V0.1.2 / 31.01.2020   + Prüfung auf Datenintegrität
+                       + neuer Datenpunkt bei Kommunikationsfehler
+                       + Ausgabe Datenpaket der Wetterstation bei Debug
+ V0.1.1 / 01.01.2020   + UTC-Korrektur
+                       + Config-Versionscheck
+                       + Shell-Parameter -v/-h/--debug
+ V0.1.0 / 29.12.2019   erstes Release
+
+Versionsinfo
+### Ende Infoblock
+
+ #Versionierung
+  SH_VER="V2.10.1"
+  CONF_V="V2.10.0"
+  SUBVER="V2.10.1"
 
 
  #Installationsverzeichnis feststellen
@@ -97,19 +106,18 @@
  #Config-Version prüfen
   VER_CONFIG=$(cat "${DIR}/wetterstation.conf"|grep '### Setting'|cut -d" " -f3)
   if [ $CONF_V != $VER_CONFIG ]; then
-	echo -e "wetterstation: \e[31mERROR #000 - Config-Version mismatch!\n"
-	echo -e "benutzt: $VER_CONFIG\t benötigt wird: $CONF_V \e[0m"
-	exit 1
+     echo -e "wetterstation: \e[31mERROR #000 - Config-Version mismatch!\n"
+     echo -e "benutzt: $VER_CONFIG\t benötigt wird: $CONF_V \e[0m"
+     exit 1
   fi
 
  #Sub-Version prüfen
   SUB_CONFIG=$(cat "${DIR}/wetterstation.sub"|grep '### Subroutinen'|cut -d" " -f3)
   if [ $SUBVER != $SUB_CONFIG ]; then
-	echo -e "wetterstation: \e[31mERROR #001 - Subroutinen-Version mismatch!\n"
-	echo -e "benutzt: $SUB_CONFIG\t benötigt wird: $SUBVER \e[0m"
-	exit 1
+     echo -e "wetterstation: \e[31mERROR #001 - Subroutinen-Version mismatch!\n"
+     echo -e "benutzt: $SUB_CONFIG\t benötigt wird: $SUBVER \e[0m"
+     exit 1
   fi
-
 
  #Konfiguration lesen + Subroutinen laden
   . "${DIR}/wetterstation.conf"
@@ -241,27 +249,11 @@ while true
    done
 
 
-   #Taupunkt und Windchill berechnen
-   if [ -z ${MESSWERTE[3]} ] && [ ! -z ${MESSWERTE[1]} ] && [ ! -z ${MESSWERTE[6]} ]; then
-     if (( $(bc -l <<< "${MESSWERTE[6]} > 5") )) && (( $(bc -l <<< "${MESSWERTE[1]} < 11") )); then
-        WINDCHILL=$(echo "scale=4;(13.12 + 0.6215 * ${MESSWERTE[1]} - 11.37 * e(l(${MESSWERTE[6]})*0.16) + 0.3965 * ${MESSWERTE[1]} * e(l(${MESSWERTE[6]})*0.16))/1" | bc -l)
-        MESSWERTE[3]=$(round $WINDCHILL 2)
-      else
-        MESSWERTE[3]=$(echo ${MESSWERTE[1]})
-     fi
-   fi
-
-   if [ -z ${MESSWERTE[2]} ] && [ ! -z ${MESSWERTE[1]} ] && [ ! -z ${MESSWERTE[5]} ]; then
-     TAUPUNKT=$(echo "scale=4;(e(l(${MESSWERTE[5]}/100)*(1/8.02)) * (109.8 + ${MESSWERTE[1]}) - 109.8)/1" | bc -l)
-     MESSWERTE[2]=$(round $TAUPUNKT 2)
-   fi
-   ##################################
-
+   #Taupunkt und Windchill
+    do_windchill
 
    #Daten an ioB schicken
     iob_send
-
-
 
    #Reset Kommfehler
     if [ ! -z "$KOMFEHLER" ] && [ "$KOMFEHLER" -gt "0" ]; then let "KOMFEHLER--"; fi
@@ -273,8 +265,10 @@ while true
   fi
 
 
+
   #Debug eingeschaltet?
    if [ $debug == "true" ]; then debuging; fi
+
 
 
   #Mitternachtjobs
@@ -288,6 +282,7 @@ while true
    if [ `date +%H` -eq "0" ] && [ `date +%M` -le "3" ]; then unset MIDNIGHTRUN; fi
 
 
+
   #15-Minutenjobs: Wetterprognose; min/max Aussentemperatur der letzten 24h + heute
    DO_IT=$(date +%M)
    DO_IT=${DO_IT#0}
@@ -299,6 +294,8 @@ while true
       fi
      fi
    fi
+
+
 
   #5-Minutenjobs: Windy; wetter.com
    if [ $(( $DO_IT % 5 )) -eq "0" ] && [ -z ${run_5minjobs_onlyonce} ]; then

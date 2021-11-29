@@ -155,11 +155,17 @@ debuging() {
      9) echo -en "Sainlogic Pro";;
      *) echo -en "unbekannt"
     esac
-   echo -e "$WE\tDP40/DP50/60/70/100/200/250/300: $GE${ANZAHL_DP40} $WE| $GE${ANZAHL_DP50} $WE| $GE${ANZAHL_DP60} $WE| $GE${ANZAHL_DP70} $WE| $GE${ANZAHL_DP100} $WE| $GE${ANZAHL_DP200} $WE| $GE${ANZAHL_DP250} $WE| $GE${ANZAHL_DP300} $WE"
+   echo -e "$WE\tDP40/50/60/70/100/200/250/300: $GE${ANZAHL_DP40} $WE| $GE${ANZAHL_DP50} $WE| $GE${ANZAHL_DP60} $WE| $GE${ANZAHL_DP70} $WE| $GE${ANZAHL_DP100} $WE| $GE${ANZAHL_DP200} $WE| $GE${ANZAHL_DP250} $WE| $GE${ANZAHL_DP300} $WE"
    echo -e "${WE}WH31: $GE${ANZAHL_WH31} $WE"
    echo -e "Script-Version: ${GE}${SH_VER}${WE}\tConfig-Version: $GE${CONF_V}$WE\tSub-Version: $GE${SUBVER}$WE"
 
    if [ ! -z "$KOMFEHLER" ]; then echo -e "\n${RE}Kommunikationsfehler!$WE\n"; fi
+
+   #API-Check
+   if [ ! -z ${WETTERCOM_ID} ]; then wettercom_update; fi
+   if [ ${use_windy} == "true" ]; then windy_update; fi
+   if [ ${openSenseMap} == "true" ]; then opensensemap; fi
+
   #Shell-Skript mit Fehler beenden
     exit 1
 }
@@ -323,12 +329,13 @@ convertInchtoMM() {
 	fi
 
 	if [ $LAST_RAIN == "DIFF" ]; then
-           SAPI "Single" "get/${DP_REGENRATE}?prettyPrint"
-           LC=$(echo ${retval} | jq -r '.lc')
-	   LC=`echo "scale=0;${LC}/1000" | bc -l`
 	   TS_AKT=$(date +%s)
-	   TS_DIFF=`echo "${TS_AKT}-${LC}" | bc`
-           TAGE=$(echo "$(($TS_DIFF /86400))")
+           SAPI "Single" "get/${DP_REGENRATE}?prettyPrint"
+           if [ -z "${retval}" ]; then return; fi                #Abbruch falls SimpleAPI nicht erreichbar
+           LC=$(echo ${retval} | jq -r '.lc')
+	   LC=$(echo "scale=0;${LC}/1000" | bc -l)
+	   TS_DIFF=$(echo "${TS_AKT}-${LC}" | bc)
+           TAGE=$(($TS_DIFF /86400))
 	   case $TAGE in
 		0)  STUNDEN=$(echo "$(($TS_DIFF /3600))")
 		    if [ "$STUNDEN" -eq "1" ]; then
@@ -784,8 +791,15 @@ opensensemap() {
 	done
 
 	OSeM_DATA=$(echo $OSeM_DATA | sed "s/}{/},{/g" )
- 	OSEM_TRANSMIT=$(curl -s -H "Content-Type: application/json" -H "Authorization: ${BOX_TOKEN}" \
-          -d "[ ${OSeM_DATA} ]" https://api.opensensemap.org/boxes/${senseBox_ID}/data)
+        if [ $debug == "true" ]; then
+           echo -e "\n\n${BL}Datenübertragung an OpenSenseMap:${NO}"
+ 	   curl -H "Content-Type: application/json" -H "Authorization: ${BOX_TOKEN}" -d "[ ${OSeM_DATA} ]" https://api.opensensemap.org/boxes/${senseBox_ID}/data
+           echo -e "\n"
+           return 0 #Ausgang
+         else
+ 	   OSEM_TRANSMIT=$(curl -s -H "Content-Type: application/json" -H "Authorization: ${BOX_TOKEN}" \
+           -d "[ ${OSeM_DATA} ]" https://api.opensensemap.org/boxes/${senseBox_ID}/data)
+        fi
 
         if [[ "$OSEM_TRANSMIT" == "\"Measurements saved in box\"" ]]; then
           SAPI "Single" "set/${DP_OSEM_TRANSMIT}?value=true&ack=true"
@@ -1453,13 +1467,38 @@ windy_register(){
 
 
 
+do_windchill(){
+   #Taupunkt und Windchill berechnen
+   if [ -z ${MESSWERTE[3]} ] && [ ! -z ${MESSWERTE[1]} ] && [ ! -z ${MESSWERTE[6]} ]; then
+     if (( $(bc -l <<< "${MESSWERTE[6]} > 5") )) && (( $(bc -l <<< "${MESSWERTE[1]} < 11") )); then
+        WINDCHILL=$(echo "scale=4;(13.12 + 0.6215 * ${MESSWERTE[1]} - 11.37 * e(l(${MESSWERTE[6]})*0.16) + 0.3965 * ${MESSWERTE[1]} * e(l(${MESSWERTE[6]})*0.16))/1" | bc -l)
+        MESSWERTE[3]=$(round $WINDCHILL 2)
+      else
+        MESSWERTE[3]=$(echo ${MESSWERTE[1]})
+     fi
+   fi
+
+   if [ -z ${MESSWERTE[2]} ] && [ ! -z ${MESSWERTE[1]} ] && [ ! -z ${MESSWERTE[5]} ]; then
+     TAUPUNKT=$(echo "scale=4;(e(l(${MESSWERTE[5]}/100)*(1/8.02)) * (109.8 + ${MESSWERTE[1]}) - 109.8)/1" | bc -l)
+     MESSWERTE[2]=$(round $TAUPUNKT 2)
+   fi
+}
+
+
+
 windy_update(){
         #Daten an die Windy-Cloud senden
          windy_mph=$(echo "scale=2;(${MESSWERTE[6]}*10/36)" | bc -l)
          windy_boe_mph=$(echo "scale=2;(${MESSWERTE[7]}*10/36)" | bc -l)
          windy_DATA="station=${windy_Station}&ts=$(date +%s)&temp=${MESSWERTE[1]}&wind=${windy_mph}&mbar=${MESSWERTE[9]}&winddir=${MESSWERTE[8]}"
          windy_DATA+="&gust=${windy_boe_mph}&humidity=${MESSWERTE[5]}&dewpoint=${MESSWERTE[2]}&precip=${MESSWERTE[23]}&uv=${MESSWERTE[17]}"
-         local retval=$(curl -s https://stations.windy.com/pws/update/${windy_APIKey}?${windy_DATA})
+         if [ $debug == "true" ]; then
+           echo -e "\n${BL}Datenübertragung an windy.com:${NO}"
+            curl https://stations.windy.com/pws/update/${windy_APIKey}?${windy_DATA}
+           return 0 #Ausgang
+          else
+            local retval=$(curl -s https://stations.windy.com/pws/update/${windy_APIKey}?${windy_DATA})
+          fi
          if echo ${retval}|grep -q 'SUCCESS'; then
              SAPI "Single" "set/${DP_WINDY_TRANSMIT}?value=true&ack=true"
            else
@@ -1480,7 +1519,14 @@ wettercom_update(){
         fi
         WC_URL+="&datum=${TIMESTAMP}&temperatur=${MESSWERTE[1]}&feuchtigkeit=${MESSWERTE[5]}&windrichtung=${MESSWERTE[8]}"
         WC_URL+="&windstaerke=${MESSWERTE[6]}&luftdruck=${MESSWERTE[10]}&niederschlagsmenge=${MESSWERTE[11]}"
-        local MESSAGE=$(wget -qO- "${WC_URL}")
+        if [ $debug == "true" ]; then
+           echo -e "\n\n${BL}Datenübertragung an wetter.com:"
+           echo -e "${RE}(vor einer Veröffentlichung unbedingt zumindest das Passwort unkenntlich machen, ggf. auch die Station-ID[=Benutzername])${NO}"
+           wget -O- "${WC_URL}"
+           return 0 #Ausgang
+         else
+           local MESSAGE=$(wget -qO- "${WC_URL}")
+        fi
 
         #alles Ok?
         if echo ${MESSAGE}|grep -q 'SUCCESS'; then

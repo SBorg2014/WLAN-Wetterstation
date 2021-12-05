@@ -82,7 +82,17 @@ Daten in Wetter.com:<br>
 
 ## Versionen ##
   
-  
+
+**V2.10.1 - 22.11.2021**
+```
+    ~ Bugfix 'jq'-Fehlermeldungen von 0:00 Uhr bis 01:00 Uhr
+    ~ Bugfix Fehlermeldung "bereits existierender User" bei der OSeM-Registrierung obwohl keiner angelegt
+    + bei Option '--debug' werden, sofern aktiviert, nun auch die Daten an den/die Wetter-Dienst(e) geschickt und deren Meldung(en) ausgegeben
+    ~ Fix auftretende Fehlermeldung falls SimpleAPI nicht erreichbar war
+    ~ Codeoptimierungen
+```
+
+
 **V2.10.0 - 21.10.2021**  
 ```
      ~ Bugfix Option '--data' bei Ecowitt-Protokoll

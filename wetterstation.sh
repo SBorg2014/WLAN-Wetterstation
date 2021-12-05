@@ -2,13 +2,14 @@
 : <<'Versionsinfo'
 
 
- V2.10.1 - 22.11.2021 (c) 2019-2021 SBorg
+ V2.11.0 - 03.12.2021 (c) 2019-2021 SBorg
 
  wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
  die Daten an den ioBroker (alternativ auch an OpenSenseMap, Windy und wetter.com)
 
  benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq' und 'bc' unter Linux
 
+ V2.11.0 / 03.12.2021  ~ Windgeschwindigkeit bei wetter.com in m/s
  V2.10.1 / 22.11.2021  ~ Bugfix 'jq'-Fehlermeldungen von 0:00 Uhr bis 01:00 Uhr
                        ~ Bugfix Fehlermeldung "bereits existierender User" bei der OSeM-Registrierung obwohl keiner angelegt
                        + bei Option '--debug' werden, sofern aktiviert, nun auch die Daten an den/die Wetter-Dienst(e)
@@ -95,9 +96,9 @@ Versionsinfo
 ### Ende Infoblock
 
  #Versionierung
-  SH_VER="V2.10.1"
+  SH_VER="V2.11.0"
   CONF_V="V2.10.0"
-  SUBVER="V2.10.1"
+  SUBVER="V2.11.0"
 
 
  #Installationsverzeichnis feststellen

@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V2.10.1 --------------------------------------------------------
+### Subroutinen V2.11.0 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -333,8 +333,8 @@ convertInchtoMM() {
            SAPI "Single" "get/${DP_REGENRATE}?prettyPrint"
            if [ -z "${retval}" ]; then return; fi                #Abbruch falls SimpleAPI nicht erreichbar
            LC=$(echo ${retval} | jq -r '.lc')
-	   LC=$(echo "scale=0;${LC}/1000" | bc -l)
-	   TS_DIFF=$(echo "${TS_AKT}-${LC}" | bc)
+           LC=$(echo "scale=0;${LC}/1000" | bc -l)
+           TS_DIFF=$(echo "${TS_AKT}-${LC}" | bc)
            TAGE=$(($TS_DIFF /86400))
 	   case $TAGE in
 		0)  STUNDEN=$(echo "$(($TS_DIFF /3600))")
@@ -1517,8 +1517,10 @@ wettercom_update(){
          else
           local TIMESTAMP=$(date +%Y%m%d%H%M)
         fi
+
+        local WIND=$(echo "scale=4;${MESSWERTE[6]}/3.6" | bc -l)
         WC_URL+="&datum=${TIMESTAMP}&temperatur=${MESSWERTE[1]}&feuchtigkeit=${MESSWERTE[5]}&windrichtung=${MESSWERTE[8]}"
-        WC_URL+="&windstaerke=${MESSWERTE[6]}&luftdruck=${MESSWERTE[10]}&niederschlagsmenge=${MESSWERTE[11]}"
+        WC_URL+="&windstaerke=${WIND}&luftdruck=${MESSWERTE[10]}&niederschlagsmenge=${MESSWERTE[11]}"
         if [ $debug == "true" ]; then
            echo -e "\n\n${BL}Datenübertragung an wetter.com:"
            echo -e "${RE}(vor einer Veröffentlichung unbedingt zumindest das Passwort unkenntlich machen, ggf. auch die Station-ID[=Benutzername])${NO}"

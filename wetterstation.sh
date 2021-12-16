@@ -10,6 +10,7 @@
  benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq' und 'bc' unter Linux
 
  V2.11.0 / 03.12.2021  ~ Windgeschwindigkeit bei wetter.com in m/s
+                       + Konfigurationsmöglichkeit des Kommunikationsfehlers (Issue #26)
  V2.10.1 / 22.11.2021  ~ Bugfix 'jq'-Fehlermeldungen von 0:00 Uhr bis 01:00 Uhr
                        ~ Bugfix Fehlermeldung "bereits existierender User" bei der OSeM-Registrierung obwohl keiner angelegt
                        + bei Option '--debug' werden, sofern aktiviert, nun auch die Daten an den/die Wetter-Dienst(e)
@@ -97,7 +98,7 @@ Versionsinfo
 
  #Versionierung
   SH_VER="V2.11.0"
-  CONF_V="V2.10.0"
+  CONF_V="V2.11.0"
   SUBVER="V2.11.0"
 
 
@@ -257,12 +258,16 @@ while true
     iob_send
 
    #Reset Kommfehler
-    if [ ! -z "$KOMFEHLER" ] && [ "$KOMFEHLER" -gt "0" ]; then let "KOMFEHLER--"; fi
+    if [ ! -z "$KOMFEHLER" ] && [ "$KOMFEHLER" -gt "0" ]; then
+       let "KOMFEHLER--"
+       if [ "$KOMFEHLER" -eq "0" ] && [ $RESET_KOMFEHLER == "true" ]; then SAPI "Single" "set/${DP_KOMFEHLER}?value=false&ack=true"; fi
+    fi
 
 
   else
    let "KOMFEHLER++"
    if [ "$KOMFEHLER" -eq "10" ]; then SAPI "Single" "set/${DP_KOMFEHLER}?value=true&ack=true"; fi
+   if [ "$KOMFEHLER" -gt "10" ]; then KOMFEHLER=10; fi  #Anzahl beschränken
   fi
 
 

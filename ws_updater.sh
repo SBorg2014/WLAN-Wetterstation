@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V2.10.1
+UPDATE_VER=V2.11.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -9,11 +9,11 @@ UPDATE_VER=V2.10.1
       BL='\e[1;36m'
       RE='\e[1;31m'
 
-            echo -e "\n\n\n${GE} ┌───────────────────────┐"
-            echo -e " │                       │"
-            echo -e " │  ${BL} WS-Updater ${UPDATE_VER}${GE}\t │"
-            echo -e " │                       │"
-            echo -e " └───────────────────────┘${WE}\n"
+            echo -e "\n\n\n${GE} ┌────────────────────────┐"
+            echo -e " │                        │"
+            echo -e " │  ${BL} WS-Updater ${UPDATE_VER}${GE}\t  │"
+            echo -e " │                        │"
+            echo -e " └────────────────────────┘${WE}\n"
 
 
 
@@ -72,8 +72,8 @@ patcher() {
            V2.7.0) PATCH280 ;;
            V2.8.0) PATCH2100 ;;
            V2.9.0) echo -e "$GE Kein Patch nötig...\n" ;;
-           V2.10.0) echo -e "$GE Kein Patch nötig...\n" ;;
-           V2.10.1) echo -e "$GE Version ist bereits aktuell...\n" ;;
+           V2.10.0) PATCH2110 ;;
+           V2.11.0) echo -e "$GE Version ist bereits aktuell...\n" ;;
            *)      FEHLER
  esac
  exit 0
@@ -115,7 +115,7 @@ main() {
           /bin/bash ./ws_updater.sh --patch
 
           jn_abfrage "\n Update ausgeführt. Soll der Service nun neu gestartet werden?"
-          if [ ! -z $antwort ]; then echo -e "\n"; sudo systemctl restart wetterstation.service; fi
+          if [ ! -z $antwort ]; then echo -e "\n"; systemctl restart wetterstation.service; fi
 
 exit
 }
@@ -245,6 +245,17 @@ PATCH2100() {
  rm patch.dat
  echo -e " Fertig...\n"
  echo -e " ${GE}Eventuelle Zusatzsensoren DP300/WS68, DP40/WH32 oder WH25/WH31 müssen eingetragen werden!\n"
+}
+
+
+#Patch Version V2.10.0 auf V2.11.0
+PATCH2110() {
+ backup
+ echo -e "\n Patche wetterstation.conf auf ${UPDATE_VER} ..."
+ sed -i 's/### Settings V2.10.0/### Settings V2.11.0/' ./wetterstation.conf
+ sed -i '/^.*debug=.*/a \ \n #Verhalten bei Kommunikationsfehler [true/false] / default: false / Soll der Datenpunkt automatisch resettet werden?\n  RESET_KOMFEHLER=false' ./wetterstation.conf
+ echo -e " Fertig...\n"
+ echo -e " ${GE}Parameter für Kommunikationsfehler ggf. ändern. Per Default verbleibt er im Zustand 'true' bei einem Fehler.\n"
 }
 
 

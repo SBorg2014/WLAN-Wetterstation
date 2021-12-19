@@ -7,7 +7,7 @@
 
    (c)2020-2021 by SBorg
    V1.0.1 - 18.12.2021  ~Bugfixing "error: TypeError: Cannot read property '0' of null"
-   						~Wechsel zu axios
+                        ~Wechsel zu axios
    V1.0.0 - 02.10.2021  ~Bugfixing Werte VorJahresMonat
                         +Kompatibilität mit JSC 3.3.x hergestellt (Änderung JSON -> Array)
                         ~Rekordwerte werden nun korrekt am Tag des Ereignisses gespeichert

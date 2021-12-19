@@ -6,6 +6,8 @@
             Auch keine Aliase unter Influx nutzen!
 
    (c)2020-2021 by SBorg
+   V1.0.1 - 18.12.2021  ~Bugfixing "error: TypeError: Cannot read property '0' of null"
+   						~Wechsel zu axios
    V1.0.0 - 02.10.2021  ~Bugfixing Werte VorJahresMonat
                         +Kompatibilität mit JSC 3.3.x hergestellt (Änderung JSON -> Array)
                         ~Rekordwerte werden nun korrekt am Tag des Ereignisses gespeichert
@@ -67,7 +69,7 @@ const DP_Check='Rekordwerte.Regenmengemonat';
 if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 //Start des Scripts
-    const ScriptVersion = "V1.0.0";
+    const ScriptVersion = "V1.0.1";
     let Tiefstwert, Hoechstwert, Temp_Durchschnitt, Max_Windboe, Max_Regenmenge, Regenmenge_Monat, warme_Tage, Sommertage;
     let heisse_Tage, Frost_Tage, kalte_Tage, Eistage, sehr_kalte_Tage, Trockenperiode_akt;
     let kalte_Tage_Jahr, warme_Tage_Jahr, Sommertage_Jahr, heisse_Tage_Jahr, Frosttage_Jahr, Eistage_Jahr, sehrkalte_Tage_Jahr;
@@ -79,7 +81,6 @@ if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 //scheduler
     schedule(ZEITPLAN, main);
-
 
 
 // ### Funktionen ###############################################################################################
@@ -186,8 +187,10 @@ async function main() {
   //Temperaturen
     Tiefstwert = Math.min(...temps);
     Hoechstwert = Math.max(...temps);
-    Math.sum = (...temps) => Array.prototype.reduce.call(temps,(a,b) => a+b);
-    Temp_Durchschnitt = Number((Math.sum(...temps)/temps.length).toFixed(2));
+    //Math.sum = (...temps) => Array.prototype.reduce.call(temps,(a,b) => a+b);
+    const reducer = (accumulator, curr) => accumulator + curr;
+    //Temp_Durchschnitt = Number((Math.sum(...temps)/temps.length).toFixed(2));
+    let Temp_Durchschnitt = Number((temps.reduce(reducer)/temps.length).toFixed(2));
     let MonatsTemp_Durchschnitt = Math.round(((((getState(PRE_DP+'.aktueller_Monat.Temperatur_Durchschnitt').val)*(zeitstempel.getDate()-1))+Temp_Durchschnitt)/zeitstempel.getDate())*100)/100;
     if (Hoechstwert > 20) { warme_Tage = 1; } else { warme_Tage = 0; }
     if (Hoechstwert > 25) { Sommertage = 1; } else { Sommertage = 0; } 
@@ -213,8 +216,8 @@ async function main() {
 
 // Tag des Jahres berechnen
    let Jahr = zeitstempel.getFullYear();
-   let heutestart = new Date(zeitstempel.setHours(0,0,0,0));
-   let neujahr = new Date(Jahr,0,1);
+   let heutestart = Number(new Date(zeitstempel.setHours(0,0,0,0)));
+   let neujahr = Number(new Date(Jahr,0,1));
    let difftage = (heutestart - neujahr) / (24*60*60*1000) + 1;
    let tag_des_jahres = Math.ceil(difftage);
    
@@ -343,7 +346,7 @@ function speichern_Monat() {
         "Max_Regenmenge": Max_Regenmenge, "Regenmenge_Monat": Regenmenge_Monat, "warme_Tage": warme_Tage,
         "Sommertage": Sommertage, "heisse_Tage": heisse_Tage, "Frost_Tage": Frost_Tage, "kalte_Tage": kalte_Tage, "Eistage": Eistage, 
         "sehr_kalte_Tage": sehr_kalte_Tage}]);
-    createState(PRE_DP+monatsdatenpunkt,'',{ name: "Monatsstatistik für "+monatsname[datum.getMonth()]+' '+datum.getFullYear(), type: "object", role: "json" }, () => { setState(PRE_DP+monatsdatenpunkt, json, true); }); 
+    createState(PRE_DP+monatsdatenpunkt,'',{ name: "Monatsstatistik für "+monatsname[datum.getMonth()]+' '+datum.getFullYear(), type: "string", role: "json" }, () => { setState(PRE_DP+monatsdatenpunkt, json, true); }); 
 } //end function
 
 function VorJahr() {    
@@ -351,7 +354,7 @@ function VorJahr() {
     let datum = new Date(zeitstempel.getFullYear(),zeitstempel.getMonth(),zeitstempel.getDate());
     let monatsdatenpunkt = '.Data.'+ (datum.getFullYear()-1) +'.'+pad(datum.getMonth()+1);
     if (existsState(PRE_DP+monatsdatenpunkt)) { //der einfache Weg: wir haben schon Daten vom Vorjahr...
-        let VorJahr = getState(PRE_DP+monatsdatenpunkt).val;
+        let VorJahr = JSON.parse(getState(PRE_DP+monatsdatenpunkt).val);
         //VorJahr = JSON.parse(VorJahr);
         setState(PRE_DP+'.Vorjahres_Monat.Tiefstwert', VorJahr[0].Tiefstwert, true);
         setState(PRE_DP+'.Vorjahres_Monat.Hoechstwert', VorJahr[0].Hoechstwert, true);
@@ -415,8 +418,8 @@ function VorJahr() {
                 //Temperaturen
                 let VTiefstwert = Math.min(...temps);
                 let VHoechstwert = Math.max(...temps);
-                Math.sum = (...temps) => Array.prototype.reduce.call(temps,(a,b) => a+b);
-                let VTemp_Durchschnitt = Number((Math.sum(...temps)/temps.length).toFixed(2));
+                const reducer = (accumulator, curr) => accumulator + curr;
+                let VTemp_Durchschnitt = Number((temps.reduce(reducer)/temps.length).toFixed(2));
 
                 //let's do Gradtage...
                 let MonatsTag, MonatsTag_old, Temp, Hit = [false,false,false,false,false,false,false];
@@ -508,17 +511,15 @@ function Statusmeldung(Text) {
 
 // Test auf neue Skriptversion
 function check_update() {
-    const util = require('util')
-    const request = util.promisify(require('request'))
-   
-    request('https://github.com/SBorg2014/WLAN-Wetterstation/commits/master/wetterstation-statistik.js')
-    .then((response) => {
+    const axios = require('axios');
 
-     //console.error(`status code: ${response && response.statusCode}`)
-     //console.log(response.body) /<a aria-label="V.*[\r\n]+.*<\/a>/
+    axios.get('https://github.com/SBorg2014/WLAN-Wetterstation/commits/master/wetterstation-statistik.js')
+     .then(function (response) {
+     
+     // /<a aria-label="V.*[\r\n]+.*<\/a>/
 
-     let regex = /<a aria-label="V.*[\r\n]+.*/
-     , version = response.body.match(regex);
+     let regex = /">V.*<\/a>/ 
+     , version = response.data.match(regex);
 
      if (version[0].match(ScriptVersion)) { 
          setState(PRE_DP+'.Control.ScriptVersion_Update','---',true); 
@@ -529,7 +530,7 @@ function check_update() {
 
     })
         .catch((error) => {
-        console.error(`error: ${error}`)
+        console.log(`Fehler: ${error}`);
     })
 } // end function
 
@@ -555,7 +556,7 @@ function Backup_Jahresstatistik() {
         "Trockenperiode": Trockenperiode,
         "kalte Tage": kalte_Tage_Jahr, "warme Tage": warme_Tage_Jahr, "Sommertage": Sommertage_Jahr, "heiße Tage": heisse_Tage_Jahr, "Frosttage": Frosttage_Jahr, "Eistage": Eistage_Jahr,
         "sehr kalte Tage": sehrkalte_Tage_Jahr}]);
-    createState(PRE_DP+'.Jahreswerte.VorJahre.'+(new Date().getFullYear()-1), '', { name: "Jahresstatistik", type: "json", role: "state" }, () => { setState(PRE_DP+'.Jahreswerte.VorJahre.'+(new Date().getFullYear()-1), json, true) });
+    createState(PRE_DP+'.Jahreswerte.VorJahre.'+(new Date().getFullYear()-1), '', { name: "Jahresstatistik", type: "string", role: "json" }, () => { setState(PRE_DP+'.Jahreswerte.VorJahre.'+(new Date().getFullYear()-1), json, true) });
 } // end function
 
 
@@ -596,7 +597,7 @@ async function Template_Rekordwerte(DatenPunkt, DatenPunktName) {
     await Sleep(5000);
     let wert = getState(PRE_DP+'.Rekordwerte.value.'+DatenPunkt).val;
     let unit = getObject(PRE_DP+'.Rekordwerte.value.'+DatenPunkt).common.unit;
-    let REKORDWERTEAUSGABE;
+    let REKORDWERTEAUSGABE="";
     
     //[WERT]
     if (REKORDWERTE_AUSGABEFORMAT.search("[WERT]") != -1) {

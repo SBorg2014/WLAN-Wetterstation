@@ -83,6 +83,16 @@ Daten in Wetter.com:<br>
 ## Versionen ##
   
 
+**V2.11.0 - 03.12.2021**
+```
+    ~ Windgeschwindigkeit bei wetter.com in m/s
+    + Konfigurationsmöglichkeit des Kommunikationsfehlers (Issue #26)
+    ~ Bugfix Speicherort beim logging
+    ~ Ergänzung bei Prüfung auf valides Datenpaket (Außentemperatur hinzugefügt)
+    + Hinweis auf korrekte WS_ID bei Wunderground-Protokoll falls Kommunikationsfehler
+```
+
+
 **V2.10.1 - 22.11.2021**
 ```
     ~ Bugfix 'jq'-Fehlermeldungen von 0:00 Uhr bis 01:00 Uhr
@@ -285,7 +295,7 @@ Daten in Wetter.com:<br>
 ## :scroll: License ## 
  MIT License
 
-Copyright (c)2019-2021 by SBorg
+Copyright (c)2019-2022 by SBorg
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

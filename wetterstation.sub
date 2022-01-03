@@ -160,6 +160,7 @@ debuging() {
    echo -e "Script-Version: ${GE}${SH_VER}${WE}\tConfig-Version: $GE${CONF_V}$WE\tSub-Version: $GE${SUBVER}$WE"
 
    if [ ! -z "$KOMFEHLER" ]; then echo -e "\n${RE}Kommunikationsfehler!$WE\n"; fi
+   if [ ! -z "$KOMFEHLER" ] && [ $WS_PROTOKOLL = 1 ]; then echo -e "\n${RE}Kommunikationsfehler! Stimmt die WS_ID in der Konfiguration mit der der WS View-App überein? $WE\n"; fi
 
    #API-Check
    if [ ! -z ${WETTERCOM_ID} ]; then wettercom_update; fi
@@ -262,7 +263,7 @@ get_DATA() {
 
    2) DATA=$(timeout ${WARTE} nc -nlvw 1 -p ${WS_PORT} 2>/dev/null|tail -1)
       STRLEN=$(echo -n $DATA | wc -m)
-      if [ "$STRLEN" -gt "150" ] && [[ "$DATA" =~ "PASSKEY=" ]]; then return 0; else return 1; fi
+      if [ "$STRLEN" -gt "150" ] && [[ "$DATA" =~ "PASSKEY=" ]] && [[ "$DATA" =~ "tempf=" ]]; then return 0; else return 1; fi
       ;;
 
    *) echo -e "\n${RE}Die Angabe: WS_PROTOKOLL=$WS_PROTOKOLL ist ungültig. Bitte die Eingabe in der wetterstation.conf korrigieren!$WE\n"
@@ -311,7 +312,7 @@ convertInchtoMM() {
 
         #Regenstatus bestimmen (#11)
 	if [ "$1" -eq "11" ]; then
-         if [ "$WS_PROTOKOLL" -eq "9" ] && [ -z ${MESSWERTE[11]} ]; then MESSWERTE[11]=0; fi
+         ##if [ "$WS_PROTOKOLL" -eq "9" ] && [ -z ${MESSWERTE[11]} ]; then MESSWERTE[11]=0; fi
 	 REGEN=$(round ${MESSWERTE[11]} 0)
 	 if [ "$REGEN" -ge "10" ]; then REGENSTATUS="Starkregen"; fi
 	 if [ "$REGEN" -lt "10" ]; then REGENSTATUS="starker Regen"; fi
@@ -419,7 +420,6 @@ wetterprognose() {
 	DRUCKWERTE=(${DRUCKWERTE[@]:1})
 	DRUCKWERTE[11]=$LUFTDRUCK
 
-
 	#Tendenz berechnen
 	if [ "${DRUCKWERTE[0]}" -gt "20" ]; then
 	 let PNOW=($LUFTDRUCK-${DRUCKWERTE[0]})*10
@@ -431,7 +431,7 @@ wetterprognose() {
 	 if [ "$PNOW" -le "30" ] && [ "$PNOW" -ge "5" ]; then WETTER_TREND="lange schön"; fi
 	 if [ "$PNOW" -le "50" ] && [ "$PNOW" -ge "30" ]; then WETTER_TREND="schön & labil"; fi
 	 if [ "$PNOW" -gt "50" ]; then WETTER_TREND="Sturmwarnung"; fi
-	 PNOW=`echo "scale=2;$PNOW/10" | bc -l`
+	 PNOW=$(echo "scale=2;$PNOW/10" | bc -l)
 	fi
 
 	#Wetter erfassen und bestimmen
@@ -483,7 +483,7 @@ firmware_check() {
 sonnenpuls() {
     SONNEN_STRAHLUNG=$(round ${MESSWERTE[$1]} 0)
     if [ "$SONNEN_STRAHLUNG" -ge "120" ] || [ ! -z "$MIDNIGHTRUN" ]; then
-	AKT_TIMESTAMP=`date +%s`
+	AKT_TIMESTAMP=$(date +%s)
 	let SONNENPULS_DIFF=${AKT_TIMESTAMP}-${TIMER_START}
 	if [ "$SONNENPULS_DIFF" -lt "300" ]; then
 	 let SONNENSCHEIN_TAG+="$SONNENPULS_DIFF"
@@ -525,13 +525,13 @@ sonnenpuls() {
 
 	#Leistung berechnen
 	SOL_TMP=$(echo "scale=3;${SOL_TMP}/(3600/${ZEIT_DIFF})" | bc -l)
-	SOLARENERGIE_TAG=`echo "scale=3;${SOLARENERGIE_TAG}+${SOL_TMP}" | bc -l`
-	SOLAR_WOCHE=`echo "scale=5;(${SOLAR_WOCHE}+${SOL_TMP})" | bc -l`
-	SOLARENERGIE_WOCHE=`echo "scale=3;${SOLAR_WOCHE}/1000" | bc -l` #Umrechnung in kWh
-	SOLAR_MONAT=`echo "scale=5;(${SOLAR_MONAT}+${SOL_TMP})" | bc -l`
-	SOLARENERGIE_MONAT=`echo "scale=3;${SOLAR_MONAT}/1000" | bc -l` #Umrechnung in kWh
-	SOLAR_JAHR=`echo "scale=5;(${SOLAR_JAHR}+${SOL_TMP})" | bc -l`
-	SOLARENERGIE_JAHR=`echo "scale=3;${SOLAR_JAHR}/1000" | bc -l`   #Umrechnung in kWh
+	SOLARENERGIE_TAG=$(echo "scale=3;${SOLARENERGIE_TAG}+${SOL_TMP}" | bc -l)
+	SOLAR_WOCHE=$(echo "scale=5;(${SOLAR_WOCHE}+${SOL_TMP})" | bc -l)
+	SOLARENERGIE_WOCHE=$(echo "scale=3;${SOLAR_WOCHE}/1000" | bc -l) #Umrechnung in kWh
+	SOLAR_MONAT=$(echo "scale=5;(${SOLAR_MONAT}+${SOL_TMP})" | bc -l)
+	SOLARENERGIE_MONAT=$(echo "scale=3;${SOLAR_MONAT}/1000" | bc -l) #Umrechnung in kWh
+	SOLAR_JAHR=$(echo "scale=5;(${SOLAR_JAHR}+${SOL_TMP})" | bc -l)
+	SOLARENERGIE_JAHR=$(echo "scale=3;${SOLAR_JAHR}/1000" | bc -l)   #Umrechnung in kWh
 
 	#Daten für ioB fertig machen
 	IOB_SOLDATA=$(cat <<-EOD
@@ -1028,8 +1028,7 @@ minmax24h() {
 
 
 minmaxheute() {
-        local TIMESTAMP=$(date +%Y-%m-%d)
-        TIMESTAMP+=" 00:00:00"
+        local TIMESTAMP=$(date +%Y-%m-%d)" 00:00:00"
         MIN_TEMP_HEUTE=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
         --data-urlencode "u=${INFLUX_USER}" --data-urlencode "p=${INFLUX_PASSWORD}" \
         --data-urlencode "q=SELECT min(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time <= now() and time >= '${TIMESTAMP}'" |\
@@ -1138,7 +1137,7 @@ metsommer() {
 
 logging() {
       local DATUM=$(date '+%Y%m%d')
-      echo -e "\n${DATA}" >> ${DATUM}_station.log
+      echo -e "\n${DATA}" >> "${DIR}/${DATUM}_station.log"
 }
 
 

@@ -251,7 +251,7 @@ PATCH2100() {
 #Patch Version V2.10.0 auf V2.11.0
 PATCH2110() {
  backup
- echo -e "\n Patche wetterstation.conf auf ${UPDATE_VER} ..."
+ echo -e "\n Patche wetterstation.conf auf V2.11.0 ..."
  sed -i 's/### Settings V2.10.0/### Settings V2.11.0/' ./wetterstation.conf
  sed -i '/^.*debug=.*/a \ \n #Verhalten bei Kommunikationsfehler [true/false] / default: false / Soll der Datenpunkt automatisch resettet werden?\n  RESET_KOMFEHLER=false' ./wetterstation.conf
  echo -e " Fertig...\n"
@@ -423,6 +423,8 @@ service() {
 	Description=Service für ioBroker Wetterstation
 
 	[Service]
+        User=$(whoami)
+        Group=$(whoami)
 	ExecStart=${DIR}/wetterstation.sh
 
 	[Install]

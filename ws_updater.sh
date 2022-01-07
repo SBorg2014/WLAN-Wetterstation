@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V2.11.0
+UPDATE_VER=V2.11.1
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -423,8 +423,8 @@ service() {
 	Description=Service für ioBroker Wetterstation
 
 	[Service]
-        User=$(whoami)
-        Group=$(whoami)
+	User=$(whoami)
+	Group=$(whoami)
 	ExecStart=${DIR}/wetterstation.sh
 
 	[Install]
@@ -434,6 +434,7 @@ service() {
       echo -e "\n Aktiviere den Service nun..."
       sudo systemctl daemon-reload
       sudo systemctl enable wetterstation.service
+      echo -e "\n ${GE}Der Service kann nun mittels ${GR}systemctl start wetterstation${GE} gestartet werden..."
 
 }
 

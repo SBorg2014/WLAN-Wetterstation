@@ -26,8 +26,8 @@ checker() {
           if [ -z $antwort ]; then echo -e "\n"; return; fi
           sudo sed -i '/\[Service\]/a User='$(whoami)'\nGroup='$(whoami) /etc/systemd/system/wetterstation.service
           echo -e "\n Done... Restarte Service...\n"
-          systemctl daemon-reload
-          systemctl restart wetterstation
+          sudo systemctl daemon-reload
+          sudo systemctl restart wetterstation
          fi
          check_prog bc
          check_prog jq

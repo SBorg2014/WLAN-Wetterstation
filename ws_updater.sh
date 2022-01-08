@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V2.11.1
+UPDATE_VER=V2.11.2
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -18,7 +18,17 @@ UPDATE_VER=V2.11.1
 
 
 checker() {
- #Test ob bc, jq, unzip und patch installiert sind
+ #Test ob bc, jq, unzip und patch installiert sind / Service im User-Kontext läuft
+         #Service im User-Kontext?
+         if [ ! $(cat /etc/systemd/system/wetterstation.service|grep User=) ]; then
+          echo -e "\n$GE Service läuft nicht im User-Kontext sondern unter User ${RE}root${GE}..."
+          jn_abfrage "\n$WE Soll nun auf User (empfohlen) umgestellt werden?"
+          if [ -z $antwort ]; then echo -e "\n"; exit 0; fi
+          sudo sed -i '/\[Service\]/a User='$(whoami)'\nGroup='$(whoami) /etc/systemd/system/wetterstation.service
+          echo -e "\n Done... Restarte Service...\n"
+          systemctl daemon-reload
+          systemctl restart wetterstation
+         fi
          check_prog bc
          check_prog jq
          check_prog unzip
@@ -57,8 +67,13 @@ patcher() {
              echo -e " $RE Abbruch... ${WE}\n\n\n"; exit 1;
            fi
 
- VERSION=$(cat ./wetterstation.conf|grep "### Settings V"|cut -d" " -f3)
- case ${VERSION} in
+  VERSION_SH=$(cat ./wetterstation.sh|grep "SH_VER"|cut -d"=" -f2|tr -d \")
+
+  while [ "$VERSION_CONF" != "$VERSION_SH" ]
+   do
+    VERSION_CONF=$(cat ./wetterstation.conf|grep "### Settings V"|cut -d" " -f3)
+
+    case ${VERSION_CONF} in
            V1.4.0) PATCH140 ;;
            V1.5.0) PATCH150 ;;
            V1.6.0) PATCH160 ;;
@@ -72,10 +87,12 @@ patcher() {
            V2.7.0) PATCH280 ;;
            V2.8.0) PATCH2100 ;;
            V2.9.0) echo -e "$GE Kein Patch nötig...\n" ;;
-           V2.10.0) PATCH2110 ;;
+           V2.10.0) PATCH2110 && exit 0;;
            V2.11.0) echo -e "$GE Version ist bereits aktuell...\n" ;;
            *)      FEHLER
- esac
+    esac
+
+   done
  exit 0
 }
 
@@ -96,7 +113,7 @@ main() {
           VERSION=$(cat ./wetterstation.sh|grep "SH_VER"|cut -d"=" -f2|tr -d \")
           echo -e " Version im aktuellen Verzeichnis    : ${GR}$VERSION"
 
-          if [ "$VERSION" == "$akt_version" ]; then echo -e "\n$GE Version ist bereits aktuell..."; exit 0; fi
+          if [ "$VERSION" == "$akt_version" ]; then echo -e "\n$GE Version ist bereits aktuell...\n"; exit 0; fi
 
           echo -e "\n$WE Informationen zum Release $akt_version:"
           echo -e " ─────────────────────────────────────────────────────────────"

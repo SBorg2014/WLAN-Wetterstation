@@ -14,6 +14,7 @@
  
  Die Wetterstation muss dazu in der Lage sein ihre Daten im "Wunderground/Ecowitt"-Format zu senden.<br><br>
  Bisher getestete Stationen:
+- BRESSER WLAN Farb-Wetter Center mit 5-in-1 Profi-Sensor V <sup>(*)</sup>
 - ChiliTec Funk Wetterstation 12in1
 - DNT Weatherscreen PRO
 - ELV WS980WiFi
@@ -23,8 +24,12 @@
   * WH3000 SE
   * WH4000 SE
 - Renkforce WH2600
-- Sainlogic 7in1 WiFi WS3500
+- Sainlogic 
+  * 7in1 WiFi WS3500
+  * Profi Wlan Wetterstation FT0300 <sup>(*)</sup>
 - Ventus W830
+   
+ <sup>(*)</sup> über DNS-Server wie bspw. PiHole oder dnsmasq
 <br><br>
 
 Zusatzsensoren (mittels Station oder Gateway DP1500/GW1000):
@@ -40,7 +45,7 @@ Zusatzsensoren (mittels Station oder Gateway DP1500/GW1000):
 <br><br>*__Die mögliche Anzahl der Zusatzsensoren ist nicht durch das Skript begrenzt, sondern wird vom Display und/oder Gateway bestimmt.__*
 <br><br>    
      
-Experimentell (über eigenen DNS-Server):
+über eigenen DNS-Server:
 - Stationen ohne Möglichkeit der Konfiguration mittels App *WS View* wie bspw. *Sainlogic Profi Wlan Wetterstation FT0300*
 - Installation siehe [WiKi](https://github.com/SBorg2014/WLAN-Wetterstation/wiki/Installation---eigener-DNS-Server)
 <br><br>

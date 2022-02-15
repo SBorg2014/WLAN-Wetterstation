@@ -24,7 +24,7 @@ checker() {
           echo -e "\n$GE Service läuft nicht im User-Kontext sondern unter User ${RE}root${GE}..."
           jn_abfrage "\n$WE Soll nun auf User (empfohlen) umgestellt werden?"
           if [ -z $antwort ]; then echo -e "\n"; return; fi
-	        echo -e "\n"
+	      echo -e "\n"
           sudo sed -i '/\[Service\]/a User='$(whoami)'\nGroup='$(whoami) /etc/systemd/system/wetterstation.service
           echo -e "\n Done... Restarte Service...\n"
           sudo systemctl daemon-reload

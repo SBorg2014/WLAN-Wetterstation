@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V2.11.2
+UPDATE_VER=V2.11.1
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -18,16 +18,17 @@ UPDATE_VER=V2.11.2
 
 
 checker() {
- #Test ob bc, jq, unzip und patch installiert sind / Service im User-Kontext läuft
+         #Test ob bc, jq, unzip und patch installiert sind / Service im User-Kontext läuft
          #Service im User-Kontext?
          if [ ! $(cat /etc/systemd/system/wetterstation.service|grep User=) ]; then
           echo -e "\n$GE Service läuft nicht im User-Kontext sondern unter User ${RE}root${GE}..."
           jn_abfrage "\n$WE Soll nun auf User (empfohlen) umgestellt werden?"
-          if [ -z $antwort ]; then echo -e "\n"; exit 0; fi
+          if [ -z $antwort ]; then echo -e "\n"; return; fi
+          echo -e "\n"
           sudo sed -i '/\[Service\]/a User='$(whoami)'\nGroup='$(whoami) /etc/systemd/system/wetterstation.service
           echo -e "\n Done... Restarte Service...\n"
-          systemctl daemon-reload
-          systemctl restart wetterstation
+          sudo systemctl daemon-reload
+          sudo systemctl restart wetterstation
          fi
          check_prog bc
          check_prog jq
@@ -87,8 +88,9 @@ patcher() {
            V2.7.0) PATCH280 ;;
            V2.8.0) PATCH2100 ;;
            V2.9.0) echo -e "$GE Kein Patch nötig...\n" ;;
-           V2.10.0) PATCH2110 && exit 0;;
-           V2.11.0) echo -e "$GE Version ist bereits aktuell...\n" ;;
+           V2.10.0) PATCH2110 ;;
+           V2.11.0) PATCH2111 && exit 0;;
+           V2.11.1) echo -e "$GE Version ist bereits aktuell...\n" ;;
            *)      FEHLER
     esac
 
@@ -273,6 +275,16 @@ PATCH2110() {
  sed -i '/^.*debug=.*/a \ \n #Verhalten bei Kommunikationsfehler [true/false] / default: false / Soll der Datenpunkt automatisch resettet werden?\n  RESET_KOMFEHLER=false' ./wetterstation.conf
  echo -e " Fertig...\n"
  echo -e " ${GE}Parameter für Kommunikationsfehler ggf. ändern. Per Default verbleibt er im Zustand 'true' bei einem Fehler.\n"
+}
+
+
+#Patch Version V2.11.0 auf V2.11.1
+PATCH2111() {
+ backup
+ echo -e "\n Patche wetterstation.conf auf V2.11.1 ..."
+ sed -i 's/### Settings V2.11.0/### Settings V2.11.1/' ./wetterstation.conf
+ sed -i 's/Sainlogic Profi/DNS/' ./wetterstation.conf
+ echo -e " Fertig...\n"
 }
 
 

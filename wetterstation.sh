@@ -2,13 +2,15 @@
 : <<'Versionsinfo'
 
 
- V2.11.0 - 03.12.2021 (c) 2019-2022 SBorg
+ V2.11.1 - 14.02.2022 (c) 2019-2022 SBorg
 
  wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
  die Daten an den ioBroker (alternativ auch an OpenSenseMap, Windy und wetter.com)
 
  benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq' und 'bc' unter Linux
 
+ V2.11.1 / 14.02.2022  ~ Reduzierung valides Datenpaket auf 250 Zeichen
+                       ~ "SainLogic Pro"-Protokoll in "DNS" umbenannt
  V2.11.0 / 03.12.2021  ~ Windgeschwindigkeit bei wetter.com in m/s
                        + Konfigurationsmöglichkeit des Kommunikationsfehlers (Issue #26)
                        ~ Bugfix Speicherort beim logging
@@ -100,9 +102,9 @@ Versionsinfo
 ### Ende Infoblock
 
  #Versionierung
-  SH_VER="V2.11.0"
-  CONF_V="V2.11.0"
-  SUBVER="V2.11.0"
+  SH_VER="V2.11.1"
+  CONF_V="V2.11.1"
+  SUBVER="V2.11.1"
 
 
  #Installationsverzeichnis feststellen

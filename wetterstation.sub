@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V2.11.0 --------------------------------------------------------
+### Subroutinen V2.11.1 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -104,7 +104,7 @@ debuging() {
    echo -e "Luftfeuchte Innen\t: $GR${MESSWERTE[4]}$WE %"
    echo -e "Luftfeuchte Aussen\t: $GR${MESSWERTE[5]}$WE %"
    echo -e "Windgeschwindkeit\t: $GR${MESSWERTE[6]}$WE km/h"
-   echo -e "Windböengeschwindkeit\t: $GR${MESSWERTE[7]}$WE km/h"
+   echo -e "Windböengeschwindigkeit\t: $GR${MESSWERTE[7]}$WE km/h"
    echo -e "max. Windböe\t\t: $GR${MESSWERTE[21]}$WE km/h"
    echo -e "Windrichtung\t\t: $GR${MESSWERTE[8]}$WE °"
    echo -e "Windrichtung\t\t: $GR${WINDRICHTUNG}$WE"
@@ -152,7 +152,7 @@ debuging() {
     case $WS_PROTOKOLL in
      1) echo -en "Wunderground";;
      2) echo -en "Ecowitt";;
-     9) echo -en "Sainlogic Pro";;
+     9) echo -en "DNS";;
      *) echo -en "unbekannt"
     esac
    echo -e "$WE\tDP40/50/60/70/100/200/250/300: $GE${ANZAHL_DP40} $WE| $GE${ANZAHL_DP50} $WE| $GE${ANZAHL_DP60} $WE| $GE${ANZAHL_DP70} $WE| $GE${ANZAHL_DP100} $WE| $GE${ANZAHL_DP200} $WE| $GE${ANZAHL_DP250} $WE| $GE${ANZAHL_DP300} $WE"
@@ -258,7 +258,7 @@ get_DATA() {
        #haben wir überhaupt eine Regenmenge?
         if [[ ! "$DATA" =~ "rainin" ]]; then DATA=$(echo $DATA| sed -e 's/solarradiation/rainin=0\&solarradiation/' ); fi
        #check auf Datenintigrität
-        if [ "$STRLEN" -gt "400" ] && [[ "$DATA" =~ "/weatherstation/updateweatherstation.php?ID=${WS_ID}" ]]; then return 0; else return 1; fi
+        if [ "$STRLEN" -gt "250" ] && [[ "$DATA" =~ "/weatherstation/updateweatherstation.php?ID=${WS_ID}" ]]; then return 0; else return 1; fi
        ;;
 
    2) DATA=$(timeout ${WARTE} nc -nlvw 1 -p ${WS_PORT} 2>/dev/null|tail -1)
@@ -681,9 +681,9 @@ setup() {
   else
    SAPI "Single" "get/${DP_WETTERDATA}?prettyPrint"
    LC=$(echo $retval | jq -r '.lc')
-   LC=`echo "scale=0;${LC}/1000" | bc -l`
+   LC=$(echo "scale=0;${LC}/1000" | bc -l)
    TS_AKT=$(date +%s)
-   TS_DIFF=`echo "${TS_AKT}-${LC}-3600" | bc` #mind. 1 Stunde Differenz (dann >0)
+   TS_DIFF=$(echo "${TS_AKT}-${LC}-3600" | bc) #mind. 1 Stunde Differenz (dann >0)
    if [ "$TS_DIFF" -le "0" ]; then
      IFS=" "
      DRUCKWERTE=(${DRUCKWERTE_TMP[*]})

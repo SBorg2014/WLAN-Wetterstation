@@ -733,7 +733,7 @@ usage() {
 
 version() {
         clear
-	echo -e "\n$BL WLAN-Wetterstation ${SH_VER} - (c)2019-2021 by SBorg"
+	echo -e "\n$BL WLAN-Wetterstation ${SH_VER} - (c)2019-2022 by SBorg"
 	echo -e " Config-Version: ${CONF_V}"
 	echo -e " Sub-Version   : ${SUBVER}\n"
 

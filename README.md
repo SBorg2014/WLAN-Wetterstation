@@ -89,6 +89,13 @@ Daten in Wetter.com:<br>
 ## Versionen ##
   
 
+**V2.11.1 - 14.02.2022**
+```
+    ~ Reduzierung valides Datenpaket auf 250 Zeichen
+    ~ "SainLogic Pro"-Protokoll in "DNS" umbenannt
+```
+
+
 **V2.11.0 - 03.12.2021**
 ```
     ~ Windgeschwindigkeit bei wetter.com in m/s

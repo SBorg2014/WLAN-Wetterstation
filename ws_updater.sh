@@ -426,11 +426,11 @@ install() {
      unset antwort
 
     #Testlauf starten
-     jn_abfrage"\n${WE} Einmaligen Testdurchlauf im Debug-Modus starten...(empfiehlt sich)?"
+     jn_abfrage "\n${WE} Einmaligen Testdurchlauf im Debug-Modus starten...(empfiehlt sich)?"
      if [ ! -z $antwort ]; then ./wetterstation.sh --debug; fi
 
     #enable Service
-     jn_abfrage"\n${WE} WLAN-Wetterstation Service nun starten?"
+     jn_abfrage "\n${WE} WLAN-Wetterstation Service nun starten?"
      if [ ! -z $antwort ]; then sudo systemctl start wetterstation.service; fi
 
     echo -e "\n\n Fertig..."

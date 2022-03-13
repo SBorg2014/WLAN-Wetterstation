@@ -24,7 +24,7 @@ checker() {
           echo -e "\n$GE Service läuft nicht im User-Kontext sondern unter User ${RE}root${GE}..."
           jn_abfrage "\n$WE Soll nun auf User (empfohlen) umgestellt werden?"
           if [ -z $antwort ]; then echo -e "\n"; return; fi
-	      echo -e "\n"
+          echo -e "\n"
           sudo sed -i '/\[Service\]/a User='$(whoami)'\nGroup='$(whoami) /etc/systemd/system/wetterstation.service
           echo -e "\n Done... Restarte Service...\n"
           sudo systemctl daemon-reload
@@ -426,11 +426,11 @@ install() {
      unset antwort
 
     #Testlauf starten
-     jn_abfrage"\n${WE} Einmaligen Testdurchlauf im Debug-Modus starten...(empfiehlt sich)?"
+     jn_abfrage "\n${WE} Einmaligen Testdurchlauf im Debug-Modus starten...(empfiehlt sich)?"
      if [ ! -z $antwort ]; then ./wetterstation.sh --debug; fi
 
     #enable Service
-     jn_abfrage"\n${WE} WLAN-Wetterstation Service nun starten?"
+     jn_abfrage "\n${WE} WLAN-Wetterstation Service nun starten?"
      if [ ! -z $antwort ]; then sudo systemctl start wetterstation.service; fi
 
     echo -e "\n\n Fertig..."
@@ -501,3 +501,4 @@ usage() {
 
  checker
  main
+

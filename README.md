@@ -89,6 +89,12 @@ Daten in Wetter.com:<br>
 ## Versionen ##
   
 
+**V2.12.0 - 26.03.2022**
+```
+    + bei fehlerhafter Außentemperatur erfolgt keine Datenübertragung des Paketes an den ioB
+```
+
+
 **V2.11.1 - 14.02.2022**
 ```
     ~ Reduzierung valides Datenpaket auf 250 Zeichen

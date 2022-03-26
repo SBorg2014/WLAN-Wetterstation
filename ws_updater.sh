@@ -136,7 +136,7 @@ main() {
           /bin/bash ./ws_updater.sh --patch
 
           jn_abfrage "\n Update ausgeführt. Soll der Service nun neu gestartet werden?"
-          if [ ! -z $antwort ]; then echo -e "\n"; systemctl restart wetterstation.service; fi
+          if [ ! -z $antwort ]; then echo -e "\n"; sudo systemctl restart wetterstation.service; fi
 
 exit
 }

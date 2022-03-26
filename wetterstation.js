@@ -1,4 +1,4 @@
-//Wetterstation Datenpunkte anlegen V2.11.1
+//Wetterstation Datenpunkte anlegen V2.12.0
  let DP="javascript.0.Wetterstation.";
  let WH31  = 0;  // Anzahl der WH31/WH25 Sensoren  (max. 1 Stück)
  let DP40  = 0;  // Anzahl der DP40/WH32 Sensoren  (max. 1 Stück)
@@ -11,6 +11,8 @@
  let DP300 = 0;  // Anzahl der DP300/WS68 Sensoren (max. 1 Stück)
  //Ende der User-Einstellungen -------------------
 
+ //Prüfe Objektpfad
+ if(DP[DP.length - 1] != '.') DP += '.';
   createState(DP+"Innentemperatur"             , 0,    {name: "Temperatur im Haus",                     type: "number", role: "state", unit: "°C" });
   createState(DP+"Aussentemperatur"            , 0,    {name: "Temperatur Außen",                       type: "number", role: "state", unit: "°C" });
   createState(DP+"Taupunkt"                    , 0,    {name: "Taupunkt",                               type: "number", role: "state", unit: "°C" });

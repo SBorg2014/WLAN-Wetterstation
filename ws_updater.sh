@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V2.11.1
+UPDATE_VER=V2.12.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -89,8 +89,9 @@ patcher() {
            V2.8.0) PATCH2100 ;;
            V2.9.0) echo -e "$GE Kein Patch nötig...\n" ;;
            V2.10.0) PATCH2110 ;;
-           V2.11.0) PATCH2111 && exit 0;;
-           V2.11.1) echo -e "$GE Version ist bereits aktuell...\n" ;;
+           V2.11.0) PATCH2111 ;;
+           V2.11.1) PATCH2120 && exit 0;;
+           V2.12.0) echo -e "$GE Version ist bereits aktuell...\n" ;;
            *)      FEHLER
     esac
 
@@ -285,6 +286,17 @@ PATCH2111() {
  sed -i 's/### Settings V2.11.0/### Settings V2.11.1/' ./wetterstation.conf
  sed -i 's/Sainlogic Profi/DNS/' ./wetterstation.conf
  echo -e " Fertig...\n"
+}
+
+
+#Patch Version V2.11.1 auf V2.12.0
+PATCH2120() {
+ backup
+ echo -e "\n Patche wetterstation.conf auf V2.12.0 ..."
+ sed -i 's/### Settings V2.11.1/### Settings V2.12.0/' ./wetterstation.conf
+ sed -i '/^.*WETTERCOM_PW=.*/a \ \n #Fix aktivieren bei fehlerhafter Außentemperatur [true/false] / default: false\n #Bei unplausiblem Messwert wird kein Datenpaket an den ioB geschickt\n  FIX_AUSSENTEMP=false' ./wetterstation.conf
+ echo -e " Fertig...\n"
+ echo -e " ${GE}Parameter für FIX_AUSSENTEMP ggf. ändern. Per Default werden auch unplausible Messwerte an den ioB geschickt.\n"
 }
 
 

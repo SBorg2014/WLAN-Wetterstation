@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V2.11.1 --------------------------------------------------------
+### Subroutinen V2.12.0 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -294,19 +294,19 @@ ws_data() {
 
 ### Datenkonvertierungen
 convertFtoC() {
-	MESSWERTE[$1]=`echo "scale=2;(${MESSWERTE[$1]}-32)*5/9" | bc -l`
+	MESSWERTE[$1]=$(echo "scale=2;(${MESSWERTE[$1]}-32)*5/9" | bc -l)
 }
 
 convertMPHtoKMH() {
-	MESSWERTE[$1]=`echo "scale=2;(${MESSWERTE[$1]}*16094/10000)" | bc -l`
+	MESSWERTE[$1]=$(echo "scale=2;(${MESSWERTE[$1]}*16094/10000)" | bc -l)
 }
 
 convertLuftdruck() {
-	MESSWERTE[$1]=`echo "scale=2;${MESSWERTE[$1]}*33864/1000" | bc -l`
+	MESSWERTE[$1]=$(echo "scale=2;${MESSWERTE[$1]}*33864/1000" | bc -l)
 }
 
 convertInchtoMM() {
-     MESSWERTE[$1]=`echo "scale=1;${MESSWERTE[$1]}*254/10" | bc -l`
+     MESSWERTE[$1]=$(echo "scale=1;${MESSWERTE[$1]}*254/10" | bc -l)
       #Protokoll #9 liefert keine Regenrate(11); also alle Regenberechnungen überspringen
       if [ "$WS_PROTOKOLL" -ne "9" ]; then
 
@@ -371,9 +371,9 @@ convertTime() {
 rain() {
 	   SAPI "Single" "get/${DP_REGEN_JAHR_KUM}?prettyPrint"
            LC=$(echo ${retval} | jq -r '.lc')
-	   LC=`echo "scale=0;${LC}/1000" | bc -l`
+	   LC=$(echo "scale=0;${LC}/1000" | bc -l)
 	   TS_AKT=$(date +%s)
-	   TS_DIFF=`echo "${TS_AKT}-${LC}-3600" | bc` #mind. 1 Stunde Differenz
+	   TS_DIFF=$(echo "${TS_AKT}-${LC}-3600" | bc) #mind. 1 Stunde Differenz
 
 	  if [ ${TS_DIFF} -ge "0" ]; then
            SAPI "Single" "getPlainValue/${DP_REGEN_JAHR_KUM}"

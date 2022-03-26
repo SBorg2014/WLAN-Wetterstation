@@ -130,6 +130,7 @@ main() {
           DL_URL=$(echo ${GitHub} | jq -r '.assets | .[].browser_download_url')
           curl -LJ ${DL_URL} -o tmp.zip
           unzip -o tmp.zip -x wetterstation.conf
+	  sudo chmod +x wetterstation.sh ws_updater.sh
 
           rm tmp.zip
           /bin/bash ./ws_updater.sh --patch

@@ -15,6 +15,17 @@ UPDATE_VER=V2.12.0
             echo -e " │                        │"
             echo -e " └────────────────────────┘${WE}\n"
 
+#Nicht als "root"...
+ if [ $(whoami) = "root" ]; then echo -e "$RE Ausführung als \"root\" nicht möglich...!\n"; exit 1; fi
+
+#Test ob Datei auf GitHub, sonst Fallback
+ if [ "$1" = "" ] && ( ! curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh|grep 404 ); then
+    echo -e "$WE Benutze neuste Version ${BL}$(curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh|grep UPDATE_VER=|cut -d"=" -f2)${WE} auf GitHub..."
+    sleep 2
+    bash <(curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh) --menu
+    exit 0
+ fi
+
 
 
 checker() {
@@ -130,12 +141,12 @@ main() {
           DL_URL=$(echo ${GitHub} | jq -r '.assets | .[].browser_download_url')
           curl -LJ ${DL_URL} -o tmp.zip
           unzip -o tmp.zip -x wetterstation.conf
-	  sudo chmod +x wetterstation.sh ws_updater.sh
+          sudo chmod +x wetterstation.sh ws_updater.sh
 
           rm tmp.zip
           /bin/bash ./ws_updater.sh --patch
 
-          jn_abfrage "\n Update ausgeführt. Soll der Service nun neu gestartet werden?"
+          jn_abfrage "\n ${WE}Update ausgeführt. Soll der Service nun neu gestartet werden?"
           if [ ! -z $antwort ]; then echo -e "\n"; sudo systemctl restart wetterstation.service; fi
 
 exit
@@ -488,11 +499,42 @@ usage() {
         echo -e " -h | --help\tdieses Hilfemenue\n"
 }
 
+menu() {
+        clear
+        echo -e "$WE\n\n\n"
+        echo -e "\t Auswahlmenü für WLAN-Wetterstation:"
+        echo -e "\t_____________________________________\n\n"
+        echo -e "\t [${BL}1${WE}] im aktuellen Verzeichnis installieren\n"
+        echo -e "\t [${BL}2${WE}] als Service einrichten\n"
+        echo -e "\t [${BL}3${WE}] Konfigurationsdatei patchen\n"
+        echo -e "\t [${BL}4${WE}] Update ausführen\n\n"
+        echo -e "\t [${BL}E${WE}] Exit\n\n\n"
+        echo -en "\t Ihre Auswahl: [${GR}1-4${WE}]"
+
+        read -n 1 -p ": " MENU_AUSWAHL
+        echo -e "\n"
+        case $MENU_AUSWAHL in
+           1)   bash <(curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh) --install
+                exit 0 ;;
+           2)   bash <(curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh) --service
+                exit 0 ;;
+           3)   bash <(curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh) --patch
+                exit 0 ;;
+           4)   bash <(curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh)
+                exit 0 ;;
+           e|E) exit 0 ;;
+           *) menu
+        esac
+}
+
   #gibt es Parameter?
   while [ "$1" != "" ]; do
     case $1 in
         --install )             checker
                                 install
+                                exit 0
+                                ;;
+        --menu )                menu
                                 exit 0
                                 ;;
         --service )             service

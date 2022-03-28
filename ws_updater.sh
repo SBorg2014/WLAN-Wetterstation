@@ -20,7 +20,7 @@ UPDATE_VER=V2.12.0
 
 
 #Test ob Datei auf GitHub, sonst Fallback
- if [ "$1" = "" ] && ( ! curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh|grep -q '404: Not Found' ); then
+ if [ "$1" = "" ] && ( ! curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh|grep -xq '404: Not Found' ); then
     echo -e "$WE Benutze neuste Version ${BL}$(curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh|grep -m 1 'UPDATE_VER='|cut -d"=" -f2
 )${WE} auf GitHub..."
     sleep 2

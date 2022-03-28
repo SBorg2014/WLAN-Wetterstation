@@ -15,12 +15,14 @@ UPDATE_VER=V2.12.0
             echo -e " │                        │"
             echo -e " └────────────────────────┘${WE}\n"
 
-#Nicht als "root"...
+#Nicht als root...
  if [ $(whoami) = "root" ]; then echo -e "$RE Ausführung als \"root\" nicht möglich...!\n"; exit 1; fi
 
+
 #Test ob Datei auf GitHub, sonst Fallback
- if [ "$1" = "" ] && ( ! curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh|grep 404 ); then
-    echo -e "$WE Benutze neuste Version ${BL}$(curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh|grep UPDATE_VER=|cut -d"=" -f2)${WE} auf GitHub..."
+ if [ "$1" = "" ] && ( ! curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh|grep -q '404: Not Found' ); then
+    echo -e "$WE Benutze neuste Version ${BL}$(curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh|grep -m 1 'UPDATE_VER='|cut -d"=" -f2
+)${WE} auf GitHub..."
     sleep 2
     bash <(curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh) --menu
     exit 0

@@ -2,13 +2,14 @@
 : <<'Versionsinfo'
 
 
- V2.12.0 - 26.03.2022 (c) 2019-2022 SBorg
+ V2.12.1 - 29.03.2022 (c) 2019-2022 SBorg
 
  wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
  die Daten an den ioBroker (alternativ auch an OpenSenseMap, Windy und wetter.com)
 
  benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq' und 'bc' unter Linux
 
+ V2.12.1 / 29.03.2022  ~ Fehler bei "FIX_AUSSENTEMP" behoben (keine Datenübertragung an den ioB / Issue #31)
  V2.12.0 / 26.03.2022  + bei fehlerhafter Außentemperatur erfolgt keine Datenübertragung des Paketes an den ioB
  V2.11.1 / 14.02.2022  ~ Reduzierung valides Datenpaket auf 250 Zeichen
                        ~ "SainLogic Pro"-Protokoll in "DNS" umbenannt
@@ -103,9 +104,9 @@ Versionsinfo
 ### Ende Infoblock
 
  #Versionierung
-  SH_VER="V2.12.0"
-  CONF_V="V2.12.0"
-  SUBVER="V2.12.0"
+  SH_VER="V2.12.1"
+  CONF_V="V2.12.1"
+  SUBVER="V2.12.1"
 
 
  #Installationsverzeichnis feststellen
@@ -263,7 +264,7 @@ while true
    #Daten an ioB schicken
     if [ ${FIX_AUSSENTEMP} == "true" ]
      then
-       if [ "${MESSWERTE[1]}" -gt "-273" ]; then iob_send; fi
+       if (( $(bc -l <<< "${MESSWERTE[1]} > -273") )); then iob_send; fi
      else
        iob_send
     fi

@@ -321,7 +321,7 @@ PATCH2121() {
  echo -e "${WE}\n Patche wetterstation.conf auf V2.12.1 ..."
  sed -i 's/### Settings V2.12.0/### Settings V2.12.1/' ./wetterstation.conf
  echo -e "${WE} Fertig...\n"
-
+}
 
 patch_260() {
 cat <<EoD >patch

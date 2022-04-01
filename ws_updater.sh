@@ -103,8 +103,9 @@ patcher() {
            V2.9.0) echo -e "$GE Kein Patch nötig...\n" ;;
            V2.10.0) PATCH2110 ;;
            V2.11.0) PATCH2111 ;;
-           V2.11.1) PATCH2120 && exit 0;;
-           V2.12.0) echo -e "$GE Version ist bereits aktuell...\n" ;;
+           V2.11.1) PATCH2120 ;;
+           V2.12.0) PATCH2121 && exit 0;;
+           V2.12.1) echo -e "$GE Version ist bereits aktuell...\n" ;;
            *)      FEHLER
     esac
 
@@ -312,6 +313,14 @@ PATCH2120() {
  echo -e " Fertig...\n"
  echo -e " ${GE}Parameter für FIX_AUSSENTEMP ggf. ändern. Per Default werden auch unplausible Messwerte an den ioB geschickt.\n"
 }
+
+
+#Patch Version V2.12.0 auf V2.12.1
+PATCH2121() {
+ backup
+ echo -e "${WE}\n Patche wetterstation.conf auf V2.12.1 ..."
+ sed -i 's/### Settings V2.12.0/### Settings V2.12.1/' ./wetterstation.conf
+ echo -e "${WE} Fertig...\n"
 
 
 patch_260() {

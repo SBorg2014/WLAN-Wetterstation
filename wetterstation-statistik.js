@@ -5,7 +5,9 @@
    Wichtig: funktioniert nur mit der Default-Datenstruktur des WLAN-Wetterstation-Skriptes!
             Auch keine Aliase unter Influx nutzen!
 
-   (c)2020-2021 by SBorg
+   (c)2020-2022 by SBorg
+   V1.1.0 - 02.04.2022  ~Bugfixing fehlender Vortag am 01. des Monats (Fix Issue #32)
+                        ~Korrektur Reset der Monatswerte
    V1.0.1 - 18.12.2021  ~Bugfixing "error: TypeError: Cannot read property '0' of null"
                         ~Wechsel zu axios
    V1.0.0 - 02.10.2021  ~Bugfixing Werte VorJahresMonat
@@ -69,7 +71,7 @@ const DP_Check='Rekordwerte.Regenmengemonat';
 if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 //Start des Scripts
-    const ScriptVersion = "V1.0.1";
+    const ScriptVersion = "V1.1.0";
     let Tiefstwert, Hoechstwert, Temp_Durchschnitt, Max_Windboe, Max_Regenmenge, Regenmenge_Monat, warme_Tage, Sommertage;
     let heisse_Tage, Frost_Tage, kalte_Tage, Eistage, sehr_kalte_Tage, Trockenperiode_akt;
     let kalte_Tage_Jahr, warme_Tage_Jahr, Sommertage_Jahr, heisse_Tage_Jahr, Frosttage_Jahr, Eistage_Jahr, sehrkalte_Tage_Jahr;
@@ -84,7 +86,7 @@ if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 
 // ### Funktionen ###############################################################################################
-async function main() {
+function main() {
     let result = [], temps = [], wind = [], regen = [], start, end, zeitstempel = new Date();
     start = new Date(zeitstempel.getFullYear(),zeitstempel.getMonth(),zeitstempel.getDate()-1,0,0,0);
     start = start.getTime();
@@ -100,13 +102,13 @@ async function main() {
             let JahresTemperatur_Durchschnitt = getState(PRE_DP+'.Jahreswerte.Temperatur_Durchschnitt').val;
             if (getState(PRE_DP+'.Rekordwerte.value.Temp_Durchschnitt_Max').val < JahresTemperatur_Durchschnitt) {
                 setState(PRE_DP+'.Rekordwerte.value.Temp_Durchschnitt_Max', JahresTemperatur_Durchschnitt, true);
-                setState(PRE_DP+'.Rekordwerte.Temperatur_Jahresdurchschnitt_Max', JahresTemperatur_Durchschnitt+' für '+ (zeitstempel.getFullYear()-1), true);
+                setState(PRE_DP+'.Rekordwerte.Temperatur_Jahresdurchschnitt_Max', JahresTemperatur_Durchschnitt+' °C für '+ (zeitstempel.getFullYear()-1), true);
                 //, () => { Template_Rekordwerte('Temp_Durchschnitt_Max','Rekordwerte.Temperatur_Jahresdurchschnitt_Max'); });
             }  
             //min Jahrestemperaturdurchschnitt
             if (getState(PRE_DP+'.Rekordwerte.value.Temp_Durchschnitt_Min').val > JahresTemperatur_Durchschnitt) {
                 setState(PRE_DP+'.Rekordwerte.value.Temp_Durchschnitt_Min', JahresTemperatur_Durchschnitt, true);
-                setState(PRE_DP+'.Rekordwerte.Temperatur_Jahresdurchschnitt_Min', JahresTemperatur_Durchschnitt+' für '+ (zeitstempel.getFullYear()-1), true);
+                setState(PRE_DP+'.Rekordwerte.Temperatur_Jahresdurchschnitt_Min', JahresTemperatur_Durchschnitt+' °C für '+ (zeitstempel.getFullYear()-1), true);
                 //, () => { Template_Rekordwerte('Temp_Durchschnitt_Min','Rekordwerte.Temperatur_Jahresdurchschnitt_Min'); });
             }
 
@@ -139,31 +141,12 @@ async function main() {
 
      } // end if 01.01.
 
-   await speichern_Monat();  //vorherige Monatsstatistik speichern
-   await VorJahr();          //Vorjahresmonatsstatistik ausführen
-   
-   /*DPs unabhängig ihres Wertes initial schreiben; wir nehmen die aktuelle Außentemperatur, da sie zum Start des Messzyklus
-     Min, Max und Durchschnitt darstellt; Rest einfach nullen */
-    let initialTemp=getState(WET_DP+'.Aussentemperatur').val;
-    setState(PRE_DP+'.aktueller_Monat.Tiefstwert', initialTemp, true);
-    setState(PRE_DP+'.aktueller_Monat.Hoechstwert', initialTemp, true);
-    setState(PRE_DP+'.aktueller_Monat.Temperatur_Durchschnitt', initialTemp, true);
-    setState(PRE_DP+'.aktueller_Monat.Max_Windboe', 0, true);
-    setState(PRE_DP+'.aktueller_Monat.Max_Regenmenge', 0, true);
-    setState(PRE_DP+'.aktueller_Monat.Regenmenge_Monat', 0, true);
-    setState(PRE_DP+'.aktueller_Monat.warme_Tage', 0, true);
-    setState(PRE_DP+'.aktueller_Monat.Sommertage', 0, true);
-    setState(PRE_DP+'.aktueller_Monat.heisse_Tage', 0, true);
-    setState(PRE_DP+'.aktueller_Monat.Frost_Tage', 0, true);
-    setState(PRE_DP+'.aktueller_Monat.kalte_Tage', 0, true);
-    setState(PRE_DP+'.aktueller_Monat.Eistage', 0, true);
-    setState(PRE_DP+'.aktueller_Monat.sehr_kalte_Tage', 0, true);
+   speichern_Monat();  //vorherige Monatsstatistik speichern
+   VorJahr();          //Vorjahresmonatsstatistik ausführen
 
-    sleep(3000);
+    sleep(10000);
     
    if (getState(PRE_DP+'.Control.AutoDelete_Data').val >0) { AutoDelete_Data(); }
-   //nun beenden
-   return;
 
  }//End Jobs Monatserster
 
@@ -214,6 +197,21 @@ async function main() {
     console.log('Letzter Messwert: ' + new Date(result.result[0][temps.length-1].ts).toISOString() + ' ***' + result.result[0][temps.length-1].value);
     console.log('Anzahl Datensätze: T_' + temps.length + '|W_' + wind.length + '|R_' + regen.length); */
 
+
+    //VorTag
+    setState(PRE_DP+'.VorTag.Temperatur_Tiefstwert', Tiefstwert, true);
+    setState(PRE_DP+'.VorTag.Temperatur_Hoechstwert', Hoechstwert, true);
+    setState(PRE_DP+'.VorTag.Temperatur_Durchschnitt', Temp_Durchschnitt, true);
+    setState(PRE_DP+'.VorTag.Regenmenge', Max_Regenmenge, true);
+    setState(PRE_DP+'.VorTag.Windboe_max', Max_Windboe, true);
+
+ //nun beenden falls Monatserster    
+  if (zeitstempel.getDate() == 1) { 
+    console.log('Ausführung zum Monatsersten beendet...');
+    Statusmeldung('erfolgreich');
+    return; 
+  }
+
 // Tag des Jahres berechnen
    let Jahr = zeitstempel.getFullYear();
    let heutestart = Number(new Date(zeitstempel.setHours(0,0,0,0)));
@@ -244,12 +242,6 @@ async function main() {
    if (sehr_kalte_Tage) {sehr_kalte_Tage = getState(PRE_DP+'.aktueller_Monat.sehr_kalte_Tage').val +1; setState(PRE_DP+'.aktueller_Monat.sehr_kalte_Tage', sehr_kalte_Tage, true);
                         sehrkalte_Tage_Jahr = getState(PRE_DP+'.Jahreswerte.Gradtage_sehrkalteTage').val +1; setState(PRE_DP+'.Jahreswerte.Gradtage_sehrkalteTage', sehrkalte_Tage_Jahr, true);}
    
-    //VorTag
-    setState(PRE_DP+'.VorTag.Temperatur_Tiefstwert', Tiefstwert, true);
-    setState(PRE_DP+'.VorTag.Temperatur_Hoechstwert', Hoechstwert, true);
-    setState(PRE_DP+'.VorTag.Temperatur_Durchschnitt', Temp_Durchschnitt, true);
-    setState(PRE_DP+'.VorTag.Regenmenge', Max_Regenmenge, true);
-    setState(PRE_DP+'.VorTag.Windboe_max', Max_Windboe, true);
 
     //Jahresstatistik
        //Temperatur
@@ -326,6 +318,8 @@ function speichern_Monat() {
     let zeitstempel = new Date();
     let datum = new Date(zeitstempel.getFullYear(),zeitstempel.getMonth(),zeitstempel.getDate()-2);
     let monatsdatenpunkt = '.Data.'+datum.getFullYear()+'.'+pad(datum.getMonth()+1); 
+    let initialTemp=getState(WET_DP+'.Aussentemperatur').val;
+
     //Datenpunkte lesen
     Tiefstwert=getState(PRE_DP+'.aktueller_Monat.Tiefstwert').val;
     Hoechstwert=getState(PRE_DP+'.aktueller_Monat.Hoechstwert').val;
@@ -346,7 +340,23 @@ function speichern_Monat() {
         "Max_Regenmenge": Max_Regenmenge, "Regenmenge_Monat": Regenmenge_Monat, "warme_Tage": warme_Tage,
         "Sommertage": Sommertage, "heisse_Tage": heisse_Tage, "Frost_Tage": Frost_Tage, "kalte_Tage": kalte_Tage, "Eistage": Eistage, 
         "sehr_kalte_Tage": sehr_kalte_Tage}]);
-    createState(PRE_DP+monatsdatenpunkt,'',{ name: "Monatsstatistik für "+monatsname[datum.getMonth()]+' '+datum.getFullYear(), type: "string", role: "json" }, () => { setState(PRE_DP+monatsdatenpunkt, json, true); }); 
+    createState(PRE_DP+monatsdatenpunkt,'',{ name: "Monatsstatistik für "+monatsname[datum.getMonth()]+' '+datum.getFullYear(), type: "object", role: "json" }, () => { setState(PRE_DP+monatsdatenpunkt, json, true); }); 
+
+    /* Monatswerte resetten. DPs unabhängig ihres Wertes initial schreiben; wir nehmen die aktuelle Außentemperatur, da sie 
+    zum Start des Messzyklus Min, Max und Durchschnitt darstellt; Rest einfach nullen */
+    setState(PRE_DP+'.aktueller_Monat.Tiefstwert', initialTemp, true);
+    setState(PRE_DP+'.aktueller_Monat.Hoechstwert', initialTemp, true);
+    setState(PRE_DP+'.aktueller_Monat.Temperatur_Durchschnitt', initialTemp, true);
+    setState(PRE_DP+'.aktueller_Monat.Max_Windboe', 0, true);
+    setState(PRE_DP+'.aktueller_Monat.Max_Regenmenge', 0, true);
+    setState(PRE_DP+'.aktueller_Monat.Regenmenge_Monat', 0, true);
+    setState(PRE_DP+'.aktueller_Monat.warme_Tage', 0, true);
+    setState(PRE_DP+'.aktueller_Monat.Sommertage', 0, true);
+    setState(PRE_DP+'.aktueller_Monat.heisse_Tage', 0, true);
+    setState(PRE_DP+'.aktueller_Monat.Frost_Tage', 0, true);
+    setState(PRE_DP+'.aktueller_Monat.kalte_Tage', 0, true);
+    setState(PRE_DP+'.aktueller_Monat.Eistage', 0, true);
+    setState(PRE_DP+'.aktueller_Monat.sehr_kalte_Tage', 0, true);
 } //end function
 
 function VorJahr() {    
@@ -354,21 +364,20 @@ function VorJahr() {
     let datum = new Date(zeitstempel.getFullYear(),zeitstempel.getMonth(),zeitstempel.getDate());
     let monatsdatenpunkt = '.Data.'+ (datum.getFullYear()-1) +'.'+pad(datum.getMonth()+1);
     if (existsState(PRE_DP+monatsdatenpunkt)) { //der einfache Weg: wir haben schon Daten vom Vorjahr...
-        let VorJahr = JSON.parse(getState(PRE_DP+monatsdatenpunkt).val);
-        //VorJahr = JSON.parse(VorJahr);
-        setState(PRE_DP+'.Vorjahres_Monat.Tiefstwert', VorJahr[0].Tiefstwert, true);
-        setState(PRE_DP+'.Vorjahres_Monat.Hoechstwert', VorJahr[0].Hoechstwert, true);
-        setState(PRE_DP+'.Vorjahres_Monat.Temperatur_Durchschnitt', VorJahr[0].Temp_Durchschnitt, true); 
-        setState(PRE_DP+'.Vorjahres_Monat.Max_Windboe', VorJahr[0].Max_Windboe, true); 
-        setState(PRE_DP+'.Vorjahres_Monat.Max_Regenmenge', VorJahr[0].Max_Regenmenge, true);
-        setState(PRE_DP+'.Vorjahres_Monat.Regenmenge_Monat', VorJahr[0].Regenmenge_Monat, true);
-        setState(PRE_DP+'.Vorjahres_Monat.warme_Tage', VorJahr[0].warme_Tage, true);
-        setState(PRE_DP+'.Vorjahres_Monat.Sommertage', VorJahr[0].Sommertage, true);
-        setState(PRE_DP+'.Vorjahres_Monat.heisse_Tage', VorJahr[0].heisse_Tage, true);
-        setState(PRE_DP+'.Vorjahres_Monat.Frost_Tage', VorJahr[0].Frost_Tage, true);
-        setState(PRE_DP+'.Vorjahres_Monat.kalte_Tage', VorJahr[0].kalte_Tage, true);
-        setState(PRE_DP+'.Vorjahres_Monat.Eistage', VorJahr[0].Eistage, true);
-        setState(PRE_DP+'.Vorjahres_Monat.sehr_kalte_Tage', VorJahr[0].sehr_kalte_Tage, true);
+        let VorJahr = getState(PRE_DP+monatsdatenpunkt).val[0];
+        setState(PRE_DP+'.Vorjahres_Monat.Tiefstwert', VorJahr.Tiefstwert, true);
+        setState(PRE_DP+'.Vorjahres_Monat.Hoechstwert', VorJahr.Hoechstwert, true);
+        setState(PRE_DP+'.Vorjahres_Monat.Temperatur_Durchschnitt', VorJahr.Temp_Durchschnitt, true); 
+        setState(PRE_DP+'.Vorjahres_Monat.Max_Windboe', VorJahr.Max_Windboe, true); 
+        setState(PRE_DP+'.Vorjahres_Monat.Max_Regenmenge', VorJahr.Max_Regenmenge, true);
+        setState(PRE_DP+'.Vorjahres_Monat.Regenmenge_Monat', VorJahr.Regenmenge_Monat, true);
+        setState(PRE_DP+'.Vorjahres_Monat.warme_Tage', VorJahr.warme_Tage, true);
+        setState(PRE_DP+'.Vorjahres_Monat.Sommertage', VorJahr.Sommertage, true);
+        setState(PRE_DP+'.Vorjahres_Monat.heisse_Tage', VorJahr.heisse_Tage, true);
+        setState(PRE_DP+'.Vorjahres_Monat.Frost_Tage', VorJahr.Frost_Tage, true);
+        setState(PRE_DP+'.Vorjahres_Monat.kalte_Tage', VorJahr.kalte_Tage, true);
+        setState(PRE_DP+'.Vorjahres_Monat.Eistage', VorJahr.Eistage, true);
+        setState(PRE_DP+'.Vorjahres_Monat.sehr_kalte_Tage', VorJahr.sehr_kalte_Tage, true);
 
     } else {
         //leider noch keine Daten vom Vorjahr; wir haben was zu tun...
@@ -511,7 +520,7 @@ function Statusmeldung(Text) {
 
 // Test auf neue Skriptversion
 function check_update() {
-    const axios = require('axios');
+    const axios = require('axios').default;
 
     axios.get('https://github.com/SBorg2014/WLAN-Wetterstation/commits/master/wetterstation-statistik.js')
      .then(function (response) {
@@ -556,7 +565,7 @@ function Backup_Jahresstatistik() {
         "Trockenperiode": Trockenperiode,
         "kalte Tage": kalte_Tage_Jahr, "warme Tage": warme_Tage_Jahr, "Sommertage": Sommertage_Jahr, "heiße Tage": heisse_Tage_Jahr, "Frosttage": Frosttage_Jahr, "Eistage": Eistage_Jahr,
         "sehr kalte Tage": sehrkalte_Tage_Jahr}]);
-    createState(PRE_DP+'.Jahreswerte.VorJahre.'+(new Date().getFullYear()-1), '', { name: "Jahresstatistik", type: "string", role: "json" }, () => { setState(PRE_DP+'.Jahreswerte.VorJahre.'+(new Date().getFullYear()-1), json, true) });
+    createState(PRE_DP+'.Jahreswerte.VorJahre.'+(new Date().getFullYear()-1), '', { name: "Jahresstatistik", type: "object", role: "json" }, () => { setState(PRE_DP+'.Jahreswerte.VorJahre.'+(new Date().getFullYear()-1), json, true) });
 } // end function
 
 

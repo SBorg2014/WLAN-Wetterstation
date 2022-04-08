@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V2.12.1 --------------------------------------------------------
+### Subroutinen V2.13.0 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -155,7 +155,7 @@ debuging() {
      9) echo -en "DNS";;
      *) echo -en "unbekannt"
     esac
-   echo -e "$WE\tDP40/50/60/70/100/200/250/300: $GE${ANZAHL_DP40} $WE| $GE${ANZAHL_DP50} $WE| $GE${ANZAHL_DP60} $WE| $GE${ANZAHL_DP70} $WE| $GE${ANZAHL_DP100} $WE| $GE${ANZAHL_DP200} $WE| $GE${ANZAHL_DP250} $WE| $GE${ANZAHL_DP300} $WE"
+   echo -e "$WE\tDP35/40/50/60/70/100/200/250/300: $GE${ANZAHL_DP35} $WE| $GE${ANZAHL_DP40} $WE| $GE${ANZAHL_DP50} $WE| $GE${ANZAHL_DP60} $WE| $GE${ANZAHL_DP70} $WE| $GE${ANZAHL_DP100} $WE| $GE${ANZAHL_DP200} $WE| $GE${ANZAHL_DP250} $WE| $GE${ANZAHL_DP300} $WE"
    echo -e "${WE}WH31: $GE${ANZAHL_WH31} $WE"
    echo -e "Script-Version: ${GE}${SH_VER}${WE}\tConfig-Version: $GE${CONF_V}$WE\tSub-Version: $GE${SUBVER}$WE"
 
@@ -205,6 +205,8 @@ iob_send() {
     #Sensoren DP/WH für ioBroker
     for (( i = 31; i < $MAXDEVICES; i+=2 )); do
       if [[ ! -z "${MESSWERTE[$i]}" ]]; then
+         if [[ "${MESSWERTE[$i]}" =~ ^tf_ch[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP35.${MESSWERTE[$i]:5:1}.Temperatur=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^tf_batt[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP35.${MESSWERTE[$i]:7:1}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" =~ ^temp[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP50.${MESSWERTE[$i]:4:1}.Temperatur=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" =~ ^humidity[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP50.${MESSWERTE[$i]:8:1}.Feuchtigkeit=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" =~ ^batt[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP50.${MESSWERTE[$i]:4:1}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
@@ -661,7 +663,7 @@ setup() {
  #Anzahl der DP Berechnen
   case $WS_PROTOKOLL in
    1) MAXDEVICES=22;;
-   *) MAXDEVICES=$(( 31 + $ANZAHL_DP40 * 2 + $ANZAHL_DP50 * 6 + $ANZAHL_DP100 * 4 + $ANZAHL_DP60 * 8 + $ANZAHL_DP200 * 6 + $ANZAHL_DP70 * 4 + $ANZAHL_DP250 * 18 + $ANZAHL_DP300 *2 ))
+   *) MAXDEVICES=$(( 31 + $ANZAHL_DP35 * 4 + $ANZAHL_DP40 * 2 + $ANZAHL_DP50 * 6 + $ANZAHL_DP100 * 4 + $ANZAHL_DP60 * 8 + $ANZAHL_DP200 * 6 + $ANZAHL_DP70 * 4 + $ANZAHL_DP250 * 18 + $ANZAHL_DP300 *2 ))
       MAXDEVICES+=$(( $ANZAHL_WH31 * 2 ))
   esac
 
@@ -1151,6 +1153,22 @@ WH31() {
       fi
 }
 
+DP35() {
+      #DP35/WN34-Sensoren
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^tf_ch[1-8]= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+         convertFtoC $j
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^tf_batt[1-8]= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+}
 
 DP40() {
       #DP40-Sensoren

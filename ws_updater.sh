@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V2.12.1
+UPDATE_VER=V2.13.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -104,9 +104,10 @@ patcher() {
            V2.10.0) PATCH2110 ;;
            V2.11.0) PATCH2111 ;;
            V2.11.1) PATCH2120 ;;
-           V2.12.0) PATCH2121 && exit 0;;
-           V2.12.1) echo -e "$GE Version ist bereits aktuell...\n" ;;
-           *)      FEHLER
+           V2.12.0) PATCH2121 ;;
+           V2.12.1) PATCH2130 && exit 0;;
+           V2.13.0) echo -e "$GE Version ist bereits aktuell...\n" ;;
+                 *) FEHLER
     esac
 
    done
@@ -322,6 +323,18 @@ PATCH2121() {
  sed -i 's/### Settings V2.12.0/### Settings V2.12.1/' ./wetterstation.conf
  echo -e "${WE} Fertig...\n"
 }
+
+
+#Patch Version V2.12.1 auf V2.13.0
+PATCH2130() {
+ backup
+ echo -e "${WE}\n Patche wetterstation.conf auf V2.13.0 ..."
+ sed -i 's/### Settings V2.12.1/### Settings V2.13.0/' ./wetterstation.conf
+ sed -i '/^.*ANZAHL_WH31=.*/a \  ANZAHL_DP35=0' ./wetterstation.conf
+ echo -e "${WE} Fertig...\n"
+ echo -e " ${GE}Eventuelle Zusatzsensoren DP35 müssen eingetragen werden!\n"
+}
+
 
 patch_260() {
 cat <<EoD >patch

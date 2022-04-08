@@ -1,6 +1,7 @@
-//Wetterstation Datenpunkte anlegen V2.12.1
+//Wetterstation Datenpunkte anlegen V2.13.0
  let DP="javascript.0.Wetterstation.";
  let WH31  = 0;  // Anzahl der WH31/WH25 Sensoren  (max. 1 Stück)
+ let DP35  = 0;  // Anzahl der DP35/WN34 Sensoren  (max. 8 Stück)
  let DP40  = 0;  // Anzahl der DP40/WH32 Sensoren  (max. 1 Stück)
  let DP50  = 0;  // Anzahl der DP50/WH31 Sensoren  (max. 8 Stück)
  let DP60  = 0;  // Anzahl der DP60/WH57 Sensoren  (max. 1 Stück)
@@ -92,7 +93,28 @@ if (WH31>0 && WH31<=1)  {
         createState(DP + "WH31." + i + ".Batterie", "", {
             "name": "WH31 Kanal " + i + " Batteriestatus [0=OK, 1=Alarm]",
             "type": "number",
-            "role": "value"
+            "role": "state"
+        });
+    }
+  }
+}
+
+if (DP35>0 && DP35<=8)  {
+  if (!existsState(DP + "DP35")) {createState(DP + "DP35", '', { name: "Wassertemperatur Sensor Außen" });}
+  for(var i=1; i<=DP35; i++) {
+    if (!existsState(DP + "DP35." + i + ".Temperatur")) {
+        createState(DP + "DP35." + i + ".Temperatur", "", {
+            "name": "DP35 Kanal " + i + " Temperatur",
+            "type": "number",
+            "role": "state",
+            "unit": "°C"
+        });
+    }
+    if (!existsState(DP + "DP35." + i + ".Batterie")) {
+        createState(DP + "DP35." + i + ".Batterie", "", {
+            "name": "DP35 Kanal " + i + " Batterie",
+            "type": "number",
+            "role": "state"
         });
     }
   }
@@ -105,7 +127,7 @@ if (DP40>0 && DP40<=1)  {
         createState(DP + "DP40." + i + ".Batterie", "", {
             "name": "DP40 Kanal " + i + " Batteriestatus [0=OK, 1=Alarm]",
             "type": "number",
-            "role": "value"
+            "role": "state"
         });
     }
   }

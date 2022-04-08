@@ -2,13 +2,14 @@
 : <<'Versionsinfo'
 
 
- V2.12.1 - 29.03.2022 (c) 2019-2022 SBorg
+ V2.13.0 - 05.04.2022 (c) 2019-2022 SBorg
 
  wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
  die Daten an den ioBroker (alternativ auch an OpenSenseMap, Windy und wetter.com)
 
  benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq' und 'bc' unter Linux
 
+ V2.13.0 / 05.04.2022  + Unterstützung für DP35/WN34 Sensor (@Omnedon)
  V2.12.1 / 29.03.2022  ~ Fehler bei "FIX_AUSSENTEMP" behoben (keine Datenübertragung an den ioB / Issue #31)
  V2.12.0 / 26.03.2022  + bei fehlerhafter Außentemperatur erfolgt keine Datenübertragung des Paketes an den ioB
  V2.11.1 / 14.02.2022  ~ Reduzierung valides Datenpaket auf 250 Zeichen
@@ -104,9 +105,9 @@ Versionsinfo
 ### Ende Infoblock
 
  #Versionierung
-  SH_VER="V2.12.1"
-  CONF_V="V2.12.1"
-  SUBVER="V2.12.1"
+  SH_VER="V2.13.0"
+  CONF_V="V2.13.0"
+  SUBVER="V2.13.0"
 
 
  #Installationsverzeichnis feststellen
@@ -242,6 +243,7 @@ while true
 
 
      ### zusätzliche DPxxx-Sensoren ############################################################
+      if [ "${ANZAHL_DP35}" -gt "0" ]; then DP35; fi
       if [ "${ANZAHL_DP40}" -gt "0" ]; then DP40; fi
       if [ "${ANZAHL_DP50}" -gt "0" ] || [ "${ANZAHL_DP100}" -gt "0" ]; then DP50_100; fi
       if [ "${ANZAHL_DP60}" -gt "0" ]; then DP60; fi

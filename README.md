@@ -33,6 +33,7 @@
 <br><br>
 
 Zusatzsensoren (mittels Station oder Gateway DP1500/GW1000):
+- bis zu 8 Stück DP35/WN34 Wassertemperatur-Sensoren
 - ein DP40/WH32 (bzw. WH26) Außentemperatur- und Luftfeuchtigkeitssensor
 - bis zu 8 Stück DP50/WH31 Temperatur-/Luftfeuchtigkeit-Sensoren
 - ein DP60/WH57 Blitzsensor
@@ -88,6 +89,12 @@ Daten in Wetter.com:<br>
 
 ## Versionen ##
   
+
+**V2.13.0 - 05.04.2022**
+```
+    + Unterstützung für DP35/WN34 Sensor (@Omnedon)
+```  
+
 
 **V2.12.1 - 29.03.2022**
 ```

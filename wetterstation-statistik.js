@@ -6,6 +6,7 @@
             Auch keine Aliase unter Influx nutzen!
 
    (c)2020-2022 by SBorg
+   V1.1.1 - 02.05.2022  ~Rework JSON-Management
    V1.1.0 - 02.04.2022  ~Bugfixing fehlender Vortag am 01. des Monats (Fix Issue #32)
                         ~Korrektur Reset der Monatswerte
    V1.0.1 - 18.12.2021  ~Bugfixing "error: TypeError: Cannot read property '0' of null"
@@ -71,7 +72,7 @@ const DP_Check='Rekordwerte.Regenmengemonat';
 if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 //Start des Scripts
-    const ScriptVersion = "V1.1.0";
+    const ScriptVersion = "V1.1.1";
     let Tiefstwert, Hoechstwert, Temp_Durchschnitt, Max_Windboe, Max_Regenmenge, Regenmenge_Monat, warme_Tage, Sommertage;
     let heisse_Tage, Frost_Tage, kalte_Tage, Eistage, sehr_kalte_Tage, Trockenperiode_akt;
     let kalte_Tage_Jahr, warme_Tage_Jahr, Sommertage_Jahr, heisse_Tage_Jahr, Frosttage_Jahr, Eistage_Jahr, sehrkalte_Tage_Jahr;
@@ -319,6 +320,7 @@ function speichern_Monat() {
     let datum = new Date(zeitstempel.getFullYear(),zeitstempel.getMonth(),zeitstempel.getDate()-2);
     let monatsdatenpunkt = '.Data.'+datum.getFullYear()+'.'+pad(datum.getMonth()+1); 
     let initialTemp=getState(WET_DP+'.Aussentemperatur').val;
+    let jsonSummary = [];
 
     //Datenpunkte lesen
     Tiefstwert=getState(PRE_DP+'.aktueller_Monat.Tiefstwert').val;
@@ -336,11 +338,12 @@ function speichern_Monat() {
     sehr_kalte_Tage=getState(PRE_DP+'.aktueller_Monat.sehr_kalte_Tage').val;
     //ggf. höchste Monatsregenmenge im Jahr schreiben
     if (getState(PRE_DP+'.Jahreswerte.Regenmengemonat').val <= Regenmenge_Monat) {setState(PRE_DP+'.Jahreswerte.Regenmengemonat', Regenmenge_Monat, true);} 
-    let json = JSON.stringify([{"Tiefstwert": Tiefstwert, "Hoechstwert": Hoechstwert, "Temp_Durchschnitt": Temp_Durchschnitt, "Max_Windboe": Max_Windboe, 
+    jsonSummary.push(
+        {"Tiefstwert": Tiefstwert, "Hoechstwert": Hoechstwert, "Temp_Durchschnitt": Temp_Durchschnitt, "Max_Windboe": Max_Windboe, 
         "Max_Regenmenge": Max_Regenmenge, "Regenmenge_Monat": Regenmenge_Monat, "warme_Tage": warme_Tage,
         "Sommertage": Sommertage, "heisse_Tage": heisse_Tage, "Frost_Tage": Frost_Tage, "kalte_Tage": kalte_Tage, "Eistage": Eistage, 
-        "sehr_kalte_Tage": sehr_kalte_Tage}]);
-    createState(PRE_DP+monatsdatenpunkt,'',{ name: "Monatsstatistik für "+monatsname[datum.getMonth()]+' '+datum.getFullYear(), type: "object", role: "json" }, () => { setState(PRE_DP+monatsdatenpunkt, json, true); }); 
+        "sehr_kalte_Tage": sehr_kalte_Tage})
+    createState(PRE_DP+monatsdatenpunkt,'',{ name: "Monatsstatistik für "+monatsname[datum.getMonth()]+' '+datum.getFullYear(), type: "string", role: "json" }, () => { setState(PRE_DP+monatsdatenpunkt, JSON.stringify(jsonSummary), true); }); 
 
     /* Monatswerte resetten. DPs unabhängig ihres Wertes initial schreiben; wir nehmen die aktuelle Außentemperatur, da sie 
     zum Start des Messzyklus Min, Max und Durchschnitt darstellt; Rest einfach nullen */
@@ -359,12 +362,13 @@ function speichern_Monat() {
     setState(PRE_DP+'.aktueller_Monat.sehr_kalte_Tage', 0, true);
 } //end function
 
-function VorJahr() {    
+function VorJahr() {   
     let zeitstempel = new Date();
     let datum = new Date(zeitstempel.getFullYear(),zeitstempel.getMonth(),zeitstempel.getDate());
     let monatsdatenpunkt = '.Data.'+ (datum.getFullYear()-1) +'.'+pad(datum.getMonth()+1);
     if (existsState(PRE_DP+monatsdatenpunkt)) { //der einfache Weg: wir haben schon Daten vom Vorjahr...
-        let VorJahr = getState(PRE_DP+monatsdatenpunkt).val[0];
+        let VorJahr_tmp = JSON.stringify(getState(PRE_DP+monatsdatenpunkt).val[0]);
+        let VorJahr = JSON.parse(VorJahr_tmp);
         setState(PRE_DP+'.Vorjahres_Monat.Tiefstwert', VorJahr.Tiefstwert, true);
         setState(PRE_DP+'.Vorjahres_Monat.Hoechstwert', VorJahr.Hoechstwert, true);
         setState(PRE_DP+'.Vorjahres_Monat.Temperatur_Durchschnitt', VorJahr.Temp_Durchschnitt, true); 
@@ -559,13 +563,15 @@ function Backup_Jahresstatistik() {
     let Frosttage_Jahr = getState(PRE_DP+'.Jahreswerte.Gradtage_Frosttage').val;
     let Eistage_Jahr = getState(PRE_DP+'.Jahreswerte.Gradtage_Eistage').val;
     let sehrkalte_Tage_Jahr = getState(PRE_DP+'.Jahreswerte.Gradtage_sehrkalteTage').val;
+    let jsonSummary = [];
 
-    let json = JSON.stringify([{"Temperatur Tiefstwert": Temperatur_Tiefstwert, "Temperatur Höchstwert": Temperatur_Hoechstwert, "Temperatur Durchschnitt": Temperatur_Durchschnitt,
+    jsonSummary.push({
+        "Temperatur Tiefstwert": Temperatur_Tiefstwert, "Temperatur Höchstwert": Temperatur_Hoechstwert, "Temperatur Durchschnitt": Temperatur_Durchschnitt,
         "Regenmengetag": Regenmengetag, "höchste Regenmengemonat": Regenmengemonat, "Windböe": Windboe_max,
         "Trockenperiode": Trockenperiode,
         "kalte Tage": kalte_Tage_Jahr, "warme Tage": warme_Tage_Jahr, "Sommertage": Sommertage_Jahr, "heiße Tage": heisse_Tage_Jahr, "Frosttage": Frosttage_Jahr, "Eistage": Eistage_Jahr,
-        "sehr kalte Tage": sehrkalte_Tage_Jahr}]);
-    createState(PRE_DP+'.Jahreswerte.VorJahre.'+(new Date().getFullYear()-1), '', { name: "Jahresstatistik", type: "object", role: "json" }, () => { setState(PRE_DP+'.Jahreswerte.VorJahre.'+(new Date().getFullYear()-1), json, true) });
+        "sehr kalte Tage": sehrkalte_Tage_Jahr});
+    createState(PRE_DP+'.Jahreswerte.VorJahre.'+(new Date().getFullYear()-1), '', { name: "Jahresstatistik", type: "string", role: "json" }, () => { setState(PRE_DP+'.Jahreswerte.VorJahre.'+(new Date().getFullYear()-1), JSON.stringify(jsonSummary), true) });
 } // end function
 
 

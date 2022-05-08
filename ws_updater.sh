@@ -466,7 +466,10 @@ install() {
 
     #Konfiguration öffnen
      jn_abfrage "\n${WE} Konfiguration nun öffnen?"
-     if [ ! -z $antwort ]; then $(cat ~/.selected_editor | grep SELECTED_EDITOR | cut -d"=" -f2 | tr -d \") wetterstation.conf; fi
+     if [ ! -z $antwort ]; then
+       if [ ! -f ~/.selected_editor ]; then update-alternatives --config editor; fi
+       $(cat ~/.selected_editor | grep SELECTED_EDITOR | cut -d"=" -f2 | tr -d \") wetterstation.conf
+     fi
 
     #DPs im ioB anlegen...
      jn_abfrage "\n${BL} Nun mittels des Javascriptes ${GE}'wetterstation.js'${BL} die Datenpunkte im ioBroker anlegen! Fertig [\e[101m Nein=Abbruch \e[0m${BL}]?"

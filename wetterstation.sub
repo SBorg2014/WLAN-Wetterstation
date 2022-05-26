@@ -178,12 +178,15 @@ function SAPI()
   #2 SAPI-URL
   #3 DATA (setBulk)
 
+  SEP="?"
+  [[ $2 == *"?"* ]] && SEP="&"
+
   if [ "$1" == "Single" ]; then
-   retval=$(curl -s ${WEB}://${IPP}/${2}&user=${AUTH_USER}&pass=${AUTH_PASS} >/dev/null 2>&1)
+   retval=$(curl ${SAPI_CURL_OPTS} -s "${WEB}://${IPP}/${2}${SEP}user=${AUTH_USER}&pass=${AUTH_PASS}" >/dev/null 2>&1)
   fi
 
   if [ "$1" == "Bulk" ]; then
-   curl --data "${3}&user=${AUTH_USER}&pass=${AUTH_PASS}" ${WEB}://${IPP}/${2} >/dev/null 2>&1
+   curl ${SAPI_CURL_OPTS} --data "${3}" "${WEB}://${IPP}/${2}${SEP}user=${AUTH_USER}&pass=${AUTH_PASS}" >/dev/null 2>&1
   fi
 }
 
@@ -243,9 +246,9 @@ iob_send() {
 
    #Daten an den ioB schicken
     if [ $debug == "true" ]; then
-	curl --data "$IOB_DATA&user=${AUTH_USER}&pass=${AUTH_PASS}&prettyPrint" ${WEB}://${IPP}/setBulk
+	curl ${SAPI_CURL_OPTS} --data "$IOB_DATA" "${WEB}://${IPP}/setBulk?ack=true&user=${AUTH_USER}&pass=${AUTH_PASS}&prettyPrint"
       else
-	curl --data "$IOB_DATA&user=${AUTH_USER}&pass=${AUTH_PASS}" ${WEB}://${IPP}/setBulk >/dev/null 2>&1
+	curl ${SAPI_CURL_OPTS} --data "$IOB_DATA" "${WEB}://${IPP}/setBulk?ack=true&user=${AUTH_USER}&pass=${AUTH_PASS}" >/dev/null 2>&1
     fi
 }
 
@@ -328,7 +331,7 @@ convertInchtoMM() {
 	 AKT_TIMESTAMP=`date +%s`
 	 if [ $LAST_RAIN == "DATUM" ]; then LASTRAINMSG=`date "+%d.%m.%Y %H:%M"`; fi
 	 if [ $LAST_RAIN == "UNIX" ]; then LASTRAINMSG=${AKT_TIMESTAMP}; fi
-	 SAPI "Bulk" "setBulk" "${DP_LETZTER_REGEN}=${LASTRAINMSG}&${DP_LETZTE_REGENMENGE}=${MESSWERTE[12]}"
+	 SAPI "Bulk" "setBulk" "${DP_LETZTER_REGEN}=${LASTRAINMSG}&${DP_LETZTE_REGENMENGE}=${MESSWERTE[12]}&ack=true"
 	fi
 
 	if [ $LAST_RAIN == "DIFF" ]; then
@@ -350,7 +353,7 @@ convertInchtoMM() {
 		1)  LASTRAINMSG="vor einem Tag" ;;
 		*)  LASTRAINMSG="vor $TAGE Tagen"
 	   esac
-           SAPI "Bulk" "setBulk" "${DP_LETZTER_REGEN}=${LASTRAINMSG}"
+           SAPI "Bulk" "setBulk" "${DP_LETZTER_REGEN}=${LASTRAINMSG}&ack=true"
 	fi
 
       fi
@@ -459,7 +462,7 @@ wetterprognose() {
 	EOD
 	)
 
-    SAPI "Bulk" "setBulk" "${IOB_WDATA}"
+    SAPI "Bulk" "setBulk" "${IOB_WDATA}&ack=true"
 
 }
 
@@ -493,7 +496,7 @@ sonnenpuls() {
 	 let SONNENSCHEIN_MO+="$SONNENPULS_DIFF"
 	 let SONNENSCHEIN_JAHR+="$SONNENPULS_DIFF"
 	fi
-	SAPI "Bulk" "setBulk" "${DP_SONNENSCHEIN_SAVE}=${SONNENSCHEIN_TAG} ${SONNENSCHEIN_WO} ${SONNENSCHEIN_MO} ${SONNENSCHEIN_JAHR}"
+	SAPI "Bulk" "setBulk" "${DP_SONNENSCHEIN_SAVE}=${SONNENSCHEIN_TAG} ${SONNENSCHEIN_WO} ${SONNENSCHEIN_MO} ${SONNENSCHEIN_JAHR}&ack=true"
 	timestr ${SONNENSCHEIN_TAG} SONNENDAUER_STR_TAG
 	timestr ${SONNENSCHEIN_WO} SONNENDAUER_STR_WO
 	timestr ${SONNENSCHEIN_MO} SONNENDAUER_STR_MO
@@ -505,7 +508,7 @@ sonnenpuls() {
 	EOD
 	)
 	if [ -z $MIDNIGHTRUN ]; then TIMER_START=`date +%s`; fi
-	SAPI "Bulk" "setBulk" "${IOB_SDATA}"
+	SAPI "Bulk" "setBulk" "${IOB_SDATA}&ack=true"
     fi
 
 	###Solarenergie
@@ -541,7 +544,7 @@ sonnenpuls() {
 	EOD
 	)
 
-	SAPI "Bulk" "setBulk" "${IOB_SOLDATA}"
+	SAPI "Bulk" "setBulk" "${IOB_SOLDATA}&ack=true"
     fi
 
 }
@@ -651,6 +654,12 @@ setup() {
   #Anzeige bis Daten komplett
   WETTER_TREND="noch --- Minuten"
 
+  if [ "$WEB_IGN_SSL_ERROR" == "true" ]; then
+    SAPI_CURL_OPTS="-k"
+  else
+    SAPI_CURL_OPTS=""
+  fi
+
   declare -a MESSWERTE
   SOLARENERGIE=(0 0)
   SOLARENERGIE_TS=(0 0)
@@ -679,7 +688,7 @@ setup() {
 
  if [ ${#DRUCKWERTE_TMP} -le "2" ]; then
    DRUCKWERTE_TMP=${DRUCKWERTE[*]}
-   SAPI "Bulk" "setBulk" "${DP_WETTERDATA}=${DRUCKWERTE_TMP}"
+   SAPI "Bulk" "setBulk" "${DP_WETTERDATA}=${DRUCKWERTE_TMP}&ack=true"
   else
    SAPI "Single" "get/${DP_WETTERDATA}?prettyPrint"
    LC=$(echo $retval | jq -r '.lc')
@@ -715,7 +724,7 @@ setup() {
    unset SOL_ARY; unset SON_ARY; unset SONNENSCHEIN_TMP; unset SOLAR_TMP
 
    #Startwerte setzen
-   SAPI "Bulk" "setBulk" "${DP_WETTER_TREND}=${WETTER_TREND}"
+   SAPI "Bulk" "setBulk" "${DP_WETTER_TREND}=${WETTER_TREND}&ack=true"
 }
 
 
@@ -1556,5 +1565,3 @@ wettercom_update(){
 }
 
 ###EoF
-
-

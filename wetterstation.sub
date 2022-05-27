@@ -182,7 +182,7 @@ function SAPI()
   [[ $2 == *"?"* ]] && SEP="&"
 
   if [ "$1" == "Single" ]; then
-   retval=$(curl ${SAPI_CURL_OPTS} -s "${WEB}://${IPP}/${2}${SEP}user=${AUTH_USER}&pass=${AUTH_PASS}" >/dev/null 2>&1)
+   retval=$(curl ${SAPI_CURL_OPTS} -s "${WEB}://${IPP}/${2}${SEP}user=${AUTH_USER}&pass=${AUTH_PASS}" 2>/dev/null)
   fi
 
   if [ "$1" == "Bulk" ]; then

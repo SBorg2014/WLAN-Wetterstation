@@ -612,9 +612,7 @@ END_BC
 reset_zaehler() {
 	#VorZaehler aktualisieren
 	timestr ${SONNENSCHEIN_TAG} SONNENDAUER_STR_TAG
-	SAPI "Single" "set/${DP_SONNENSCHEIN_VORTAG_TEXT}?value=${SONNENDAUER_STR_TAG}&ack=true"
-	SAPI "Single" "set/${DP_SONNENSCHEIN_VORTAG}?value=${SONNENSCHEIN_TAG}&ack=true"
-	SAPI "Single" "set/${DP_SOLARENERGIE_VORTAG}?value=${SOLARENERGIE_TAG}&ack=true"
+	SAPI "Bulk" "setBulk" "${DP_SONNENSCHEIN_VORTAG_TEXT}=${SONNENDAUER_STR_TAG}&${DP_SONNENSCHEIN_VORTAG}=${SONNENSCHEIN_TAG}&${DP_SOLARENERGIE_VORTAG}=${SOLARENERGIE_TAG}&ack=true"
 
 	#Tageszähler resetten
 	SONNENSCHEIN_TAG=0
@@ -635,15 +633,11 @@ reset_zaehler() {
 	  SOLAR_MONAT=0
 	  if [ `date +%m` -eq "12" ]; then
 		#Jahreszähler resetten
-		SAPI "Single" "set/${DP_REGENMENGE_VORJAHR}?value=${REGENMENGE}&ack=true"
-		SAPI "Single" "set/${DP_SONNENSCHEIN_VORJAHR}?value=${SONNENSCHEIN_JAHR}&ack=true"
-		SAPI "Single" "set/${DP_SOLARENERGIE_VORJAHR}?value=${SOLAR_JAHR}&ack=true"
+		SAPI "Bulk" "setBulk" "${DP_REGENMENGE_VORJAHR}=${REGENMENGE}&${DP_SONNENSCHEIN_VORJAHR}=${SONNENSCHEIN_JAHR}&${DP_SOLARENERGIE_VORJAHR}=${SOLAR_JAHR}&ack=true"
 		REGENMENGE=0
-	        SAPI "Single" "set/${DP_REGEN_JAHR_KUM}?value=${REGENMENGE}&ack=true"
 		SONNENSCHEIN_JAHR=0
 		SOLAR_JAHR=0
-	        SAPI "Single" "set/${DP_MET_SOMMER_TEMP}?value=&ack=true"
-	        SAPI "Single" "set/${DP_MET_SOMMER_REGEN}?value=&ack=true"
+		SAPI "Bulk" "setBulk" "${DP_REGEN_JAHR_KUM}=${REGENMENGE}&${DP_MET_SOMMER_TEMP}=&${DP_MET_SOMMER_REGEN}=&ack=true"
 	  fi
 	fi
 

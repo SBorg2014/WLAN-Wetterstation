@@ -43,6 +43,7 @@
   DP_SONNENSCHEIN_WOCHE=${PRE_DP}.Info.Sonnenschein_Woche
   DP_SONNENSCHEIN_MONAT=${PRE_DP}.Info.Sonnenschein_Monat
   DP_SONNENSCHEIN_JAHR=${PRE_DP}.Info.Sonnenschein_Jahr
+  DP_SONNENSCHEIN_VORTAG_TEXT=${PRE_DP}.Info.Sonnenschein_VorTag_Text
   DP_SONNENSCHEIN_TAG_TEXT=${PRE_DP}.Info.Sonnenschein_Tag_Text
   DP_SONNENSCHEIN_WOCHE_TEXT=${PRE_DP}.Info.Sonnenschein_Woche_Text
   DP_SONNENSCHEIN_MONAT_TEXT=${PRE_DP}.Info.Sonnenschein_Monat_Text
@@ -610,6 +611,8 @@ END_BC
 
 reset_zaehler() {
 	#VorZaehler aktualisieren
+	timestr ${SONNENSCHEIN_TAG} SONNENDAUER_STR_TAG
+	SAPI "Single" "set/${DP_SONNENSCHEIN_VORTAG_TEXT}?value=${SONNENDAUER_STR_TAG}&ack=true"
 	SAPI "Single" "set/${DP_SONNENSCHEIN_VORTAG}?value=${SONNENSCHEIN_TAG}&ack=true"
 	SAPI "Single" "set/${DP_SOLARENERGIE_VORTAG}?value=${SOLARENERGIE_TAG}&ack=true"
 

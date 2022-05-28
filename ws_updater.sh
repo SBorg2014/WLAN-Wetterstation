@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V2.13.0
+UPDATE_VER=V2.14.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -105,8 +105,9 @@ patcher() {
            V2.11.0) PATCH2111 ;;
            V2.11.1) PATCH2120 ;;
            V2.12.0) PATCH2121 ;;
-           V2.12.1) PATCH2130 && exit 0;;
-           V2.13.0) echo -e "$GE Version ist bereits aktuell...\n" ;;
+           V2.12.1) PATCH2130 ;;
+           V2.13.0) PATCH2140 && exit 0;;
+           V2.14.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
                  *) FEHLER
     esac
 
@@ -333,6 +334,16 @@ PATCH2130() {
  sed -i '/^.*ANZAHL_WH31=.*/a \  ANZAHL_DP35=0' ./wetterstation.conf
  echo -e "${WE} Fertig...\n"
  echo -e " ${GE}Eventuelle Zusatzsensoren DP35 müssen eingetragen werden!\n"
+}
+
+
+#Patch Version V2.13.0 auf V2.14.0
+PATCH2140() {
+ backup
+ echo -e "${WE}\n Patche wetterstation.conf auf V2.14.0 ..."
+ sed -i 's/### Settings V2.13.0/### Settings V2.14.0/' ./wetterstation.conf
+ sed -i '/^.*WEB=HTTP.*/a \\n #Ignoriere Zertifikatsfehler bei der Simple-Restful-API [true/false] / default: false / nötig bei eigenen Zertifikaten\n  WEB_IGN_SSL_ERROR=false' ./wetterstation.conf
+ echo -e "${WE} Fertig...\n"
 }
 
 

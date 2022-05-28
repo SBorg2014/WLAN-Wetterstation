@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V2.13.0 --------------------------------------------------------
+### Subroutinen V2.14.0 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -329,8 +329,8 @@ convertInchtoMM() {
 
 	#letztes Regenereignis + letzte Regenmenge
 	if [ "$REGEN" -gt "0" ] && [ "$1" -eq "12" ]; then
-	 AKT_TIMESTAMP=`date +%s`
-	 if [ $LAST_RAIN == "DATUM" ]; then LASTRAINMSG=`date "+%d.%m.%Y %H:%M"`; fi
+	 AKT_TIMESTAMP=$(date +%s)
+	 if [ $LAST_RAIN == "DATUM" ]; then LASTRAINMSG=$(date "+%d.%m.%Y %H:%M"); fi
 	 if [ $LAST_RAIN == "UNIX" ]; then LASTRAINMSG=${AKT_TIMESTAMP}; fi
 	 SAPI "Bulk" "setBulk" "${DP_LETZTER_REGEN}=${LASTRAINMSG}&${DP_LETZTE_REGENMENGE}=${MESSWERTE[12]}&ack=true"
 	fi

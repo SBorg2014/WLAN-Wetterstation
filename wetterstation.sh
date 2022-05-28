@@ -2,13 +2,18 @@
 : <<'Versionsinfo'
 
 
- V2.13.0 - 05.04.2022 (c) 2019-2022 SBorg
+ V2.14.0 - 28.05.2022 (c) 2019-2022 SBorg
 
  wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
  die Daten an den ioBroker (alternativ auch an OpenSenseMap, Windy und wetter.com)
 
  benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq' und 'bc' unter Linux
 
+ V2.14.0 / 28.05.2022  ~ Fixed authentication for Simple-API setBulk requests (@crycode-de)
+                       + Set ack flag on setBulk requests (requires PR ioBroker/ioBroker.simple-api#145) (@crycode-de)
+                       + Added option to ignore SSL errors if HTTPS is used together with a self-signed certificate (@crycode-de)
+                       + Added the state .Info.Sonnenschein_VorTag_Text (@crycode-de)
+                       ~ Merge some SAPI "Single" calls into SAPI "Bulk" calls (@crycode-de)
  V2.13.0 / 05.04.2022  + Unterstützung für DP35/WN34 Sensor (@Omnedon)
  V2.12.1 / 29.03.2022  ~ Fehler bei "FIX_AUSSENTEMP" behoben (keine Datenübertragung an den ioB / Issue #31)
  V2.12.0 / 26.03.2022  + bei fehlerhafter Außentemperatur erfolgt keine Datenübertragung des Paketes an den ioB
@@ -105,9 +110,9 @@ Versionsinfo
 ### Ende Infoblock
 
  #Versionierung
-  SH_VER="V2.13.0"
-  CONF_V="V2.13.0"
-  SUBVER="V2.13.0"
+  SH_VER="V2.14.0"
+  CONF_V="V2.14.0"
+  SUBVER="V2.14.0"
 
 
  #Installationsverzeichnis feststellen

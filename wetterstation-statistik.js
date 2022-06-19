@@ -6,6 +6,7 @@
             Auch keine Aliase unter Influx nutzen!
 
    (c)2020-2022 by SBorg
+   V1.1.2 - 19.06.2022  ~mögliche "Null"-Werte bei "Regenmenge Vortag" und "Windböe" gefixt (Fix Issue #35)
    V1.1.1 - 02.05.2022  ~Rework JSON-Management
    V1.1.0 - 02.04.2022  ~Bugfixing fehlender Vortag am 01. des Monats (Fix Issue #32)
                         ~Korrektur Reset der Monatswerte
@@ -72,7 +73,7 @@ const DP_Check='Rekordwerte.Regenmengemonat';
 if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 //Start des Scripts
-    const ScriptVersion = "V1.1.1";
+    const ScriptVersion = "V1.1.2";
     let Tiefstwert, Hoechstwert, Temp_Durchschnitt, Max_Windboe, Max_Regenmenge, Regenmenge_Monat, warme_Tage, Sommertage;
     let heisse_Tage, Frost_Tage, kalte_Tage, Eistage, sehr_kalte_Tage, Trockenperiode_akt;
     let kalte_Tage_Jahr, warme_Tage_Jahr, Sommertage_Jahr, heisse_Tage_Jahr, Frosttage_Jahr, Eistage_Jahr, sehrkalte_Tage_Jahr;
@@ -185,11 +186,11 @@ function main() {
     if (Tiefstwert < -10) { sehr_kalte_Tage = 1; } else { sehr_kalte_Tage = 0; }
 
   //Wind
-    Max_Windboe = Math.max(...wind);      
+    if (wind.length == 0) { Max_Windboe = 0; } else { Max_Windboe = Math.max(...wind); }     
 
   //Regen
-    Max_Regenmenge = Math.max(...regen);
-    
+    if (regen.length == 0) { Max_Regenmenge = 0; } else { Max_Regenmenge = Math.max(...regen); }
+
 
 /* Debug-Consolenausgaben
     console.log('Daten ab ' + timeConverter(start));

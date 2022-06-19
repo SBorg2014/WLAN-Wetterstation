@@ -89,6 +89,14 @@ Daten in Wetter.com:<br>
 
 ## Versionen ##
   
+**V2.14.0 - 28.05.2022**
+```
+    ~ Fixed authentication for Simple-API setBulk requests (@crycode-de)
+    + Set ack flag on setBulk requests (requires PR ioBroker/ioBroker.simple-api#145) (@crycode-de)
+    + Added option to ignore SSL errors if HTTPS is used together with a self-signed certificate (@crycode-de)
+    + Added the state .Info.Sonnenschein_VorTag_Text (@crycode-de)
+    ~ Merge some SAPI "Single" calls into SAPI "Bulk" calls (@crycode-de)
+ ```
 
 **V2.13.0 - 05.04.2022**
 ```

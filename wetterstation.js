@@ -1,4 +1,4 @@
-//Wetterstation Datenpunkte anlegen V2.14.0
+//Wetterstation Datenpunkte anlegen V2.15.0
  let DP="javascript.0.Wetterstation.";
  let WH31  = 0;  // Anzahl der WH31/WH25 Sensoren  (max. 1 Stück)
  let DP35  = 0;  // Anzahl der DP35/WN34 Sensoren  (max. 8 Stück)
@@ -46,6 +46,7 @@
   createState(DP+"tempData.Solarenergie"         ,"0",   {name: "temporäre Daten Tag, Woche, Monat, Jahr",type: "string", role: "state" });
   createState(DP+"Info.FW_Upgrade"               , false,{name: "neue Firmware für die Station",          type: "boolean",role: "state" });
   createState(DP+"Info.FW_Version"               ," ",   {name: "Firmwareversion der Station",            type: "string", role: "state" });
+  createState(DP+"Info.Meldungen"                ," ",   {name: "Status- und Fehlermeldungen",            type: "string", role: "state" });
   createState(DP+"Info.Hitzeindex"               , 0,    {name: "Hitzeindex (erst ab 20°C)",              type: "mixed",  role: "state", unit: "°C" });
   createState(DP+"Info.openSenseMap"             , false,{name: "Datenübertragung openSenseMap erfolgreich",type: "boolean",role: "state" });
   createState(DP+"Info.Windy"                    , false,{name: "Datenübertragung Windy erfolgreich",     type: "boolean",role: "state" });

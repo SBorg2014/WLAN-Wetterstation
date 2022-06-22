@@ -2,13 +2,14 @@
 : <<'Versionsinfo'
 
 
- V2.14.0 - 28.05.2022 (c) 2019-2022 SBorg
+ V2.15.0 - 19.06.2022 (c) 2019-2022 SBorg
 
  wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
  die Daten an den ioBroker (alternativ auch an OpenSenseMap, Windy und wetter.com)
 
  benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq' und 'bc' unter Linux
 
+ V2.15.0 / 19.06.2022  + neuer DP "Meldungen"; für Status- und Fehlermeldungen
  V2.14.0 / 28.05.2022  ~ Fixed authentication for Simple-API setBulk requests (@crycode-de)
                        + Set ack flag on setBulk requests (requires PR ioBroker/ioBroker.simple-api#145) (@crycode-de)
                        + Added option to ignore SSL errors if HTTPS is used together with a self-signed certificate (@crycode-de)
@@ -110,9 +111,9 @@ Versionsinfo
 ### Ende Infoblock
 
  #Versionierung
-  SH_VER="V2.14.0"
+  SH_VER="V2.15.0"
   CONF_V="V2.14.0"
-  SUBVER="V2.14.0"
+  SUBVER="V2.15.0"
 
 
  #Installationsverzeichnis feststellen
@@ -271,7 +272,19 @@ while true
    #Daten an ioB schicken
     if [ ${FIX_AUSSENTEMP} == "true" ]
      then
-       if (( $(bc -l <<< "${MESSWERTE[1]} > -273") )); then iob_send; fi
+       if (( $(bc -l <<< "${MESSWERTE[1]} > -273") ))
+        then
+         iob_send
+         if [ "${TEMPFIX_ERR}" -gt "0" ]; then let "TEMPFIX_ERR--"; fi
+        else
+         MELDUNG "unplausibler Messwert Aussentemperatur. Datenpaket verworfen..."
+         let "TEMPFIX_ERR++"
+         if [ "${TEMPFIX_ERR}" -gt "10" ]
+          then
+           MELDUNG "möglicherweise Batterie des Wettermastes schwach"
+           SAPI "Single" "set/${DP_STATION_BATTERIE}?value=1&ack=true"
+          fi
+       fi
      else
        iob_send
     fi
@@ -303,8 +316,9 @@ while true
         reset_zaehler      #Sonnenscheindauer, Solarenergie zurücksetzen (enthällt auch Speicherung Werte VorJahr)
         minmaxavg365d      #Min-/Max-/Avg-Aussentemperatur vor einem Jahr
         metsommer          #meteorologischer Sommer Durchschnittstemperatur und Regenmenge
+        MELDUNG "Mitternachtjobs durchgeführt"
    fi
-   if [ `date +%H` -eq "0" ] && [ `date +%M` -le "3" ]; then unset MIDNIGHTRUN; fi
+   if [ $(date +%H) -eq "0" ] && [ $(date +%M) -le "3" ]; then unset MIDNIGHTRUN; fi
 
 
 
@@ -312,12 +326,14 @@ while true
    DO_IT=$(date +%M)
    DO_IT=${DO_IT#0}
    if [ $(( $DO_IT % 15 )) -eq "0" ]; then
-     if [ `date +%s` -ge "$TIMER_SET" ]; then wetterprognose
+     if [ $(date +%s) -ge "$TIMER_SET" ]; then wetterprognose
       if [ ! -z ${INFLUX_DB} ] && [ $(date +%H) -gt "1" ]; then
         minmax24h
         minmaxheute
       fi
      fi
+     #stündlich Lebenszeichen
+     if [ "$(date +%H)" -ne "${ALIVE}" ]; then ALIVE=$(date +%H); MELDUNG "Skript läuft..."; fi
    fi
 
 

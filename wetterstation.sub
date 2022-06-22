@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V2.14.0 --------------------------------------------------------
+### Subroutinen V2.15.0 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -30,6 +30,7 @@
   DP_WETTER_AKTUELL=${PRE_DP}.Wetter_aktuell
   DP_DRUCK_TENDENZ=${PRE_DP}.Druck_Tendenz
   DP_KOMFEHLER=${PRE_DP}._Kommunikationsfehler
+  DP_MELDUNGEN=${PRE_DP}.Info.Meldungen
   DP_WETTERDATA=${PRE_DP}.tempData.Wetterdaten
   DP_SONNENSCHEIN_SAVE=${PRE_DP}.tempData.Sonnenschein
   DP_SOLAR_SAVE=${PRE_DP}.tempData.Solarenergie
@@ -406,7 +407,6 @@ batterie() {
 }
 
 
-
 ### Wasserleckalarm als Text
 leakalarm() {
    if [[ "MESSWERTE[$1]" -eq 0 ]]; then
@@ -508,7 +508,7 @@ sonnenpuls() {
 	${DP_SONNENSCHEIN_TAG_TEXT}=${SONNENDAUER_STR_TAG}&${DP_SONNENSCHEIN_WOCHE_TEXT}=${SONNENDAUER_STR_WO}&${DP_SONNENSCHEIN_MONAT_TEXT}=${SONNENDAUER_STR_MO}&${DP_SONNENSCHEIN_JAHR_TEXT}=${SONNENDAUER_STR_JAHR}&${DP_SONNENSCHEIN_TAG}=${SONNENSCHEIN_TAG}&${DP_SONNENSCHEIN_WOCHE}=${SONNENSCHEIN_WO}&${DP_SONNENSCHEIN_MONAT}=${SONNENSCHEIN_MO}&${DP_SONNENSCHEIN_JAHR}=${SONNENSCHEIN_JAHR}
 	EOD
 	)
-	if [ -z $MIDNIGHTRUN ]; then TIMER_START=`date +%s`; fi
+	if [ -z $MIDNIGHTRUN ]; then TIMER_START=$(date +%s); fi
 	SAPI "Bulk" "setBulk" "${IOB_SDATA}&ack=true"
     fi
 
@@ -622,7 +622,7 @@ reset_zaehler() {
 	TIMER_START=0
 
 	#Wochenzähler resetten (Sonntags um 0:00 Uhr)
-	if [ `date +%u` -eq "7" ]; then
+	if [ $(date +%u) -eq "7" ]; then
 	   SONNENSCHEIN_WO=0
 	   SOLAR_WOCHE=0
 	fi
@@ -631,7 +631,7 @@ reset_zaehler() {
 	if [ $(date -d "now + 1 day" +"%d") -eq "01" ]; then
 	  SONNENSCHEIN_MO=0
 	  SOLAR_MONAT=0
-	  if [ `date +%m` -eq "12" ]; then
+	  if [ $(date +%m) -eq "12" ]; then
 		#Jahreszähler resetten
 		SAPI "Bulk" "setBulk" "${DP_REGENMENGE_VORJAHR}=${REGENMENGE}&${DP_SONNENSCHEIN_VORJAHR}=${SONNENSCHEIN_JAHR}&${DP_SOLARENERGIE_VORJAHR}=${SOLAR_JAHR}&ack=true"
 		REGENMENGE=0
@@ -644,12 +644,18 @@ reset_zaehler() {
 	MIDNIGHTRUN=1; sonnenpuls 16
 }
 
+function MELDUNG() {
+  #Meldung an den ioB schicken
+  SAPI "Bulk" "setBulk" "${DP_MELDUNGEN}=${1}&ack=true"
+}
+
 setup() {
-  let "WARTE=WS_POLL*2+6"    #2x Poll + Zuschlag warten
-  TIMER_SET=$(date +%s)      #Initial Set
-  TIMER_START=0              #Reset Sonnenpuls
-  #Anzeige bis Daten komplett
-  WETTER_TREND="noch --- Minuten"
+  let "WARTE=WS_POLL*2+6"          #2x Poll + Zuschlag warten
+  TIMER_SET=$(date +%s)            #Initial Set
+  TIMER_START=0                    #Reset Sonnenpuls
+  TEMPFIX_ERR=0                    #Zähler Temperaturfix
+  ALIVE=$(date +%H)                #Lebenszeichen
+  WETTER_TREND="noch --- Minuten"  #Anzeige bis Daten komplett
 
   if [ "$WEB_IGN_SSL_ERROR" == "true" ]; then
     SAPI_CURL_OPTS="-k"
@@ -676,8 +682,9 @@ setup() {
  #falls reboot warten bis der ioB wieder läuft...
   while ! nc -nvz $(echo $IPP|sed -e 's/:/ /'); do sleep 30; done
 
- #Fehlermeldungen resetten
+ #Fehlermeldungen resetten + Skriptstart loggen
   SAPI "Single" "set/${DP_KOMFEHLER}?value=false&ack=true"
+  MELDUNG "Skript gestartet"
 
  #Wetterdatenarray lesen
   SAPI "Single" "getPlainValue/${DP_WETTERDATA}"

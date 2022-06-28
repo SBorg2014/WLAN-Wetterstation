@@ -38,7 +38,8 @@
   DP_FW_VERSION=${PRE_DP}.Info.FW_Version
   DP_OSEM_TRANSMIT=${PRE_DP}.Info.openSenseMap
   DP_WINDY_TRANSMIT=${PRE_DP}.Info.Windy
-  DP_WCOM_TRANSMIT=${PRE_DP}.Info.Wetter_com
+  DP_WCCOM_TRANSMIT=${PRE_DP}.Info.Wetter_com
+  DP_WUCOM_TRANSMIT=${PRE_DP}.Info.Wunderground_com
   DP_SONNENSCHEIN_VORTAG=${PRE_DP}.Info.Sonnenschein_VorTag
   DP_SONNENSCHEIN_TAG=${PRE_DP}.Info.Sonnenschein_Tag
   DP_SONNENSCHEIN_WOCHE=${PRE_DP}.Info.Sonnenschein_Woche
@@ -165,7 +166,8 @@ debuging() {
    if [ ! -z "$KOMFEHLER" ] && [ $WS_PROTOKOLL = 1 ]; then echo -e "\n${RE}Kommunikationsfehler! Stimmt die WS_ID in der Konfiguration mit der der WS View-App überein? $WE\n"; fi
 
    #API-Check
-   if [ ! -z ${WETTERCOM_ID} ]; then wettercom_update; fi
+   if [ ${WETTERCOM_UPDATE} == "true" ]; then wettercom_update; fi
+   if [ ${WUNDERGROUND_UPDATE} == "true" ]; then wunderground_update; fi
    if [ ${use_windy} == "true" ]; then windy_update; fi
    if [ ${openSenseMap} == "true" ]; then opensensemap; fi
 
@@ -248,9 +250,9 @@ iob_send() {
 
    #Daten an den ioB schicken
     if [ $debug == "true" ]; then
-	curl ${SAPI_CURL_OPTS} --data "$IOB_DATA" "${WEB}://${IPP}/setBulk?ack=true&user=${AUTH_USER}&pass=${AUTH_PASS}&prettyPrint"
+	curl ${SAPI_CURL_OPTS} --data "$IOB_DATA" "${WEB}://${IPP}/setBulk/?ack=true&user=${AUTH_USER}&pass=${AUTH_PASS}&prettyPrint"
       else
-	curl ${SAPI_CURL_OPTS} --data "$IOB_DATA" "${WEB}://${IPP}/setBulk?ack=true&user=${AUTH_USER}&pass=${AUTH_PASS}" >/dev/null 2>&1
+	curl ${SAPI_CURL_OPTS} --data "$IOB_DATA" "${WEB}://${IPP}/setBulk/?ack=true&user=${AUTH_USER}&pass=${AUTH_PASS}" >/dev/null 2>&1
     fi
 }
 
@@ -1565,6 +1567,48 @@ wettercom_update(){
            SAPI "Single" "set/${DP_WCOM_TRANSMIT}?value=true&ack=true"
          else
            SAPI "Single" "set/${DP_WCOM_TRANSMIT}?value=false&ack=true"
+        fi
+}
+
+
+
+wunderground_update(){
+        #Daten an wunderground.com senden
+        WU_URL="https://weatherstation.wunderground.com/weatherstation/updateweatherstation.php?ID=${WUNDERGROUND_ID}&PASSWORD=${WUNDERGROUND_PW}"
+
+		local TEMP=$(echo "scale=2;${MESSWERTE[1]}*1.8+32" | bc -l)
+		local DEWPT=$(echo "scale=2;${MESSWERTE[2]}*1.8+32" | bc -l)
+		local WIND=$(echo "scale=2;${MESSWERTE[6]}/1.60934" | bc -l)
+		local WINDGUST=$(echo "scale=2;${MESSWERTE[7]}/1.60934" | bc -l)
+		local PRESSURE=$(echo "scale=2;${MESSWERTE[10]}*0.029529980164712" | bc -l)
+		local RAIN=$(echo "scale=2;${MESSWERTE[11]}/25.4" | bc -l)
+		local DAILYRAIN=$(echo "scale=2;${MESSWERTE[12]}/24.5" | bc -l)
+		WU_URL+="&dateutc=now"
+		WU_URL+="&tempf=${TEMP}"
+		WU_URL+="&dewptf=${DEWPT}"
+		WU_URL+="&humidity=${MESSWERTE[5]}"
+		WU_URL+="&windspeedmph=${WIND}"
+		WU_URL+="&windgustmph=${WINDGUST}"
+		WU_URL+="&winddir=${MESSWERTE[8]}"
+		WU_URL+="&baromin=${PRESSURE}"
+		WU_URL+="&rainin=${RAIN}"
+		WU_URL+="&dailyrainin=${DAILYRAIN}"
+		WU_URL+="&action=updateraw"
+        if [ $debug == "true" ]; then
+           echo -e "\n\n${BL}Datenübertragung an wunderground.com:"
+           echo -e "${RE}(vor einer Veröffentlichung unbedingt zumindest das Passwort unkenntlich machen, ggf. auch die Station-ID[=Benutzername])"
+	   echo -e "${NO}"
+           wget -O- "${WU_URL}"
+           return 0 #Ausgang
+         else
+           local MESSAGE=$(wget -qO- "${WU_URL}")
+        fi
+
+        #alles Ok?
+        if echo ${MESSAGE}|grep -q 'success'; then
+           SAPI "Single" "set/${DP_WUCOM_TRANSMIT}?value=true&ack=true"
+         else
+           SAPI "Single" "set/${DP_WUCOM_TRANSMIT}?value=false&ack=true"
         fi
 }
 

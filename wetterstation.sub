@@ -1564,9 +1564,9 @@ wettercom_update(){
 
         #alles Ok?
         if echo ${MESSAGE}|grep -q 'SUCCESS'; then
-           SAPI "Single" "set/${DP_WCOM_TRANSMIT}?value=true&ack=true"
+           SAPI "Single" "set/${DP_WCCOM_TRANSMIT}?value=true&ack=true"
          else
-           SAPI "Single" "set/${DP_WCOM_TRANSMIT}?value=false&ack=true"
+           SAPI "Single" "set/${DP_WCCOM_TRANSMIT}?value=false&ack=true"
         fi
 }
 

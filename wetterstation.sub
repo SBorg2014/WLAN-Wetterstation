@@ -38,7 +38,7 @@
   DP_FW_VERSION=${PRE_DP}.Info.FW_Version
   DP_OSEM_TRANSMIT=${PRE_DP}.Info.openSenseMap
   DP_WINDY_TRANSMIT=${PRE_DP}.Info.Windy
-  DP_WCCOM_TRANSMIT=${PRE_DP}.Info.Wetter_com
+  DP_WCOM_TRANSMIT=${PRE_DP}.Info.Wetter_com
   DP_WUCOM_TRANSMIT=${PRE_DP}.Info.Wunderground_com
   DP_SONNENSCHEIN_VORTAG=${PRE_DP}.Info.Sonnenschein_VorTag
   DP_SONNENSCHEIN_TAG=${PRE_DP}.Info.Sonnenschein_Tag

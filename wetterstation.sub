@@ -250,9 +250,9 @@ iob_send() {
 
    #Daten an den ioB schicken
     if [ $debug == "true" ]; then
-	curl ${SAPI_CURL_OPTS} --data "$IOB_DATA" "${WEB}://${IPP}/setBulk/?ack=true&user=${AUTH_USER}&pass=${AUTH_PASS}&prettyPrint"
+	curl ${SAPI_CURL_OPTS} --data "$IOB_DATA" "${WEB}://${IPP}/setBulk?ack=true&user=${AUTH_USER}&pass=${AUTH_PASS}&prettyPrint"
       else
-	curl ${SAPI_CURL_OPTS} --data "$IOB_DATA" "${WEB}://${IPP}/setBulk/?ack=true&user=${AUTH_USER}&pass=${AUTH_PASS}" >/dev/null 2>&1
+	curl ${SAPI_CURL_OPTS} --data "$IOB_DATA" "${WEB}://${IPP}/setBulk?ack=true&user=${AUTH_USER}&pass=${AUTH_PASS}" >/dev/null 2>&1
     fi
 }
 

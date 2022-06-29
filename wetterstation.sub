@@ -1574,8 +1574,7 @@ wettercom_update(){
 
 wunderground_update(){
         #Daten an wunderground.com senden
-	local wu_upd_str=$(echo "${DATA}" | awk '{print $2}')
-        WU_URL="https://weatherstation.wunderground.com${wu_upd_str}"
+        WU_URL="https://weatherstation.wunderground.com$(echo "${DATA}" | awk '{print $2}')"
 
         if [ $debug == "true" ]; then
            echo -e "\n\n${BL}Datenübertragung an wunderground.com:"

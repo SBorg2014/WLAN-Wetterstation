@@ -1574,26 +1574,9 @@ wettercom_update(){
 
 wunderground_update(){
         #Daten an wunderground.com senden
-        WU_URL="https://weatherstation.wunderground.com/weatherstation/updateweatherstation.php?ID=${WUNDERGROUND_ID}&PASSWORD=${WUNDERGROUND_PW}"
+	local wu_upd_str=$(echo "${DATA}" | awk '{print $2}')
+        WU_URL="https://weatherstation.wunderground.com${wu_upd_str}"
 
-		local TEMP=$(echo "scale=2;${MESSWERTE[1]}*1.8+32" | bc -l)
-		local DEWPT=$(echo "scale=2;${MESSWERTE[2]}*1.8+32" | bc -l)
-		local WIND=$(echo "scale=2;${MESSWERTE[6]}/1.60934" | bc -l)
-		local WINDGUST=$(echo "scale=2;${MESSWERTE[7]}/1.60934" | bc -l)
-		local PRESSURE=$(echo "scale=2;${MESSWERTE[10]}*0.029529980164712" | bc -l)
-		local RAIN=$(echo "scale=2;${MESSWERTE[11]}/25.4" | bc -l)
-		local DAILYRAIN=$(echo "scale=2;${MESSWERTE[12]}/24.5" | bc -l)
-		WU_URL+="&dateutc=now"
-		WU_URL+="&tempf=${TEMP}"
-		WU_URL+="&dewptf=${DEWPT}"
-		WU_URL+="&humidity=${MESSWERTE[5]}"
-		WU_URL+="&windspeedmph=${WIND}"
-		WU_URL+="&windgustmph=${WINDGUST}"
-		WU_URL+="&winddir=${MESSWERTE[8]}"
-		WU_URL+="&baromin=${PRESSURE}"
-		WU_URL+="&rainin=${RAIN}"
-		WU_URL+="&dailyrainin=${DAILYRAIN}"
-		WU_URL+="&action=updateraw"
         if [ $debug == "true" ]; then
            echo -e "\n\n${BL}Datenübertragung an wunderground.com:"
            echo -e "${RE}(vor einer Veröffentlichung unbedingt zumindest das Passwort unkenntlich machen, ggf. auch die Station-ID[=Benutzername])"

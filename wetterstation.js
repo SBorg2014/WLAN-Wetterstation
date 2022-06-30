@@ -51,6 +51,7 @@
   createState(DP+"Info.openSenseMap"             , false,{name: "Datenübertragung openSenseMap erfolgreich",type: "boolean",role: "state" });
   createState(DP+"Info.Windy"                    , false,{name: "Datenübertragung Windy erfolgreich",     type: "boolean",role: "state" });
   createState(DP+"Info.Wetter_com"               , false,{name: "Datenübertragung Wetter.com erfolgreich",type: "boolean",role: "state" });
+  createState(DP+"Info.Wunderground_com"         , false,{name: "Datenübertragung Wunderground.com erfolgreich",type: "boolean",role: "state" });
   createState(DP+"Info.Sonnenschein_VorTag"      , 0,    {name: "Sonnenscheindauer Gestern",              type: "number", role: "state", unit: "Sek." });
   createState(DP+"Info.Sonnenschein_Tag"         , 0,    {name: "Sonnenscheindauer Heute",                type: "number", role: "state", unit: "Sek." });
   createState(DP+"Info.Sonnenschein_Woche"       , 0,    {name: "Sonnenscheindauer diese Woche",          type: "number", role: "state", unit: "Sek." });

@@ -39,6 +39,7 @@
   DP_OSEM_TRANSMIT=${PRE_DP}.Info.openSenseMap
   DP_WINDY_TRANSMIT=${PRE_DP}.Info.Windy
   DP_WCOM_TRANSMIT=${PRE_DP}.Info.Wetter_com
+  DP_WUCOM_TRANSMIT=${PRE_DP}.Info.Wunderground_com
   DP_SONNENSCHEIN_VORTAG=${PRE_DP}.Info.Sonnenschein_VorTag
   DP_SONNENSCHEIN_TAG=${PRE_DP}.Info.Sonnenschein_Tag
   DP_SONNENSCHEIN_WOCHE=${PRE_DP}.Info.Sonnenschein_Woche
@@ -165,7 +166,8 @@ debuging() {
    if [ ! -z "$KOMFEHLER" ] && [ $WS_PROTOKOLL = 1 ]; then echo -e "\n${RE}Kommunikationsfehler! Stimmt die WS_ID in der Konfiguration mit der der WS View-App überein? $WE\n"; fi
 
    #API-Check
-   if [ ! -z ${WETTERCOM_ID} ]; then wettercom_update; fi
+   if [ ${WETTERCOM_UPDATE} == "true" ]; then wettercom_update; fi
+   if [ ${WUNDERGROUND_UPDATE} == "true" ]; then wunderground_update; fi
    if [ ${use_windy} == "true" ]; then windy_update; fi
    if [ ${openSenseMap} == "true" ]; then opensensemap; fi
 
@@ -1561,10 +1563,34 @@ wettercom_update(){
         fi
 
         #alles Ok?
-        if echo ${MESSAGE}|grep -q 'SUCCESS'; then
+        if echo ${MESSAGE}|grep -qi 'SUCCESS'; then
            SAPI "Single" "set/${DP_WCOM_TRANSMIT}?value=true&ack=true"
          else
            SAPI "Single" "set/${DP_WCOM_TRANSMIT}?value=false&ack=true"
+        fi
+}
+
+
+
+wunderground_update(){
+        #Daten an wunderground.com senden
+        WU_URL="https://weatherstation.wunderground.com$(echo "${DATA}" | awk '{print $2}')"
+
+        if [ $debug == "true" ]; then
+           echo -e "\n\n${BL}Datenübertragung an wunderground.com:"
+           echo -e "${RE}(vor einer Veröffentlichung unbedingt zumindest das Passwort unkenntlich machen, ggf. auch die Station-ID[=Benutzername])"
+	   echo -e "${NO}"
+           wget -O- "${WU_URL}"
+           return 0 #Ausgang
+         else
+           local MESSAGE=$(wget -qO- "${WU_URL}")
+        fi
+
+        #alles Ok?
+        if echo ${MESSAGE}|grep -qi 'SUCCESS'; then
+           SAPI "Single" "set/${DP_WUCOM_TRANSMIT}?value=true&ack=true"
+         else
+           SAPI "Single" "set/${DP_WUCOM_TRANSMIT}?value=false&ack=true"
         fi
 }
 

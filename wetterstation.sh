@@ -343,7 +343,7 @@ while true
 
      #Windy / wetter.com
      if [ ${use_windy} == "true" ]; then windy_update; fi
-     if [ ! -z ${WETTERCOM_ID} ]; then wettercom_update; fi
+     if [ ${WETTERCOM_UPDATE} == "true" ]; then wettercom_update; fi
 
      #run only once
      run_5minjobs_onlyonce=true
@@ -351,6 +351,13 @@ while true
     else
      unset run_5minjobs_onlyonce
    fi
+   
+   
+   
+  #10-Sekundenjobs: wunderground.com
+
+  #Wunderground
+  if [ ${WUNDERGROUND_UPDATE} == "true" ]; then wunderground_update; fi
 
 
 

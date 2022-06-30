@@ -166,7 +166,7 @@ debuging() {
    if [ ! -z "$KOMFEHLER" ] && [ $WS_PROTOKOLL = 1 ]; then echo -e "\n${RE}Kommunikationsfehler! Stimmt die WS_ID in der Konfiguration mit der der WS View-App überein? $WE\n"; fi
 
    #API-Check
-   if [ ${WETTERCOM_UPDATE} == "true" ]; then wettercom_update; fi
+   if [ ! -z ${WETTERCOM_ID} ]; then wettercom_update; fi
    if [ ${WUNDERGROUND_UPDATE} == "true" ]; then wunderground_update; fi
    if [ ${use_windy} == "true" ]; then windy_update; fi
    if [ ${openSenseMap} == "true" ]; then opensensemap; fi
@@ -1578,8 +1578,7 @@ wunderground_update(){
 
         if [ $debug == "true" ]; then
            echo -e "\n\n${BL}Datenübertragung an wunderground.com:"
-           echo -e "${RE}(vor einer Veröffentlichung unbedingt zumindest das Passwort unkenntlich machen, ggf. auch die Station-ID[=Benutzername])"
-	   echo -e "${NO}"
+           echo -e "${RE}(vor einer Veröffentlichung unbedingt zumindest das Passwort unkenntlich machen, ggf. auch die Station-ID[=Benutzername])${NO}"
            wget -O- "${WU_URL}"
            return 0 #Ausgang
          else

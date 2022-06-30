@@ -10,6 +10,7 @@
  benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq' und 'bc' unter Linux
 
  V2.15.0 / 19.06.2022  + neuer DP "Meldungen"; für Status- und Fehlermeldungen
+                       + Datenübertragung an Wunderground.com auch bei eigenem DNS-Server (Protokoll #9)(@git-ZeR0)
  V2.14.0 / 28.05.2022  ~ Fixed authentication for Simple-API setBulk requests (@crycode-de)
                        + Set ack flag on setBulk requests (requires PR ioBroker/ioBroker.simple-api#145) (@crycode-de)
                        + Added option to ignore SSL errors if HTTPS is used together with a self-signed certificate (@crycode-de)
@@ -112,7 +113,7 @@ Versionsinfo
 
  #Versionierung
   SH_VER="V2.15.0"
-  CONF_V="V2.14.0"
+  CONF_V="V2.15.0"
   SUBVER="V2.15.0"
 
 
@@ -342,7 +343,7 @@ while true
    if [ $(( $DO_IT % 5 )) -eq "0" ] && [ -z ${run_5minjobs_onlyonce} ]; then
 
      #Windy / wetter.com
-     if [ ${use_windy} == "true" ]; then windy_update; fi
+     if [ ! -z ${WETTERCOM_ID} ]; then wettercom_update; fi
      if [ ${WETTERCOM_UPDATE} == "true" ]; then wettercom_update; fi
 
      #run only once
@@ -351,13 +352,6 @@ while true
     else
      unset run_5minjobs_onlyonce
    fi
-   
-   
-   
-  #10-Sekundenjobs: wunderground.com
-
-  #Wunderground
-  if [ ${WUNDERGROUND_UPDATE} == "true" ]; then wunderground_update; fi
 
 
 
@@ -372,6 +366,9 @@ while true
 
   #openSenseMap
    if [ ${openSenseMap} == "true" ]; then opensensemap; fi
+
+  #Wunderground
+  if [ ${WUNDERGROUND_UPDATE} == "true" ]; then wunderground_update; fi
 
 
 

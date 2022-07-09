@@ -11,8 +11,10 @@
   DP_FEUCHTE_AUSSEN=${PRE_DP}.Aussenfeuchtigkeit
   DP_WIND=${PRE_DP}.Wind
   DP_WIND_MAX=${PRE_DP}.Wind_max
+  DP_WIND_10MIN=${PRE_DP}.Wind_10min
   DP_WIND_DIR=${PRE_DP}.Windrichtung
   DP_WIND_DIR_TXT=${PRE_DP}.Windrichtung_Text
+  DP_WIND_DIR_10MIN=${PRE_DP}.Windrichtung_10min
   DP_DRUCK_ABS=${PRE_DP}.Druck_absolut
   DP_DRUCK_REL=${PRE_DP}.Druck_relativ
   DP_REGENRATE=${PRE_DP}.Regenrate
@@ -107,10 +109,12 @@ debuging() {
    echo -e "Luftfeuchte Innen\t: $GR${MESSWERTE[4]}$WE %"
    echo -e "Luftfeuchte Aussen\t: $GR${MESSWERTE[5]}$WE %"
    echo -e "Windgeschwindkeit\t: $GR${MESSWERTE[6]}$WE km/h"
+   echo -e "Windgeschwindkeit 10min\t: $GR${MESSWERTE[27]}$WE km/h"
    echo -e "Windböengeschwindigkeit\t: $GR${MESSWERTE[7]}$WE km/h"
    echo -e "max. Windböe\t\t: $GR${MESSWERTE[21]}$WE km/h"
    echo -e "Windrichtung\t\t: $GR${MESSWERTE[8]}$WE °"
    echo -e "Windrichtung\t\t: $GR${WINDRICHTUNG}$WE"
+   echo -e "Windrichtung 10min\t: $GR${MESSWERTE[26]}$WE °"
    echo -e "Luftdruck absolut\t: $GR${MESSWERTE[9]}$WE hPa"
    echo -e "Luftdruck relativ\t: $GR${MESSWERTE[10]}$WE hPa"
    echo -e "Regenrate\t\t: $GR${MESSWERTE[11]}$WE mm/h"
@@ -171,7 +175,12 @@ debuging() {
    if [ ${use_windy} == "true" ]; then windy_update; fi
    if [ ${openSenseMap} == "true" ]; then opensensemap; fi
 
-  #Shell-Skript mit Fehler beenden
+   #Influx-Version prüfen
+   if [ ! -z ${INFLUX_DB} ]; then
+    if [ ! $(influxd version|cut -d" " -f2|grep v1.) ]; then echo -e "\n${RE} Offizieller Support nur für Influx V1.x!\n\n${NO}"; fi
+   fi
+
+   #Shell-Skript mit Fehler beenden
     exit 1
 }
 
@@ -201,11 +210,11 @@ iob_send() {
     IOBPAR=(${DP_TEMP_INNEN} ${DP_TEMP_AUSSEN} ${DP_TAUPUNKT} ${DP_WCHILL} ${DP_FEUCHTE_INNEN} ${DP_FEUCHTE_AUSSEN} ${DP_WIND} ${DP_WIND_MAX} \
     ${DP_WIND_DIR} ${DP_DRUCK_ABS} ${DP_DRUCK_REL} ${DP_REGENRATE} ${DP_REGEN_TAG} ${DP_REGEN_WOCHE} ${DP_REGEN_MONAT} ${DP_REGEN_JAHR} \
     ${DP_SONNE} ${DP_UV_INDEX} ${DP_DP50_1_TEMP} ${DP_ZEITSTEMPEL} ${DP_FW_VERSION} ${DP_STATION_BATTERIE} ${DP_WINDBOEEN_MAX} ${DP_REGEN_EVENT} \
-    ${DP_REGEN_STUNDE} ${DP_REGEN_TOTAL} ${DP_GATEWAY_NAME})
+    ${DP_REGEN_STUNDE} ${DP_REGEN_TOTAL} ${DP_GATEWAY_NAME} ${DP_WIND_DIR_10MIN} ${DP_WIND_10MIN})
 
     IOBOUT=""
     #Standard DP für ioBroker
-    for (( i = 0; i < 26; i++ )); do
+    for (( i = 0; i < 28; i++ )); do
        if [[ ! -z "${MESSWERTE[$i]}" ]]; then IOBOUT="${IOBOUT}&${IOBPAR[$i]}=${MESSWERTE[$i]}"; fi
     done
 

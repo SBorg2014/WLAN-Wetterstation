@@ -22,8 +22,10 @@
   createState(DP+"Aussenfeuchtigkeit"            , 0,    {name: "Luftfeuchtigkeit Außen",                 type: "number", role: "state", unit: "%" });
   createState(DP+"Wind"                          , 0,    {name: "Windgeschwindigkeit",                    type: "number", role: "state", unit: "km/h" });
   createState(DP+"Wind_max"                      , 0,    {name: "Windgeschwindigkeit maximal",            type: "number", role: "state", unit: "km/h" });
+  createState(DP+"Wind_10min"                    , 0,    {name: "Windgeschwindigkeit Durchschnitt 10min", type: "number", role: "state", unit: "km/h" });
   createState(DP+"Windrichtung"                  , 0,    {name: "Windrichtung in Grad",                   type: "number", role: "state", unit: "°" });
   createState(DP+"Windrichtung_Text"             ," ",   {name: "Windrichtung als Text",                  type: "string", role: "state" });
+  createState(DP+"Windrichtung_10min"            , 0,    {name: "Windrichtung Durchschnitt 10 Minuten",   type: "number", role: "state", unit: "°" });
   createState(DP+"Druck_absolut"                 , 0,    {name: "Luftdruck absolut",                      type: "number", role: "state", unit: "hPa" });
   createState(DP+"Druck_relativ"                 , 0,    {name: "Luftdruck relativ",                      type: "number", role: "state", unit: "hPa" });
   createState(DP+"Druck_Tendenz"                 ,"",    {name: "Luftdrucktendenz",                       type: "mixed",  role: "state" });

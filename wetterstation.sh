@@ -11,6 +11,7 @@
 
  V2.15.0 / 19.06.2022  + neuer DP "Meldungen"; für Status- und Fehlermeldungen
                        + Datenübertragung an Wunderground.com auch bei eigenem DNS-Server (Protokoll #9)(@git-ZeR0)
+                       + Windrichtung und -geschwindigkeit der letzten 10 Minuten (aktuell HP1000SE Pro)
  V2.14.0 / 28.05.2022  ~ Fixed authentication for Simple-API setBulk requests (@crycode-de)
                        + Set ack flag on setBulk requests (requires PR ioBroker/ioBroker.simple-api#145) (@crycode-de)
                        + Added option to ignore SSL errors if HTTPS is used together with a self-signed certificate (@crycode-de)
@@ -247,6 +248,10 @@ while true
         then MESSWERTE[24]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); convertInchtoMM 24; fi
      if [[ ${MESSWERTERAWIN[$i]} == model=* ]]
         then MESSWERTE[25]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); fi
+     if [[ ${MESSWERTERAWIN[$i]} == winddir_avg10m=* ]]
+        then MESSWERTE[26]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); fi
+     if [[ ${MESSWERTERAWIN[$i]} == windspdmph_avg10m=* ]]
+        then MESSWERTE[27]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); convertMPHtoKMH 27; fi
 
 
      ### zusätzliche DPxxx-Sensoren ############################################################
@@ -311,7 +316,7 @@ while true
 
 
   #Mitternachtjobs
-   if [ `date +%H` -ge "23" ] && [ `date +%M` -ge "58" ] && [ -z $MIDNIGHTRUN ]; then
+   if [ $(date +%H) -ge "23" ] && [ $(date +%M) -ge "58" ] && [ -z $MIDNIGHTRUN ]; then
         rain               #Jahresregenmenge
         firmware_check     #neue Firmware
         reset_zaehler      #Sonnenscheindauer, Solarenergie zurücksetzen (enthällt auch Speicherung Werte VorJahr)
@@ -343,8 +348,8 @@ while true
    if [ $(( $DO_IT % 5 )) -eq "0" ] && [ -z ${run_5minjobs_onlyonce} ]; then
 
      #Windy / wetter.com
+     if [ ${use_windy} == "true" ]; then windy_update; fi
      if [ ! -z ${WETTERCOM_ID} ]; then wettercom_update; fi
-     if [ ${WETTERCOM_UPDATE} == "true" ]; then wettercom_update; fi
 
      #run only once
      run_5minjobs_onlyonce=true

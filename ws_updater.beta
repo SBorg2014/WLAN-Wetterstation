@@ -32,6 +32,8 @@ UPDATE_VER=V2.15.0
 
 checker() {
          #Test ob bc, jq, unzip und patch installiert sind / Service im User-Kontext läuft
+         #installierte Influx-Version
+         #Rest-Api im ioB läuft
          #Service im User-Kontext?
          if [ ! $(cat /etc/systemd/system/wetterstation.service|grep User=) ]; then
           echo -e "\n$GE Service läuft nicht im User-Kontext sondern unter User ${RE}root${GE}..."
@@ -48,6 +50,7 @@ checker() {
          check_prog jq
          check_prog unzip
          check_prog patch
+         check_prog restapi
          echo -e "\n"
 }
 
@@ -55,6 +58,17 @@ checker() {
 check_prog() {
          if [ $1 == "influx" ]; then
           if [ ! $(influxd version|cut -d" " -f2|grep v1.) ]; then echo -e "${RE} Offizieller Support nur für Influx V1.x!\n\n${NO}"; sleep 5; fi
+          return
+         fi
+         if [ $1 == "restapi" ]; then
+          local test=$(iob status rest-api.0|cut -d'"' -f3)
+          if [ "${test}" = " is running" ]; then RESTAPI=true
+            echo -e "\n $GR'Rest-API'$WE im ioBroker installiert: [$GR✓$WE]"
+           else
+            echo -e "\n $GR'Rest-API'$WE im ioBroker installiert: [$RE✗$WE]"
+            echo -e "  (Dies ist kein Problem, es können nur ggf. keine neuen Datenpunkte automatisch angelegt werden."
+            echo -e "  Dies muss bei Bedarf per 'wetterstation.js' von Hand im ioBroker erfolgen.)"
+           fi
           return
          fi
          if [ $(which $1) ]; then
@@ -555,6 +569,7 @@ usage() {
 
 menu() {
         clear
+pwd
         echo -e "$WE\n\n\n"
         echo -e "\t Auswahlmenü für WLAN-Wetterstation:"
         echo -e "\t_____________________________________\n\n"
@@ -581,9 +596,53 @@ menu() {
         esac
 }
 
+make_objects(){
+ #1: ID
+ #2: name
+ #3: type
+ #4: unit
+
+ . $(pwd)/wetterstation.conf.temp
+ echo -e " Lege neues Object im ioBroker an: $BL${PRE_DP}$1$NO"
+ local TOKEN=$(echo -n ${RESTAPI_USER}:${RESTAPI_PW} | base64)
+
+ #build Data-String
+  local DATA=$(cat <<-EOD
+	{
+	"_id": "${PRE_DP}$1",
+	"type": "state",
+	"common": {
+	"name": "$2",
+	"type": "$3",
+	"role": "state"
+	},
+	"native": {
+	"name": "$2",
+	"type": "$3",
+	"role": "state"
+	}
+	}
+	EOD
+  )
+
+ local RESULT=$(curl -skX 'POST' \
+  ${RESTAPI_URL}'/v1/object/'${PRE_DP}${1} \
+  -H 'accept: application/json' \
+  -H 'authorization: Basic '${TOKEN} \
+  -H 'Content-Type: application/json' \
+  --data "$DATA"
+ )
+
+  #Fehler beim anlegen?
+  if [[ $RESULT == *"error"* ]]; then echo -e "${RE} Fehlermeldung beim Anlegen des Datenpunktes:\n  $RESULT$NO"; fi
+
+}
+
+
   #gibt es Parameter?
   while [ "$1" != "" ]; do
     case $1 in
+--test ) make_objects ".Info.Meldungen" 'Status- und Fehlermeldungen' 'string'; exit 0;;
         --install )             checker
                                 install
                                 exit 0
@@ -604,7 +663,7 @@ menu() {
         -h | --help )           usage
                                 exit 0
                                 ;;
-        * )                     echo -e "\n${RE}\"$1\"${WE} wird nicht unterstüzt...\n\n"
+        * )                     echo -e "\n${RE}\"$1\"${WE} wird nicht unterstützt...\n\n"
                                 usage
                                 exit 1
     esac

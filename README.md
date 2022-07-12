@@ -23,6 +23,7 @@
   * HP1000SE Pro
   * WH3000 SE
   * WH4000 SE
+  * WH6000 Pro
 - Renkforce WH2600
 - Sainlogic 
   * 7in1 WiFi WS3500
@@ -88,7 +89,14 @@ Daten in Wetter.com:<br>
 <br><br>
 
 ## Versionen ##
-  
+
+**V2.15.0 - 19.06.2022**
+```
+    + neuer DP "Meldungen"; für Status- und Fehlermeldungen
+    + Datenübertragung an Wunderground.com auch bei eigenem DNS-Server (Protokoll #9)(@git-ZeR0)
+    + Windrichtung und -geschwindigkeit der letzten 10 Minuten (aktuell HP1000SE Pro)
+```
+ 
 **V2.14.0 - 28.05.2022**
 ```
     ~ Fixed authentication for Simple-API setBulk requests (@crycode-de)

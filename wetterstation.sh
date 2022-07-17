@@ -12,6 +12,7 @@
  V2.15.0 / 19.06.2022  + neuer DP "Meldungen"; für Status- und Fehlermeldungen
                        + Datenübertragung an Wunderground.com auch bei eigenem DNS-Server (Protokoll #9)(@git-ZeR0)
                        + Windrichtung und -geschwindigkeit der letzten 10 Minuten (aktuell HP1000SE Pro)
+					   + ws_updater: anlegen neuer Datenpunkte per Rest-API möglich
  V2.14.0 / 28.05.2022  ~ Fixed authentication for Simple-API setBulk requests (@crycode-de)
                        + Set ack flag on setBulk requests (requires PR ioBroker/ioBroker.simple-api#145) (@crycode-de)
                        + Added option to ignore SSL errors if HTTPS is used together with a self-signed certificate (@crycode-de)

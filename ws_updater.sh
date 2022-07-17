@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V2.14.0
+UPDATE_VER=V2.15.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -15,11 +15,14 @@ UPDATE_VER=V2.14.0
             echo -e " │                        │"
             echo -e " └────────────────────────┘${WE}\n"
 
-#Nicht als root...
+ #Nicht als root...
  if [ $(whoami) = "root" ]; then echo -e "$RE Ausführung als \"root\" nicht möglich...!\n"; exit 1; fi
 
+ #Verzeichnis feststellen + conf lesen
+  DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+  . "${DIR}/wetterstation.conf"
 
-#Test ob Datei auf GitHub, sonst Fallback
+ #Test ob Datei auf GitHub, sonst Fallback
  if [ "$1" = "" ] && ( ! curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh|grep -xq '404: Not Found' ); then
     echo -e "$WE Benutze neuste Version ${BL}$(curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh|grep -m 1 'UPDATE_VER='|cut -d"=" -f2
 )${WE} auf GitHub..."
@@ -32,6 +35,8 @@ UPDATE_VER=V2.14.0
 
 checker() {
          #Test ob bc, jq, unzip und patch installiert sind / Service im User-Kontext läuft
+         #installierte Influx-Version
+         #Rest-Api im ioB läuft
          #Service im User-Kontext?
          if [ ! $(cat /etc/systemd/system/wetterstation.service|grep User=) ]; then
           echo -e "\n$GE Service läuft nicht im User-Kontext sondern unter User ${RE}root${GE}..."
@@ -43,14 +48,32 @@ checker() {
           sudo systemctl daemon-reload
           sudo systemctl restart wetterstation
          fi
+         check_prog influx
          check_prog bc
          check_prog jq
          check_prog unzip
          check_prog patch
+         check_prog restapi
          echo -e "\n"
 }
 
+
 check_prog() {
+         if [ $1 == "influx" ]; then
+          if [ ! $(influxd version|cut -d" " -f2|grep v1.) ]; then echo -e "${RE} Offizieller Support nur für Influx V1.x!\n\n${NO}"; sleep 5; fi
+          return
+         fi
+         if [ $1 == "restapi" ]; then
+          local test=$(iob status rest-api.0|cut -d'"' -f3)
+          if [ "${test}" = " is running" ]; then RESTAPI=true
+            echo -e "\n $GR'Rest-API'$WE im ioBroker installiert: [$GR✓$WE]"
+           else
+            echo -e "\n $GR'Rest-API'$WE im ioBroker installiert: [$RE✗$WE]"
+            echo -e "  (Dies ist kein Problem, es können nur ggf. keine neuen Datenpunkte automatisch angelegt werden."
+            echo -e "  Dies muss bei Bedarf per 'wetterstation.js' von Hand im ioBroker erfolgen.)"
+           fi
+          return
+         fi
          if [ $(which $1) ]; then
            echo -e " $GR'$1'$WE installiert: [$GR✓$WE]"
           else
@@ -106,8 +129,9 @@ patcher() {
            V2.11.1) PATCH2120 ;;
            V2.12.0) PATCH2121 ;;
            V2.12.1) PATCH2130 ;;
-           V2.13.0) PATCH2140 && exit 0;;
-           V2.14.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
+           V2.13.0) PATCH2140 ;;
+           V2.14.0) PATCH2150 && exit 0;;
+           V2.15.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
                  *) FEHLER
     esac
 
@@ -347,6 +371,18 @@ PATCH2140() {
 }
 
 
+#Patch Version V2.14.0 auf V2.15.0
+PATCH2150() {
+ backup
+ echo -e "${WE}\n Patche wetterstation.conf auf V2.15.0 ..."
+ sed -i 's/### Settings V2.14.0/### Settings V2.15.0/' ./wetterstation.conf
+ sed -i '/^.*WETTERCOM_PW=.*/a \\n\n #Daten an Wunderground.com senden? [true/false] / default: false\n   #Nur nötig und sinnvoll bei WS_PROTOKOLL=9 (DNS) wenn trotzdem auch Daten weiterhin an Wunderground.com gesendet werden sollen.\n   WUNDERGROUND_UPDATE=false' ./wetterstation.conf
+ sed -i 's/#InfluxDB-Konfiguration/#InfluxDB-Konfiguration für Influx V1.x.x/' ./wetterstation.conf
+ echo -e "${WE} Fertig...\n"
+ echo -e " ${GE}Die Datenübertragung an Wunderground.com kann nun aktiviert werden!\n"
+}
+
+
 patch_260() {
 cat <<EoD >patch
 --- wetterstation.conf_250	2021-05-13 13:45:06.297750501 +0200
@@ -477,10 +513,7 @@ install() {
 
     #Konfiguration öffnen
      jn_abfrage "\n${WE} Konfiguration nun öffnen?"
-     if [ ! -z $antwort ]; then
-       if [ ! -f ~/.selected_editor ]; then update-alternatives --config editor; fi
-       $(cat ~/.selected_editor | grep SELECTED_EDITOR | cut -d"=" -f2 | tr -d \") wetterstation.conf
-     fi
+     if [ ! -z $antwort ]; then $(cat ~/.selected_editor | grep SELECTED_EDITOR | cut -d"=" -f2 | tr -d \") wetterstation.conf; fi
 
     #DPs im ioB anlegen...
      jn_abfrage "\n${BL} Nun mittels des Javascriptes ${GE}'wetterstation.js'${BL} die Datenpunkte im ioBroker anlegen! Fertig [\e[101m Nein=Abbruch \e[0m${BL}]?"
@@ -505,9 +538,6 @@ service() {
          echo -e "\n\n ${RE}Wetterstation-Service existiert bereits!${WE}\n"
          return 0
       fi
-
-      #Verzeichnis feststellen
-      DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
         sudo tee -a /etc/systemd/system/wetterstation.service > /dev/null <<-EoD
 	[Unit]
@@ -565,6 +595,52 @@ menu() {
         esac
 }
 
+make_objects(){
+ #1: ID
+ #2: name
+ #3: type
+ #4: unit
+
+ echo -e " Lege neues Object im ioBroker an: $BL${PRE_DP}$1$NO"
+ local TOKEN=$(echo -n ${RESTAPI_USER}:${RESTAPI_PW} | base64)
+
+ #build Data-String
+  local DATA=$(cat <<-EOD
+	{
+	"_id": "${PRE_DP}$1",
+	"type": "state",
+	"common": {
+	"name": "$2",
+	"type": "$3",
+	"role": "state"
+	},
+	"native": {
+	"name": "$2",
+	"type": "$3",
+	"role": "state"
+	}
+	}
+	EOD
+  )
+
+  #Check 4 Units
+   if [ "$4" != "" ]; then DATA=$(echo $DATA | sed "s|\"role\": \"state\"|\"role\": \"state\", \"unit\": \"$4\"|g"); fi
+
+ local RESULT=$(curl -skX 'POST' \
+  ${RESTAPI_URL}'/v1/object/'${PRE_DP}${1} \
+  -H 'accept: application/json' \
+  -H 'authorization: Basic '${TOKEN} \
+  -H 'Content-Type: application/json' \
+  --data "$DATA"
+ )
+
+  #Fehler beim anlegen?
+  if [[ $RESULT == *"error"* ]]; then echo -e "${RE} Fehlermeldung beim Anlegen des Datenpunktes:\n  $RESULT$NO"; fi
+  if [ "$RESULT" == "" ]; then echo -e "${RE} Keine Antwort der Rest-API erhalten! Stimmt das Protokoll (http/https), IP-Adresse und der Port?${NO}\n"; fi
+
+}
+
+
   #gibt es Parameter?
   while [ "$1" != "" ]; do
     case $1 in
@@ -588,7 +664,7 @@ menu() {
         -h | --help )           usage
                                 exit 0
                                 ;;
-        * )                     echo -e "\n${RE}\"$1\"${WE} wird nicht unterstüzt...\n\n"
+        * )                     echo -e "\n${RE}\"$1\"${WE} wird nicht unterstützt...\n\n"
                                 usage
                                 exit 1
     esac
@@ -596,6 +672,7 @@ menu() {
   done
 
 
- checker
- main
+
+  checker
+  main
 

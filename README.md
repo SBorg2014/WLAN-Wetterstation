@@ -95,6 +95,7 @@ Daten in Wetter.com:<br>
     + neuer DP "Meldungen"; für Status- und Fehlermeldungen
     + Datenübertragung an Wunderground.com auch bei eigenem DNS-Server (Protokoll #9)(@git-ZeR0)
     + Windrichtung und -geschwindigkeit der letzten 10 Minuten (aktuell HP1000SE Pro)
+    + ws_updater: anlegen neuer Datenpunkte per Rest-API möglich
 ```
  
 **V2.14.0 - 28.05.2022**

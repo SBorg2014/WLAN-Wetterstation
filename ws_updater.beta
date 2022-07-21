@@ -61,14 +61,14 @@ checker() {
 
 check_prog() {
          if [ $1 == "influx" ]; then
-          if [ ! $(influxd version|cut -d" " -f2|grep v1.) ]; then echo -e "${RE} Offizieller Support nur für Influx V1.x!\n\n${NO}"; sleep 5; fi
+          if [ -f /usr/bin/influxd ] && [ ! $(influxd version|cut -d" " -f2|grep v1.) ]; then echo -e "${RE} Offizieller Support nur für Influx V1.x!\n\n${NO}"; sleep 5; fi
           return
          fi
          if [ $1 == "restapi" ]; then
           if [ "$(nc -vz $(echo "${RESTAPI_URL}" | grep -o '[\.0-9]*') &> /dev/null; echo $?)" -eq "0" ]; then RESTAPI=true
-            echo -e "\n $GR'Rest-API'$WE im ioBroker installiert: [$GR✓$WE]"
+            echo -e "\n Zugriff auf $GR'Rest-API'$WE im ioBroker: [$GR✓$WE]"
            else
-            echo -e "\n $GR'Rest-API'$WE im ioBroker installiert: [$RE✗$WE]"
+            echo -e "\n Zugriff auf $GR'Rest-API'$WE im ioBroker: [$RE✗$WE]"
             echo -e "  (Dies ist kein Problem, es können nur keine neuen Datenpunkte bei Bedarf automatisch angelegt werden."
             echo -e "  Dies muss im Fall neuer Datenpunkte per 'wetterstation.js' von Hand im ioBroker erfolgen.)"
            fi

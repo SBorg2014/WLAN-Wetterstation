@@ -673,7 +673,8 @@ make_objects(){
                                 main
                                 exit 0
                                 ;;
-        --patch )               patcher
+        --patch )               checker
+                                patcher
                                 exit 0
                                 ;;
         -h | --help )           usage

@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V2.15.0 --------------------------------------------------------
+### Subroutinen V2.16.0 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -402,9 +402,82 @@ rain() {
 
 
 
+#Berechnung der durchschnittlichen Windgeschwindigkeit der letzten 10 Minuten
+do_windspeed(){
+   #Array/RRD bilden für Median der letzten 10 Minuten
+     if [ "${#WINDSPEED_10M[@]}" -ge "20" ]; then WINDSPEED_10M=(${WINDSPEED_10M[@]:1}); fi
+     WINDSPEED_10M[${#WINDSPEED_10M[@]}]=$1
+     local SPEED=$(echo ${WINDSPEED_10M[@]}|jq -s '(sort|if length%2==1 then.[length/2|floor]else[.[length/2-1,length/2]]|add/2 end)')
+     SPEED=$(round $SPEED 2)
+     SAPI "Single" "set/${DP_WIND_10MIN}?value=${SPEED}&ack=true"
+}
+
+
+
+#Berechnung der durchschnittlichen Windrichtung der letzten 10 Minuten
+do_winddir(){
+  local w=0
+  readarray -t u < <(for idx in "${!WINDDIR_10M[@]}"; do
+    echo "scale = 5"
+    echo "pi=4*a(1)"
+    echo "s(${WINDDIR_10M[$idx]}*pi/180)"
+  done | bc -l)
+
+  readarray -t v < <(for idx in "${!WINDDIR_10M[@]}"; do
+    echo "scale = 5"
+    echo "pi=4*a(1)"
+    echo "c(${WINDDIR_10M[$idx]}*pi/180)"
+  done | bc -l)
+
+   local u_sum=$(dc <<< '[+]sa[z2!>az2!>b]sb'"${u[*]//-/_}lbxp")
+   local v_sum=$(dc <<< '[+]sa[z2!>az2!>b]sb'"${v[*]//-/_}lbxp")
+   local u_mit=$(echo "scale=5; ${u_sum}/${#WINDDIR_10M[@]}"|bc -l)
+   local v_mit=$(echo "scale=5; ${v_sum}/${#WINDDIR_10M[@]}"|bc -l)
+
+   if (( $(bc -l <<< "$v_mit < 0.0001") )); then #Almost zero
+      if (( $(bc -l <<< "$u_mit < 0.0001") )); then #Almost zero
+        w=0
+       elif (( $(bc -l <<< "$u_mit < 0.0") )); then
+        w=270
+       else
+        w=90
+      fi
+    else
+     w=$(bc -l <<END_BC
+        define abs(i) {
+           if (i < 0) return (-i)
+           return (i)
+        }
+        scale=5
+        a(abs(${u_mit})/abs(${v_mit}))*180/(4*a(1))
+END_BC
+     )
+   fi
+
+  w=$(round $w 0)
+
+  if (( $(bc -l <<< "${u_mit} >= 0") )) && (( $(bc -l <<< "${v_mit} >= 0") )); then let "winkel = $w"; fi
+  if (( $(bc -l <<< "${u_mit} >= 0") )) && (( $(bc -l <<< "${v_mit} < 0") )); then let "winkel = 180 - $w"; fi
+  if (( $(bc -l <<< "${u_mit} < 0") )) && (( $(bc -l <<< "${v_mit} >= 0") )); then let "winkel = 360 - $w"; fi
+  if (( $(bc -l <<< "${u_mit} < 0") )) && (( $(bc -l <<< "${v_mit} < 0") )); then let "winkel = 180 + $w"; fi
+
+  unset u
+  unset v
+  echo $winkel
+}
+
+
+
 ###Windrichtung als Text
 winddir() {
    WINDRICHTUNG=${WINDDIRS[$(round ${MESSWERTE[$1]}/22.5 0)]}
+
+   if [[ "$DATA" =~ "winddir_avg10m=" ]]; then return; fi #Ausgang falls Station den Wert liefert
+   #Array/RRD bilden für Durchschnitt der letzten 10 Minuten
+     if [ "${#WINDDIR_10M[@]}" -ge "20" ]; then WINDDIR_10M=(${WINDDIR_10M[@]:1}); fi
+     WINDDIR_10M[${#WINDDIR_10M[@]}]=${MESSWERTE[$1]}
+     local WINKEL=$(do_winddir)
+     SAPI "Single" "set/${DP_WIND_DIR_10MIN}?value=${WINKEL}&ack=true"
 }
 
 
@@ -1057,12 +1130,13 @@ minmaxheute() {
         local TIMESTAMP=$(date +%Y-%m-%d)" 00:00:00"
         MIN_TEMP_HEUTE=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
         --data-urlencode "u=${INFLUX_USER}" --data-urlencode "p=${INFLUX_PASSWORD}" \
-        --data-urlencode "q=SELECT min(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time <= now() and time >= '${TIMESTAMP}'" |\
-        jq -r '.results | .[].series | .[].values[] | .[1]')
+        --data-urlencode "q=SELECT min(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time <= now() and time >= '${TIMESTAMP}'")
+        if [[ "${MIN_TEMP_HEUTE}" =~ "values" ]]; then MIN_TEMP_HEUTE=$(echo ${MIN_TEMP_HEUTE}|jq -r '.results | .[].series | .[].values[] | .[1]'); else MIN_TEMP_HEUTE=; fi
         MAX_TEMP_HEUTE=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
         --data-urlencode "u=${INFLUX_USER}" --data-urlencode "p=${INFLUX_PASSWORD}" \
-        --data-urlencode "q=SELECT max(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time <= now() and time >= '${TIMESTAMP}'" |\
-        jq -r '.results | .[].series | .[].values[] | .[1]')
+        --data-urlencode "q=SELECT max(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time <= now() and time >= '${TIMESTAMP}'")
+        if [[ "${MAX_TEMP_HEUTE}" =~ "values" ]]; then MAX_TEMP_HEUTE=$(echo ${MAX_TEMP_HEUTE}|jq -r '.results | .[].series | .[].values[] | .[1]'); else MAX_TEMP_HEUTE=; fi
+
 
         #keine Werte vorhanden?
         if [ -z ${MIN_TEMP_HEUTE} ] || [ -z ${MAX_TEMP_HEUTE} ]; then
@@ -1119,7 +1193,7 @@ metsommer() {
         local TIMESTART=$(date +%Y-06-01)" 00:00:00"
         local TIMESTOP=$(date +%Y-08-31)" 23:59:59"
 
-        MET_SOMMER_TEMP_AVG=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
+        local MET_SOMMER_TEMP_AVG=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
         --data-urlencode "u=${INFLUX_USER}" --data-urlencode "p=${INFLUX_PASSWORD}" \
         --data-urlencode "q=SELECT mean(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time >= '${TIMESTART}' AND time <= '${TIMESTOP}'" |\
         jq -r '.results | .[].series | .[].values[] | .[1]' 2> /dev/null)
@@ -1130,30 +1204,33 @@ metsommer() {
           SAPI "Single" "set/${DP_MET_SOMMER_TEMP}?value=${MET_SOMMER_TEMP_AVG}&ack=true"
         fi
 
-        declare -a MET_SOMMER_REGEN_ARR
-        MET_SOMMER_REGEN_ARR=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
+        local TMP_STR=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
         --data-urlencode "u=${INFLUX_USER}" --data-urlencode "p=${INFLUX_PASSWORD}" \
         --data-urlencode "q=SELECT max(value) FROM \"${PRE_DP}.Regen_Tag\" WHERE (time >= '${TIMESTART}' AND time <= '${TIMESTOP}') group by time(1d)" |\
-        jq -r '.results | .[].series | .[].values[] | .[1]' 2> /dev/null)
+        jq -r '.results | .[].series | .[].values[] | .[1]'| tr '\n' ' ' | sed -e 's/null//g')
+
+        #Konvertiere String to Array
+        IFS=" " && read -r -a REGEN_ARR <<< "${TMP_STR}"
+
         #Summe des Arrays bilden
-         MET_SOMMER_REGEN=0
-         for i in ${MET_SOMMER_REGEN_ARR[@]}; do
-          MET_SOMMER_REGEN=$(echo "scale=1; ${MET_SOMMER_REGEN}+$i" | bc -l)
+         local MET_REGEN=0
+         for i in ${REGEN_ARR[@]}; do
+          MET_REGEN=$(echo "scale=1; ${MET_REGEN}+$i" | bc -l)
          done
 
-        if [ -z "${MET_SOMMER_REGEN}" ]; then
+        if [ -z "${MET_REGEN}" ]; then
           SAPI "Single" "set/${DP_MET_SOMMER_REGEN}?value=999.9&ack=true"
          else
-          SAPI "Single" "set/${DP_MET_SOMMER_REGEN}?value=${MET_SOMMER_REGEN}&ack=true"
+          SAPI "Single" "set/${DP_MET_SOMMER_REGEN}?value=${MET_REGEN}&ack=true"
         fi
 
 
         if [ ! -z ${metsom_override} ]; then
           echo -e "\n Daten vom 01.06.$(date +%Y) bis 31.08.$(date +%Y) wurden ermittelt...\n"
           echo -e "\t Ø-Temperatur: ${GR}${MET_SOMMER_TEMP_AVG} °C${NO}"
-          echo -e "\t Regenmenge  : ${GR}${MET_SOMMER_REGEN} l/m²${NO}\n"
+          echo -e "\t Regenmenge  : ${GR}${MET_REGEN} l/m²${NO}\n"
         fi
-        unset MET_SOMMER_REGEN_ARR
+        unset REGEN_ARR
         unset metsom_override
 
       fi

@@ -2,17 +2,21 @@
 : <<'Versionsinfo'
 
 
- V2.15.0 - 19.06.2022 (c) 2019-2022 SBorg
+ V2.16.0 - 12.07.2022 (c) 2019-2022 SBorg
 
  wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
  die Daten an den ioBroker (alternativ auch an OpenSenseMap, Windy und wetter.com)
 
- benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq' und 'bc' unter Linux
+ benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq', 'bc' und 'dc' unter Linux
 
+ V2.16.0 / 12.07.2022  + Windrichtung der letzten 10 Minuten für alle Stationen (benötigt wird dafür nun noch 'dc')
+                       + durchschnittliche Windgeschwindigkeit der letzten 10 Minuten für alle Stationen
+                       ~ Bugfix gelegentlicher "jq parse"-Fehler
+                       ~ Bugfix Regenmenge des meteorologischen Sommers aktualisiert sich nicht
  V2.15.0 / 19.06.2022  + neuer DP "Meldungen"; für Status- und Fehlermeldungen
                        + Datenübertragung an Wunderground.com auch bei eigenem DNS-Server (Protokoll #9)(@git-ZeR0)
                        + Windrichtung und -geschwindigkeit der letzten 10 Minuten (aktuell HP1000SE Pro)
-					   + ws_updater: anlegen neuer Datenpunkte per Rest-API möglich
+                       + ws_updater: anlegen neuer Datenpunkte per Rest-API möglich
  V2.14.0 / 28.05.2022  ~ Fixed authentication for Simple-API setBulk requests (@crycode-de)
                        + Set ack flag on setBulk requests (requires PR ioBroker/ioBroker.simple-api#145) (@crycode-de)
                        + Added option to ignore SSL errors if HTTPS is used together with a self-signed certificate (@crycode-de)
@@ -114,9 +118,9 @@ Versionsinfo
 ### Ende Infoblock
 
  #Versionierung
-  SH_VER="V2.15.0"
-  CONF_V="V2.15.0"
-  SUBVER="V2.15.0"
+  SH_VER="V2.16.0"
+  CONF_V="V2.16.0"
+  SUBVER="V2.16.0"
 
 
  #Installationsverzeichnis feststellen
@@ -276,6 +280,9 @@ while true
    #Taupunkt und Windchill
     do_windchill
 
+   #durchschnittliche Windgeschwindigkeit der letzten 10 Minuten
+    if [[ ! "$DATA" =~ "windspdmph_avg10m=" ]]; then do_windspeed ${MESSWERTE[6]}; fi
+
    #Daten an ioB schicken
     if [ ${FIX_AUSSENTEMP} == "true" ]
      then
@@ -334,7 +341,7 @@ while true
    DO_IT=${DO_IT#0}
    if [ $(( $DO_IT % 15 )) -eq "0" ]; then
      if [ $(date +%s) -ge "$TIMER_SET" ]; then wetterprognose
-      if [ ! -z ${INFLUX_DB} ] && [ $(date +%H) -gt "1" ]; then
+      if [ ! -z ${INFLUX_DB} ]; then
         minmax24h
         minmaxheute
       fi
@@ -367,7 +374,6 @@ while true
       else
        HITZEINDEX=
      fi
-
 
 
   #openSenseMap

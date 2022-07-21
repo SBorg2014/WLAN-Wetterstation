@@ -1,4 +1,4 @@
-//Wetterstation Datenpunkte anlegen V2.15.0
+//Wetterstation Datenpunkte anlegen V2.16.0
  let DP="javascript.0.Wetterstation.";
  let WH31  = 0;  // Anzahl der WH31/WH25 Sensoren  (max. 1 Stück)
  let DP35  = 0;  // Anzahl der DP35/WN34 Sensoren  (max. 8 Stück)

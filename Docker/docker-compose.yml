@@ -14,7 +14,7 @@ services:
             /bin/bash -c 
             "
                 apt-get update &&
-                apt-get install -y apt-transport-https ca-certificates gnupg netcat-openbsd bc jq nano sudo curl &&
+                apt-get install -y apt-transport-https ca-certificates gnupg netcat-openbsd bc jq dc nano sudo curl &&
                 cd /opt/wetterstation && chmod +x wetterstation.sh && /opt/wetterstation/wetterstation.sh
             "
 

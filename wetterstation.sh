@@ -2,13 +2,16 @@
 : <<'Versionsinfo'
 
 
- V2.16.0 - 12.07.2022 (c) 2019-2022 SBorg
+ V2.17.0 - 22.07.2022 (c) 2019-2022 SBorg
 
  wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
  die Daten an den ioBroker (alternativ auch an OpenSenseMap, Windy und wetter.com)
 
  benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq', 'bc' und 'dc' unter Linux
 
+ V2.17.0 / 22.07.2022  + durchschnittliche Windrichtung und -geschwindigkeit der letzten 10 Minuten alternativ anstelle
+                         der aktuellen Werte an OpenSenseMap, windy und wetter.com senden
+                       + Temperaturtrend Aussentemperatur der letzten Stunde
  V2.16.0 / 12.07.2022  + Windrichtung der letzten 10 Minuten für alle Stationen (benötigt wird dafür nun noch 'dc')
                        + durchschnittliche Windgeschwindigkeit der letzten 10 Minuten für alle Stationen
                        ~ Bugfix gelegentlicher "jq parse"-Fehler
@@ -118,9 +121,9 @@ Versionsinfo
 ### Ende Infoblock
 
  #Versionierung
-  SH_VER="V2.16.0"
-  CONF_V="V2.16.0"
-  SUBVER="V2.16.0"
+  SH_VER="V2.17.0"
+  CONF_V="V2.17.0"
+  SUBVER="V2.17.0"
 
 
  #Installationsverzeichnis feststellen
@@ -204,7 +207,7 @@ while true
      if [[ ${MESSWERTERAWIN[$i]} == tempinf=* ]] || [[ ${MESSWERTERAWIN[$i]} == indoortempf=* ]]
         then MESSWERTE[0]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); convertFtoC 0; fi
      if [[ ${MESSWERTERAWIN[$i]} == tempf=* ]]
-        then MESSWERTE[1]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); convertFtoC 1; fi
+        then MESSWERTE[1]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); convertFtoC 1; do_trend_aussentemp; fi
      if [[ ${MESSWERTERAWIN[$i]} == dewptf=* ]]
         then MESSWERTE[2]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); convertFtoC 2; fi
      if [[ ${MESSWERTERAWIN[$i]} == windchillf=* ]]

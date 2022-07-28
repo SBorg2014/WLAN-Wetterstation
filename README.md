@@ -90,6 +90,14 @@ Daten in Wetter.com:<br>
 
 ## Versionen ##
 
+**V2.16.0 - 12.07.2022**
+```
+    + Windrichtung der letzten 10 Minuten für alle Stationen (benötigt wird dafür nun noch 'dc')
+    + durchschnittliche Windgeschwindigkeit der letzten 10 Minuten für alle Stationen
+    ~ Bugfix gelegentlicher "jq parse"-Fehler
+    ~ Bugfix Regenmenge des meteorologischen Sommers aktualisiert sich nicht
+```
+ 
 **V2.15.0 - 19.06.2022**
 ```
     + neuer DP "Meldungen"; für Status- und Fehlermeldungen

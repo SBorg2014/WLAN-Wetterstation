@@ -27,7 +27,7 @@ UPDATE_VER=V2.16.0
  if [ "$1" = "" ] && ( ! curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh|grep -xq '404: Not Found' ); then
     echo -e "$WE Benutze neuste Version ${BL}$(curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh|grep -m 1 'UPDATE_VER='|cut -d"=" -f2)${WE} auf GitHub..."
     sleep 2
-    bash <(curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh) --menu
+    source <(curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh) --menu
     exit 0
  fi
 
@@ -174,7 +174,7 @@ main() {
           sudo chmod +x wetterstation.sh ws_updater.sh
 
           rm tmp.zip
-          /bin/bash ./ws_updater.sh --patch
+          source ./ws_updater.sh --patch
 
           jn_abfrage "\n ${WE}Update ausgeführt. Soll der Service nun neu gestartet werden?"
           if [ ! -z $antwort ]; then echo -e "\n"; sudo systemctl restart wetterstation.service; fi
@@ -597,13 +597,13 @@ menu() {
         read -n 1 -p ": " MENU_AUSWAHL
         echo -e "\n"
         case $MENU_AUSWAHL in
-           1)   bash <(curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh) --install
+           1)   source <(curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh) --install
                 exit 0 ;;
-           2)   bash <(curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh) --service
+           2)   source <(curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh) --service
                 exit 0 ;;
-           3)   bash <(curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh) --patch
+           3)   source <(curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh) --patch
                 exit 0 ;;
-           4)   bash <(curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh) --gitup
+           4)   source <(curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh) --gitup
                 exit 0 ;;
            e|E) exit 0 ;;
            *) menu

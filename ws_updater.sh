@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V2.15.0
+UPDATE_VER=V2.16.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -20,13 +20,12 @@ UPDATE_VER=V2.15.0
 
  #Verzeichnis feststellen + conf lesen
   DIR=$(pwd)
-  #DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-  . "${DIR}/wetterstation.conf"
+  if [ -f "${DIR}/wetterstation.conf" ]; then . "${DIR}/wetterstation.conf"; fi
+
 
  #Test ob Datei auf GitHub, sonst Fallback
  if [ "$1" = "" ] && ( ! curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh|grep -xq '404: Not Found' ); then
-    echo -e "$WE Benutze neuste Version ${BL}$(curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh|grep -m 1 'UPDATE_VER='|cut -d"=" -f2
-)${WE} auf GitHub..."
+    echo -e "$WE Benutze neuste Version ${BL}$(curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh|grep -m 1 'UPDATE_VER='|cut -d"=" -f2)${WE} auf GitHub..."
     sleep 2
     bash <(curl -s https://raw.githubusercontent.com/SBorg2014/WLAN-Wetterstation/master/ws_updater.sh) --menu
     exit 0
@@ -35,7 +34,7 @@ UPDATE_VER=V2.15.0
 
 
 checker() {
-         #Test ob bc, jq, unzip und patch installiert sind / Service im User-Kontext läuft
+         #Test ob bc, jq, unzip, patch und dc installiert sind / Service im User-Kontext läuft
          #installierte Influx-Version
          #Rest-Api im ioB läuft
          #Service im User-Kontext?
@@ -49,9 +48,10 @@ checker() {
           sudo systemctl daemon-reload
           sudo systemctl restart wetterstation
          fi
-         check_prog influx
+         if [ ! -z ${INFLUX_API} ]; then check_prog influx; fi
          check_prog bc
          check_prog jq
+         check_prog dc
          check_prog unzip
          check_prog patch
          check_prog restapi
@@ -61,17 +61,16 @@ checker() {
 
 check_prog() {
          if [ $1 == "influx" ]; then
-          if [ ! $(influxd version|cut -d" " -f2|grep v1.) ]; then echo -e "${RE} Offizieller Support nur für Influx V1.x!\n\n${NO}"; sleep 5; fi
+          if [ -f /usr/bin/influxd ] && [ ! $(influxd version|cut -d" " -f2|grep v1.) ]; then echo -e "${RE} Offizieller Support nur für Influx V1.x!\n\n${NO}"; sleep 5; fi
           return
          fi
          if [ $1 == "restapi" ]; then
-          local test=$(iob status rest-api.0|cut -d'"' -f3)
-          if [ "${test}" = " is running" ]; then RESTAPI=true
-            echo -e "\n $GR'Rest-API'$WE im ioBroker installiert: [$GR✓$WE]"
+          if [ "$(nc -vz $(echo "${RESTAPI_URL}" | grep -o '[\.0-9]*') &> /dev/null; echo $?)" -eq "0" ]; then RESTAPI=true
+            echo -e "\n Zugriff auf $GR'Rest-API'$WE im ioBroker: [$GR✓$WE]"
            else
-            echo -e "\n $GR'Rest-API'$WE im ioBroker installiert: [$RE✗$WE]"
-            echo -e "  (Dies ist kein Problem, es können nur ggf. keine neuen Datenpunkte automatisch angelegt werden."
-            echo -e "  Dies muss bei Bedarf per 'wetterstation.js' von Hand im ioBroker erfolgen.)"
+            echo -e "\n Zugriff auf $GR'Rest-API'$WE im ioBroker: [$RE✗$WE]"
+            echo -e "  (Dies ist kein Problem, es können nur keine neuen Datenpunkte bei Bedarf automatisch angelegt werden."
+            echo -e "  Dies muss im Fall neuer Datenpunkte per 'wetterstation.js' von Hand im ioBroker erfolgen.)"
            fi
           return
          fi
@@ -131,8 +130,9 @@ patcher() {
            V2.12.0) PATCH2121 ;;
            V2.12.1) PATCH2130 ;;
            V2.13.0) PATCH2140 ;;
-           V2.14.0) PATCH2150 && exit 0;;
-           V2.15.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
+           V2.14.0) PATCH2150 ;;
+           V2.15.0) PATCH2160 && exit 0;;
+           V2.16.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
                  *) FEHLER
     esac
 
@@ -384,6 +384,17 @@ PATCH2150() {
 }
 
 
+#Patch Version V2.15.0 auf V2.16.0
+PATCH2160() {
+ backup
+ echo -e "${WE}\n Patche wetterstation.conf auf V2.16.0 ..."
+ sed -i 's/### Settings V2.15.0/### Settings V2.16.0/' ./wetterstation.conf
+ sed -i '/^.*IPP=.*/a \\n #Protokoll, ioBroker-IP und Port der Rest-API [http(s)://xxx.xxx.xxx.xxx:xxxxx] / leer lassen falls nicht benutzt\n  RESTAPI_URL=\n  RESTAPI_USER=\n  RESTAPI_PW=' ./wetterstation.conf
+ echo -e "${WE} Fertig...\n"
+ echo -e " ${GE}Die Rest-API kann nun durch Eingabe der URL und den Zugangsdaten aktiviert werden!\n"
+}
+
+
 patch_260() {
 cat <<EoD >patch
 --- wetterstation.conf_250	2021-05-13 13:45:06.297750501 +0200
@@ -501,7 +512,7 @@ install() {
      echo -e " Lade Datei von GitHub herunter...\n"
      curl -LJ ${DL_URL} -o tmp.zip
      echo -e "\n Entpacke Dateien...\n"
-     unzip tmp.zip
+     unzip -n tmp.zip
 
      echo -e "\n Lösche Dateidownload..."
      rm tmp.zip
@@ -533,7 +544,7 @@ install() {
      if [ ! -z $antwort ]; then sudo systemctl start wetterstation.service; fi
 
     echo -e "\n\n Fertig..."
-    echo -e "Wenn der Testlauf ausgeführt wurde und erfolgreich verlief, sollten nun aktuelle Daten der Wetterstation im ioBroker in den Datenpunkten stehen ;-)\n"
+    echo -e " Wenn der Testlauf ausgeführt wurde und erfolgreich verlief, sollten nun aktuelle Daten\n der Wetterstation im ioBroker in den Datenpunkten stehen ;-)\n"
 }
 
 service() {
@@ -639,7 +650,7 @@ make_objects(){
  )
 
   #Fehler beim anlegen?
-  if [[ $RESULT == *"error"* ]]; then echo -e "${RE} Fehlermeldung beim Anlegen des Datenpunktes:\n  $RESULT$NO"; fi
+  if [[ $RESULT == *"error"* ]]; then echo -e "${RE} Fehlermeldung beim Anlegen des Datenpunktes:\n  ${RESULT}${NO}"; fi
   if [ "$RESULT" == "" ]; then echo -e "${RE} Keine Antwort der Rest-API erhalten! Stimmt das Protokoll (http/https), IP-Adresse und der Port?${NO}\n"; fi
 
 }
@@ -662,7 +673,8 @@ make_objects(){
                                 main
                                 exit 0
                                 ;;
-        --patch )               patcher
+        --patch )               checker
+                                patcher
                                 exit 0
                                 ;;
         -h | --help )           usage

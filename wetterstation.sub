@@ -1693,7 +1693,8 @@ wettercom_update(){
               WIND=$(echo "scale=4;${WIND_AVGSPEED_10M}/3.6" | bc -l)
               WC_URL+="&windrichtung=${WIND_AVGANGEL_10M}&windstaerke=${WIND}"
             elif [ ! -z ${MESSWERTE[26]} ] && [ ! -z ${MESSWERTE[27]} ]; then
-              WC_URL+="&windrichtung=${MESSWERTE[26]}&windstaerke=${MESSWERTE[27]}"
+              WIND=$(echo "scale=4;${MESSWERTE[27]}/3.6" | bc -l)
+              WC_URL+="&windrichtung=${MESSWERTE[26]}&windstaerke=${WIND}"
             else
               WC_URL+="&windrichtung=${MESSWERTE[8]}&windstaerke=${WIND}"
            fi

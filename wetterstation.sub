@@ -1690,7 +1690,8 @@ wettercom_update(){
         #Windgeschwindigkeit und -richtung aktuell oder per 10 Minuten-Durchschnitt
         if [ ${USE_AVG_WIND} == "true" ]; then
            if [ ! -z ${WIND_AVGSPEED_10M} ] && [ ! -z ${WIND_AVGANGEL_10M} ]; then
-              WC_URL+="&windrichtung=${WIND_AVGANGEL_10M}&windstaerke=${WIND_AVGSPEED_10M}"
+              WIND=$(echo "scale=4;${WIND_AVGSPEED_10M}/3.6" | bc -l)
+              WC_URL+="&windrichtung=${WIND_AVGANGEL_10M}&windstaerke=${WIND}"
             elif [ ! -z ${MESSWERTE[26]} ] && [ ! -z ${MESSWERTE[27]} ]; then
               WC_URL+="&windrichtung=${MESSWERTE[26]}&windstaerke=${MESSWERTE[27]}"
             else

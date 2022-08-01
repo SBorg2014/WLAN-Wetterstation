@@ -6,6 +6,7 @@
             Auch keine Aliase unter Influx nutzen!
 
    (c)2020-2022 by SBorg
+   V1.1.3 - 01.08.2022  +Rekordwerte auch bei Einstellung "LAST_RAIN=DATUM [+UNIX]" in der wetterstation.conf
    V1.1.2 - 19.06.2022  ~mögliche "Null"-Werte bei "Regenmenge Vortag" und "Windböe" gefixt (Fix Issue #35)
    V1.1.1 - 02.05.2022  ~Rework JSON-Management
    V1.1.0 - 02.04.2022  ~Bugfixing fehlender Vortag am 01. des Monats (Fix Issue #32)
@@ -47,9 +48,9 @@
 
 
 // *** User-Einstellungen **********************************************************************************************************************************
-    const WET_DP='javascript.0.Wetterstation';        // wo liegen die Datenpunkte mit den Daten der Wetterstation  [default: javascript.0.Wetterstation]                          
-    const INFLUXDB_INSTANZ='0';                       // unter welcher Instanz läuft die InfluxDB [default: 0]
-    const PRE_DP='0_userdata.0.Statistik.Wetter';     // wo sollen die Statistikwerte abgelegt werden. Nur unter "0_userdata" oder "javascript" möglich!
+    const WET_DP='javascript.0.Wetterstation';          // wo liegen die Datenpunkte mit den Daten der Wetterstation  [default: javascript.0.Wetterstation]                          
+    const INFLUXDB_INSTANZ='0';                         // unter welcher Instanz läuft die InfluxDB [default: 0]
+    const PRE_DP='0_userdata.0.Statistik.Wetter';       // wo sollen die Statistikwerte abgelegt werden. Nur unter "0_userdata" oder "javascript" möglich!
     let REKORDWERTE_AUSGABEFORMAT="[WERT] im [MONAT] [JAHR]";   /* Wie soll die Ausgabe der Rekordwerte formatiert werden (Template-Vorlage)?
                                                                     [WERT]      = Messwert (zB. '22.42' bei Temperatur, '12' bei Tagen)
                                                                     [TAG]       = Tag (0-31)
@@ -61,7 +62,7 @@
                                                                  [default: [WERT] im [MONAT] [JAHR] ] erzeugt als Beispiel im DP die 
                                                                  Ausgabe: "22.42 °C im Juni 2020"
                                                                 */
-    const ZEITPLAN = "3 1 * * *";                     // wann soll die Statistik erstellt werden (Minuten Stunde * * *) [default 1:03 Uhr] 
+    const ZEITPLAN = "3 1 * * *";                       // wann soll die Statistik erstellt werden (Minuten Stunde * * *) [default 1:03 Uhr] 
 // *** ENDE User-Einstellungen *****************************************************************************************************************************
 
 
@@ -73,14 +74,15 @@ const DP_Check='Rekordwerte.Regenmengemonat';
 if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 //Start des Scripts
-    const ScriptVersion = "V1.1.2";
+    const ScriptVersion = "V1.1.3";
+    const dayOfYear = date => Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
     let Tiefstwert, Hoechstwert, Temp_Durchschnitt, Max_Windboe, Max_Regenmenge, Regenmenge_Monat, warme_Tage, Sommertage;
     let heisse_Tage, Frost_Tage, kalte_Tage, Eistage, sehr_kalte_Tage, Trockenperiode_akt;
     let kalte_Tage_Jahr, warme_Tage_Jahr, Sommertage_Jahr, heisse_Tage_Jahr, Frosttage_Jahr, Eistage_Jahr, sehrkalte_Tage_Jahr;
     let monatstage = [31,28,31,30,31,30,31,31,30,31,30,31];
     let monatsname = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
     let monatsname_kurz = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
-    console.log('Wetterstation-Statistiken gestartet...');
+    console.log("Wetterstation-Statistiken " + ScriptVersion + " gestartet...");
     setTimeout(Statusmeldung, 500);
 
 //scheduler
@@ -256,13 +258,24 @@ function main() {
        if (getState(PRE_DP+'.Jahreswerte.Regenmengetag').val < Max_Regenmenge) {setState(PRE_DP+'.Jahreswerte.Regenmengetag', Max_Regenmenge, true);}
        //Windböe
        if (getState(PRE_DP+'.Jahreswerte.Windboe_max').val <= Max_Windboe) {setState(PRE_DP+'.Jahreswerte.Windboe_max', Max_Windboe, true);} 
-    if (getState(WET_DP+'.Info.Letzter_Regen').val.match(/Tag/g)) { //nur setzen bei [Tag]en, nicht bei Stunden
-        Trockenperiode_akt=parseInt(getState(WET_DP+'.Info.Letzter_Regen').val.replace(/[^0-9\.]/g, ''), 10);
-        let Trockenperiode_alt=getState(PRE_DP+'.Jahreswerte.Trockenperiode').val;
-        if (Trockenperiode_akt >= Trockenperiode_alt) { setState(PRE_DP+'.Jahreswerte.Trockenperiode', Trockenperiode_akt, true); }
+    if (getState(WET_DP + '.Info.Letzter_Regen').val.match(/:/g)) { //LAST_RAIN=DATUM (01.08.2022 12:40)
+        Trockenperiode_akt=dayOfYear(new Date()) - dayOfYear(new Date(getState(WET_DP + '.Info.Letzter_Regen').lc));
+        if (Trockenperiode_akt<=0) { Trockenperiode_akt+=365; } // Jahrewechsel
+        let Trockenperiode_alt = getState(PRE_DP + '.Jahreswerte.Trockenperiode').val;
+        if (Trockenperiode_akt >= Trockenperiode_alt) { setState(PRE_DP + '.Jahreswerte.Trockenperiode', Trockenperiode_akt, true); }
+    }    
+    if (getState(WET_DP + '.Info.Letzter_Regen').val.match(/^\d{10}$/)) { //LAST_RAIN=UNIX (0123456789)
+        Trockenperiode_akt = parseInt((Date.now() - getState("javascript.0.Wetterstation.Info.Letzter_Regen").lc) / 1000 / 86400);
+        let Trockenperiode_alt = getState(PRE_DP + '.Jahreswerte.Trockenperiode').val;
+        if (Trockenperiode_akt >= Trockenperiode_alt) { setState(PRE_DP + '.Jahreswerte.Trockenperiode', Trockenperiode_akt, true); }
+    }
+    if (getState(WET_DP + '.Info.Letzter_Regen').val.match(/Tag/g)) { //LAST_RAIN=DIFF; nur setzen bei [Tag]en, nicht bei Stunden
+        Trockenperiode_akt = parseInt(getState(WET_DP+'.Info.Letzter_Regen').val.replace(/[^0-9\.]/g, ''), 10);
+        let Trockenperiode_alt = getState(PRE_DP + '.Jahreswerte.Trockenperiode').val;
+        if (Trockenperiode_akt >= Trockenperiode_alt) { setState(PRE_DP + '.Jahreswerte.Trockenperiode', Trockenperiode_akt, true); }
     }
 
-    //Rekordwerte
+    //Rekordwerte 
     Rekordwerte();
 
  });

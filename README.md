@@ -90,6 +90,14 @@ Daten in Wetter.com:<br>
 
 ## Versionen ##
 
+**V2.17.0 - 22.07.2022**
+```
+    + durchschnittliche Windrichtung und -geschwindigkeit der letzten 10 Minuten alternativ anstelle
+    der aktuellen Werte an OpenSenseMap, windy und wetter.com senden
+    + Temperaturtrend Aussentemperatur der letzten Stunde
+    ~ Fix für Datenübertragung an nicht antwortenden OSeM-Server
+```
+
 **V2.16.0 - 12.07.2022**
 ```
     + Windrichtung der letzten 10 Minuten für alle Stationen (benötigt wird dafür nun noch 'dc')

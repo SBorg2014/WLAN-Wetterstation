@@ -930,7 +930,7 @@ opensensemap() {
            echo -e "\n"
            return 0 #Ausgang
          else
- 	   OSEM_TRANSMIT=$(curl -s -H "Content-Type: application/json" -H "Authorization: ${BOX_TOKEN}" \
+ 	   OSEM_TRANSMIT=$(timeout 10 curl -s -H "Content-Type: application/json" -H "Authorization: ${BOX_TOKEN}" \
            -d "[ ${OSeM_DATA} ]" https://api.opensensemap.org/boxes/${senseBox_ID}/data)
         fi
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V2.16.0
+UPDATE_VER=V2.17.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -131,8 +131,9 @@ patcher() {
            V2.12.1) PATCH2130 ;;
            V2.13.0) PATCH2140 ;;
            V2.14.0) PATCH2150 ;;
-           V2.15.0) PATCH2160 && exit 0;;
-           V2.16.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
+           V2.15.0) PATCH2160 ;;
+           V2.16.0) PATCH2170 && exit 0;;
+           V2.17.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
                  *) FEHLER
     esac
 
@@ -392,6 +393,19 @@ PATCH2160() {
  sed -i '/^.*IPP=.*/a \\n #Protokoll, ioBroker-IP und Port der Rest-API [http(s)://xxx.xxx.xxx.xxx:xxxxx] / leer lassen falls nicht benutzt\n  RESTAPI_URL=\n  RESTAPI_USER=\n  RESTAPI_PW=' ./wetterstation.conf
  echo -e "${WE} Fertig...\n"
  echo -e " ${GE}Die Rest-API kann nun durch Eingabe der URL und den Zugangsdaten aktiviert werden!\n"
+}
+
+
+#Patch Version V2.16.0 auf V2.17.0
+PATCH2170() {
+ backup
+ echo -e "${WE}\n Patche wetterstation.conf auf V2.17.0 ..."
+ sed -i 's/### Settings V2.16.0/### Settings V2.17.0/' ./wetterstation.conf
+ sed -i '/^.*WUNDERGROUND_UPDATE=.*/a \\n #Windrichtung und -geschwindigkeit der letzten 10 Minuten anstelle aktueller Werte an\n #windy/OpenSenseMap/wetter.com übertragen? [true/false] / default: false\n  USE_AVG_WIND=false' ./wetterstation.conf
+ if [ ${RESTAPI} == "true" ]; then make_objects ".Aussentemperatur_Trend" "Trend der Aussentemperatur der letzten Stunde" "number" "°C"; fi
+ echo -e "${WE} Fertig...\n"
+ echo -e " ${GE}Die alternative Datenübertragung von Windrichtung und -geschwindigkeit der letzten\n 10 Minuten an windy/OpenSenseMap/wetter.com kann nun aktiviert werden!"
+ echo -e " Einstellung dafür in der wetterstation.conf: ${BL}USE_AVG_WIND=true\n${NO}"
 }
 
 

@@ -1743,7 +1743,6 @@ wunderground_update(){
 }
 
 
-
 do_trend_aussentemp(){
     if [ -z $TEMP_AUSSEN_ALT ]; then TEMP_AUSSEN_ALT=${MESSWERTE[1]}; fi # 1. Start
    #Trend ermitteln

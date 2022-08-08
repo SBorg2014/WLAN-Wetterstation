@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V2.18.0
+UPDATE_VER=V2.17.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -48,7 +48,7 @@ checker() {
           sudo systemctl daemon-reload
           sudo systemctl restart wetterstation
          fi
-         if [ ! -z ${INFLUX_API} ] && [ $(which influxd) ]; then check_prog influx; fi
+         if [ ! -z ${INFLUX_API} ]; then check_prog influx; fi
          check_prog bc
          check_prog jq
          check_prog dc
@@ -61,7 +61,7 @@ checker() {
 
 check_prog() {
          if [ $1 == "influx" ]; then
-          if [ ! $(influxd version|cut -d" " -f2|grep v1.) ]; then echo -e "${RE} Offizieller Support nur für Influx V1.x!\n\n${WE}"; sleep 5; fi
+          if [ -f /usr/bin/influxd ] && [ ! $(influxd version|cut -d" " -f2|grep v1.) ]; then echo -e "${RE} Offizieller Support nur für Influx V1.x!\n\n${NO}"; sleep 5; fi
           return
          fi
          if [ $1 == "restapi" ]; then
@@ -133,9 +133,8 @@ patcher() {
            V2.13.0) PATCH2140 ;;
            V2.14.0) PATCH2150 ;;
            V2.15.0) PATCH2160 ;;
-           V2.16.0) PATCH2170 ;;
-           V2.17.0) PATCH2180 && exit 0;;
-           V2.18.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
+           V2.16.0) PATCH2170 && exit 0;;
+           V2.17.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
                  *) FEHLER
     esac
 
@@ -407,23 +406,7 @@ PATCH2170() {
  if [ ${RESTAPI} == "true" ]; then make_objects ".Aussentemperatur_Trend" "Trend der Aussentemperatur der letzten Stunde" "number" "°C"; fi
  echo -e "${WE} Fertig...\n"
  echo -e " ${GE}Die alternative Datenübertragung von Windrichtung und -geschwindigkeit der letzten\n 10 Minuten an windy/OpenSenseMap/wetter.com kann nun aktiviert werden!"
- echo -e " Einstellung dafür in der wetterstation.conf: ${BL}USE_AVG_WIND=true\n${WE}"
-}
-
-
-#Patch Version V2.17.0 auf V2.18.0
-PATCH2180() {
- backup
- echo -e "${WE}\n Patche wetterstation.conf auf V2.18.0 ..."
- sed -i 's/### Settings V2.17.0/### Settings V2.18.0/' ./wetterstation.conf
- sed -i '/^.*ANZAHL_DP35=.*/i \  ANZAHL_DP10=0' ./wetterstation.conf
- if [ ${RESTAPI} == "true" ]; then
-  make_objects ".Info.Wolkenbasis" "Höhe der Wolkenbasis" "number" "m"
-  make_objects ".Info.Shellscriptversion" "Versionsnummer des Scriptes" "string"
-  make_objects ".Windrichtung_Text_10min" "Windrichtung Durchschnitt 10 Minuten als Text" "string"
- fi
- echo -e "${WE} Fertig...\n"
- echo -e " ${GE}Eventuelle Zusatzsensoren DP10/WN35 können nun eingetragen werden!\n${WE}"
+ echo -e " Einstellung dafür in der wetterstation.conf: ${BL}USE_AVG_WIND=true\n${NO}"
 }
 
 
@@ -648,7 +631,7 @@ make_objects(){
  #3: type
  #4: unit
 
- echo -e " ${WE}Lege neues Object im ioBroker an: $BL${PRE_DP}$1$WE"
+ echo -e " Lege neues Object im ioBroker an: $BL${PRE_DP}$1$NO"
  local TOKEN=$(echo -n ${RESTAPI_USER}:${RESTAPI_PW} | base64)
 
  #build Data-String
@@ -682,8 +665,8 @@ make_objects(){
  )
 
   #Fehler beim anlegen?
-  if [[ $RESULT == *"error"* ]]; then echo -e "${RE} Fehlermeldung beim Anlegen des Datenpunktes:\n  ${RESULT}${WE}"; fi
-  if [ "$RESULT" == "" ]; then echo -e "${RE} Keine Antwort der Rest-API erhalten! Stimmt das Protokoll (http/https), IP-Adresse und der Port?${WE}\n"; fi
+  if [[ $RESULT == *"error"* ]]; then echo -e "${RE} Fehlermeldung beim Anlegen des Datenpunktes:\n  ${RESULT}${NO}"; fi
+  if [ "$RESULT" == "" ]; then echo -e "${RE} Keine Antwort der Rest-API erhalten! Stimmt das Protokoll (http/https), IP-Adresse und der Port?${NO}\n"; fi
 
 }
 

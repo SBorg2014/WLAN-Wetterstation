@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V2.17.0 --------------------------------------------------------
+### Subroutinen V2.18.0 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -15,6 +15,7 @@
   DP_WIND_10MIN=${PRE_DP}.Wind_10min
   DP_WIND_DIR=${PRE_DP}.Windrichtung
   DP_WIND_DIR_TXT=${PRE_DP}.Windrichtung_Text
+  DP_WIND_DIR_TXT_10MIN=${PRE_DP}.Windrichtung_Text_10min
   DP_WIND_DIR_10MIN=${PRE_DP}.Windrichtung_10min
   DP_DRUCK_ABS=${PRE_DP}.Druck_absolut
   DP_DRUCK_REL=${PRE_DP}.Druck_relativ
@@ -43,6 +44,7 @@
   DP_WINDY_TRANSMIT=${PRE_DP}.Info.Windy
   DP_WCOM_TRANSMIT=${PRE_DP}.Info.Wetter_com
   DP_WUCOM_TRANSMIT=${PRE_DP}.Info.Wunderground_com
+  DP_SCRIPTVERSION=${PRE_DP}.Info.Shellscriptversion
   DP_SONNENSCHEIN_VORTAG=${PRE_DP}.Info.Sonnenschein_VorTag
   DP_SONNENSCHEIN_TAG=${PRE_DP}.Info.Sonnenschein_Tag
   DP_SONNENSCHEIN_WOCHE=${PRE_DP}.Info.Sonnenschein_Woche
@@ -63,6 +65,7 @@
   DP_SOLARENERGIE_VORJAHR=${PRE_DP}.Info.Solarenergie_VorJahr
   DP_LETZTER_REGEN=${PRE_DP}.Info.Letzter_Regen
   DP_LETZTE_REGENMENGE=${PRE_DP}.Info.Letzte_Regenmenge
+  DP_WOLKENBASIS=${PRE_DP}.Info.Wolkenbasis
   DP_STATION_BATTERIE=${PRE_DP}.Info.Station_Batteriestatus
   DP_WINDBOEEN_MAX=${PRE_DP}.Windboeen_max
   DP_REGEN_EVENT=${PRE_DP}.Regen_Event
@@ -163,7 +166,7 @@ debuging() {
      9) echo -en "DNS";;
      *) echo -en "unbekannt"
     esac
-   echo -e "$WE\tDP35/40/50/60/70/100/200/250/300: $GE${ANZAHL_DP35} $WE| $GE${ANZAHL_DP40} $WE| $GE${ANZAHL_DP50} $WE| $GE${ANZAHL_DP60} $WE| $GE${ANZAHL_DP70} $WE| $GE${ANZAHL_DP100} $WE| $GE${ANZAHL_DP200} $WE| $GE${ANZAHL_DP250} $WE| $GE${ANZAHL_DP300} $WE"
+   echo -e "$WE\tDP10/DP35/40/50/60/70/100/200/250/300: $GE${ANZAHL_DP10} $WE| $GE${ANZAHL_DP35} $WE| $GE${ANZAHL_DP40} $WE| $GE${ANZAHL_DP50} $WE| $GE${ANZAHL_DP60} $WE| $GE${ANZAHL_DP70} $WE| $GE${ANZAHL_DP100} $WE| $GE${ANZAHL_DP200} $WE| $GE${ANZAHL_DP250} $WE| $GE${ANZAHL_DP300} $WE"
    echo -e "${WE}WH31: $GE${ANZAHL_WH31} $WE"
    echo -e "Script-Version: ${GE}${SH_VER}${WE}\tConfig-Version: $GE${CONF_V}$WE\tSub-Version: $GE${SUBVER}$WE"
 
@@ -177,7 +180,7 @@ debuging() {
    if [ ${openSenseMap} == "true" ]; then opensensemap; fi
 
    #Influx-Version prüfen
-   if [ ! -z ${INFLUX_DB} ]; then
+   if [ ! -z ${INFLUX_DB} ] && [ $(which influxd) ]; then
     if [ ! $(influxd version|cut -d" " -f2|grep v1.) ]; then echo -e "\n${RE} Offizieller Support nur für Influx V1.x!\n\n${NO}"; fi
    fi
 
@@ -250,6 +253,9 @@ iob_send() {
          if [[ "${MESSWERTE[$i]}" =~ ^wh68batt ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP300.1.Batterie=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" =~ ^wh26batt ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP40.1.Batterie=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" =~ ^wh25batt ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WH31.1.Batterie=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^leafwetness_ch[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP10.${MESSWERTE[$i]:14:1}.Blattfeuchte=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^leaf_batt[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP10.${MESSWERTE[$i]:9:1}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
+
       fi
     done
     IOBOUT="${IOBOUT:1}"
@@ -478,7 +484,8 @@ winddir() {
      if [ "${#WINDDIR_10M[@]}" -ge "20" ]; then WINDDIR_10M=(${WINDDIR_10M[@]:1}); fi
      WINDDIR_10M[${#WINDDIR_10M[@]}]=${MESSWERTE[$1]}
      WIND_AVGANGEL_10M=$(do_winddir)
-     SAPI "Single" "set/${DP_WIND_DIR_10MIN}?value=${WIND_AVGANGEL_10M}&ack=true"
+     local WINDDIR_TXT_10M=${WINDDIRS[$(round ${WIND_AVGANGEL_10M}/22.5 0)]}
+     SAPI "Bulk" "setBulk" "${DP_WIND_DIR_TXT_10MIN}=${WINDDIR_TXT_10M}&${DP_WIND_DIR_10MIN}?value=${WIND_AVGANGEL_10M}&ack=true"
 }
 
 
@@ -762,7 +769,7 @@ setup() {
   case $WS_PROTOKOLL in
    1) MAXDEVICES=22;;
    *) MAXDEVICES=$(( 31 + $ANZAHL_DP35 * 4 + $ANZAHL_DP40 * 2 + $ANZAHL_DP50 * 6 + $ANZAHL_DP100 * 4 + $ANZAHL_DP60 * 8 + $ANZAHL_DP200 * 6 + $ANZAHL_DP70 * 4 + $ANZAHL_DP250 * 18 + $ANZAHL_DP300 *2 ))
-      MAXDEVICES+=$(( $ANZAHL_WH31 * 2 ))
+      MAXDEVICES+=$(( $ANZAHL_WH31 * 2 + $ANZAHL_DP10 * 4 ))
   esac
 
  #falls reboot warten bis der ioB wieder läuft...
@@ -770,6 +777,7 @@ setup() {
 
  #Fehlermeldungen resetten + Skriptstart loggen
   SAPI "Single" "set/${DP_KOMFEHLER}?value=false&ack=true"
+  SAPI "Single" "set/${DP_SCRIPTVERSION}?value=${SH_VER}&ack=true"
   MELDUNG "Skript gestartet"
 
  #Wetterdatenarray lesen
@@ -1288,6 +1296,22 @@ WH31() {
       fi
 }
 
+DP10() {
+      #DP10-Sensoren
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^leafwetness_ch[1-8]= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^leaf_batt[1-8]= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+}
+
 DP35() {
       #DP35/WN34-Sensoren
       if [[ ${MESSWERTERAWIN[$i]} =~ ^tf_ch[1-8]= ]]
@@ -1743,6 +1767,7 @@ wunderground_update(){
 }
 
 
+
 do_trend_aussentemp(){
     if [ -z $TEMP_AUSSEN_ALT ]; then TEMP_AUSSEN_ALT=${MESSWERTE[1]}; fi # 1. Start
    #Trend ermitteln
@@ -1754,6 +1779,15 @@ do_trend_aussentemp(){
      TEMPTREND_AUSSEN[${#TEMPTREND_AUSSEN[@]}]=${TEMP_DIFF}
      local TEMP_TREND_AUSSEN=$(dc <<< '[+]sa[z2!>az2!>b]sb'"${TEMPTREND_AUSSEN[*]//-/_}lbxp")
      SAPI "Single" "set/${DP_TEMP_AUSSEN_TREND}?value=${TEMP_TREND_AUSSEN}&ack=true"
+}
+
+
+
+do_wolkenbasis(){
+   #Höhe der Wolkenbasis berechnen
+    local WOLKENBASIS=$(echo "scale=2;(${MESSWERTE[1]}-${MESSWERTE[2]})*125"| bc -l)
+    WOLKENBASIS=$(round ${WOLKENBASIS} 0)
+    SAPI "Single" "set/${DP_WOLKENBASIS}?value=${WOLKENBASIS}&ack=true"
 }
 
 ###EoF

@@ -1,6 +1,7 @@
-//Wetterstation Datenpunkte anlegen V2.17.0
+//Wetterstation Datenpunkte anlegen V2.18.0
  let DP="javascript.0.Wetterstation.";
  let WH31  = 0;  // Anzahl der WH31/WH25 Sensoren  (max. 1 Stück)
+ let DP10  = 0;  // Anzahl der DP10/WN35 Sensoren  (max. 8 Stück)
  let DP35  = 0;  // Anzahl der DP35/WN34 Sensoren  (max. 8 Stück)
  let DP40  = 0;  // Anzahl der DP40/WH32 Sensoren  (max. 1 Stück)
  let DP50  = 0;  // Anzahl der DP50/WH31 Sensoren  (max. 8 Stück)
@@ -26,6 +27,7 @@
   createState(DP+"Wind_10min"                    , 0,    {name: "Windgeschwindigkeit Durchschnitt 10min", type: "number", role: "state", unit: "km/h" });
   createState(DP+"Windrichtung"                  , 0,    {name: "Windrichtung in Grad",                   type: "number", role: "state", unit: "°" });
   createState(DP+"Windrichtung_Text"             ," ",   {name: "Windrichtung als Text",                  type: "string", role: "state" });
+  createState(DP+"Windrichtung_Text_10min"       ," ",   {name: "Windrichtung Durchschnitt 10 Minuten als Text", type: "string", role: "state" });
   createState(DP+"Windrichtung_10min"            , 0,    {name: "Windrichtung Durchschnitt 10 Minuten",   type: "number", role: "state", unit: "°" });
   createState(DP+"Druck_absolut"                 , 0,    {name: "Luftdruck absolut",                      type: "number", role: "state", unit: "hPa" });
   createState(DP+"Druck_relativ"                 , 0,    {name: "Luftdruck relativ",                      type: "number", role: "state", unit: "hPa" });
@@ -52,6 +54,7 @@
   createState(DP+"Info.Meldungen"                ," ",   {name: "Status- und Fehlermeldungen",            type: "string", role: "state" });
   createState(DP+"Info.Hitzeindex"               , 0,    {name: "Hitzeindex (erst ab 20°C)",              type: "mixed",  role: "state", unit: "°C" });
   createState(DP+"Info.openSenseMap"             , false,{name: "Datenübertragung openSenseMap erfolgreich",type: "boolean",role: "state" });
+  createState(DP+"Info.Shellscriptversion"       ," ",   {name: "Versionsnummer des Scriptes",            type: "string", role: "state" });
   createState(DP+"Info.Windy"                    , false,{name: "Datenübertragung Windy erfolgreich",     type: "boolean",role: "state" });
   createState(DP+"Info.Wetter_com"               , false,{name: "Datenübertragung Wetter.com erfolgreich",type: "boolean",role: "state" });
   createState(DP+"Info.Wunderground_com"         , false,{name: "Datenübertragung Wunderground.com erfolgreich",type: "boolean",role: "state" });
@@ -78,6 +81,7 @@
   createState(DP+"Info.Letzte_Regenmenge"        , 0,    {name: "letzte Regenmenge",                      type: "number", role: "value", unit: "mm" });
   createState(DP+"Info.Station_Batteriestatus"   , 0,    {name: "Batteriestatus [0=OK, 1=Alarm]",         type: "number", role: "value" });
   createState(DP+"Info.Wetterstation_Gateway"    ," ",   {name: "Gateway Informationen",                  type: "string", role: "state" });
+  createState(DP+"Info.Wolkenbasis"              , 0,    {name: "Höhe der Wolkenbasis",                   type: "number", role: "state", unit: "m" });
   createState(DP+"Info.Temp_Aussen_24h_max"      , 0,    {name: "höchste Aussentemperatur der letzten 24 Stunden",type: "number", role: "state", unit: "°C" });
   createState(DP+"Info.Temp_Aussen_Heute_max"    , 0,    {name: "bisher höchste Aussentemperatur des heutigen Tages",type: "number", role: "value", unit: "°C" });
   createState(DP+"Info.Temp_Aussen_Heute_min"    , 0,    {name: "bisher niedrigste Aussentemperatur des heutigen Tages",type: "number", role: "value", unit: "°C" });
@@ -103,6 +107,28 @@ if (WH31>0 && WH31<=1)  {
         });
     }
   }
+}
+
+if (DP10 > 0 && DP10 <= 8) {
+    if (!existsState(DP + "DP10")) { createState(DP + "DP10", '', { name: "Blattfeuchte Sensor" }); }
+    for (var i = 1; i <= DP10; i++) {
+        if (!existsState(DP + "DP10." + i + ".Blattfeuchte")) {
+            createState(DP + "DP10." + i + ".Blattfeuchte", "", {
+                "name": "DP10 Kanal " + i + " Blattfeuchte",
+                "type": "number",
+                "role": "state",
+                "unit": "%"
+            });
+        }
+        if (!existsState(DP + "DP10." + i + ".Batterie")) {
+            createState(DP + "DP10." + i + ".Batterie", "", {
+                "name": "DP10 Kanal " + i + " Batterie",
+                "type": "number",
+                "role": "state",
+                "unit": "Volt"
+            });
+        }
+    }
 }
 
 if (DP35>0 && DP35<=8)  {

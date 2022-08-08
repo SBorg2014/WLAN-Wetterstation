@@ -2,13 +2,17 @@
 : <<'Versionsinfo'
 
 
- V2.17.0 - 22.07.2022 (c) 2019-2022 SBorg
+ V2.18.0 - 28.07.2022 (c) 2019-2022 SBorg
 
  wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
  die Daten an den ioBroker (alternativ auch an OpenSenseMap, Windy und wetter.com)
 
  benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq', 'bc' und 'dc' unter Linux
 
+ V2.18.0 / 28.07.2022  + Höhe der Wolkenbasis
+                       + Windrichtung der letzten 10 Minuten als Text
+                       + Unterstützung für DP10/WN35 Blattfeuchte-Sensor
+                       + Ausgabe der Skriptversion in Datenpunkt beim Start
  V2.17.0 / 22.07.2022  + durchschnittliche Windrichtung und -geschwindigkeit der letzten 10 Minuten alternativ anstelle
                          der aktuellen Werte an OpenSenseMap, windy und wetter.com senden
                        + Temperaturtrend Aussentemperatur der letzten Stunde
@@ -122,9 +126,9 @@ Versionsinfo
 ### Ende Infoblock
 
  #Versionierung
-  SH_VER="V2.17.0"
-  CONF_V="V2.17.0"
-  SUBVER="V2.17.0"
+  SH_VER="V2.18.0"
+  CONF_V="V2.18.0"
+  SUBVER="V2.18.0"
 
 
  #Installationsverzeichnis feststellen
@@ -264,6 +268,7 @@ while true
 
 
      ### zusätzliche DPxxx-Sensoren ############################################################
+      if [ "${ANZAHL_DP10}" -gt "0" ]; then DP10; fi
       if [ "${ANZAHL_DP35}" -gt "0" ]; then DP35; fi
       if [ "${ANZAHL_DP40}" -gt "0" ]; then DP40; fi
       if [ "${ANZAHL_DP50}" -gt "0" ] || [ "${ANZAHL_DP100}" -gt "0" ]; then DP50_100; fi
@@ -356,12 +361,14 @@ while true
 
 
 
-  #5-Minutenjobs: Windy; wetter.com
+  #5-Minutenjobs: Windy; wetter.com; Wolkenbasis
    if [ $(( $DO_IT % 5 )) -eq "0" ] && [ -z ${run_5minjobs_onlyonce} ]; then
 
-     #Windy / wetter.com
+     #Windy / wetter.com / Wolkenbasis
      if [ ${use_windy} == "true" ]; then windy_update; fi
      if [ ! -z ${WETTERCOM_ID} ]; then wettercom_update; fi
+     do_wolkenbasis
+
 
      #run only once
      run_5minjobs_onlyonce=true

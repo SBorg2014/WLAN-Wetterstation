@@ -34,6 +34,7 @@
 <br><br>
 
 Zusatzsensoren (mittels Station oder Gateway DP1500/GW1000):
+- bis zu 8 Stück DP10/WN35 Blattfeuchte-Sensoren 
 - bis zu 8 Stück DP35/WN34 Wassertemperatur-Sensoren
 - ein DP40/WH32 (bzw. WH26) Außentemperatur- und Luftfeuchtigkeitssensor
 - bis zu 8 Stück DP50/WH31 Temperatur-/Luftfeuchtigkeit-Sensoren
@@ -89,6 +90,14 @@ Daten in Wetter.com:<br>
 <br><br>
 
 ## Versionen ##
+
+**V2.18.0 - 28.07.2022**
+```
+    + Höhe der Wolkenbasis
+    + Windrichtung der letzten 10 Minuten als Text
+    + Unterstützung für DP10/WN35 Blattfeuchte-Sensor
+    + Ausgabe der Skriptversion in Datenpunkt beim Start
+```
 
 **V2.17.0 - 22.07.2022**
 ```

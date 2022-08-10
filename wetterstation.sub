@@ -479,17 +479,20 @@ END_BC
 winddir() {
    WINDRICHTUNG=${WINDDIRS[$(round ${MESSWERTE[$1]}/22.5 0)]}
 
-   if [[ "$DATA" =~ "winddir_avg10m=" ]]; then
-     local WINDDIR_TXT_10M=${WINDDIRS[$(round ${MESSWERTE[26]}/22.5 0)]}
-     SAPI "Bulk" "setBulk" "${DP_WIND_DIR_TXT_10MIN}=${WINDDIR_TXT_10M}&ack=true"
-    else
-     #Array/RRD bilden für Durchschnitt der letzten 10 Minuten
-     if [ "${#WINDDIR_10M[@]}" -ge "20" ]; then WINDDIR_10M=(${WINDDIR_10M[@]:1}); fi
-     WINDDIR_10M[${#WINDDIR_10M[@]}]=${MESSWERTE[$1]}
-     WIND_AVGANGEL_10M=$(do_winddir)
-     local WINDDIR_TXT_10M=${WINDDIRS[$(round ${WIND_AVGANGEL_10M}/22.5 0)]}
-     SAPI "Bulk" "setBulk" "${DP_WIND_DIR_TXT_10MIN}=${WINDDIR_TXT_10M}&${DP_WIND_DIR_10MIN}?value=${WIND_AVGANGEL_10M}&ack=true"
-   fi
+   case $1 in
+    8) if [[ "$DATA" =~ "winddir_avg10m=" ]]; then return; fi #Ausgang wenn Station 10 Minutenwerte liefert
+        #Array/RRD bilden für Durchschnitt der letzten 10 Minuten
+        if [ "${#WINDDIR_10M[@]}" -ge "20" ]; then WINDDIR_10M=(${WINDDIR_10M[@]:1}); fi
+        WINDDIR_10M[${#WINDDIR_10M[@]}]=${MESSWERTE[$1]}
+        WIND_AVGANGEL_10M=$(do_winddir)
+        local WINDDIR_TXT_10M=${WINDDIRS[$(round ${WIND_AVGANGEL_10M}/22.5 0)]}
+        SAPI "Bulk" "setBulk" "${DP_WIND_DIR_TXT_10MIN}=${WINDDIR_TXT_10M}&${DP_WIND_DIR_10MIN}?value=${WIND_AVGANGEL_10M}&ack=true"
+       ;;
+   26) local WINDDIR_TXT_10M=${WINDDIRS[$(round ${MESSWERTE[$1]}/22.5 0)]}
+       SAPI "Bulk" "setBulk" "${DP_WIND_DIR_TXT_10MIN}=${WINDDIR_TXT_10M}&ack=true"
+       ;;
+    *) return
+   esac
 }
 
 

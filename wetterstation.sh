@@ -262,7 +262,7 @@ while true
      if [[ ${MESSWERTERAWIN[$i]} == model=* ]]
         then MESSWERTE[25]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); fi
      if [[ ${MESSWERTERAWIN[$i]} == winddir_avg10m=* ]]
-        then MESSWERTE[26]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); fi
+        then MESSWERTE[26]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); winddir 26; fi
      if [[ ${MESSWERTERAWIN[$i]} == windspdmph_avg10m=* ]]
         then MESSWERTE[27]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); convertMPHtoKMH 27; fi
 

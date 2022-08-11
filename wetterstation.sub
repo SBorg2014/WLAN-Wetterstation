@@ -477,10 +477,10 @@ END_BC
 
 ###Windrichtung als Text
 winddir() {
-   WINDRICHTUNG=${WINDDIRS[$(round ${MESSWERTE[$1]}/22.5 0)]}
 
    case $1 in
-    8) if [[ "$DATA" =~ "winddir_avg10m=" ]]; then return; fi #Ausgang wenn Station 10 Minutenwerte liefert
+    8) WINDRICHTUNG=${WINDDIRS[$(round ${MESSWERTE[$1]}/22.5 0)]}
+       if [[ "$DATA" =~ "winddir_avg10m=" ]]; then return; fi #Ausgang wenn Station 10 Minutenwerte liefert
         #Array/RRD bilden für Durchschnitt der letzten 10 Minuten
         if [ "${#WINDDIR_10M[@]}" -ge "20" ]; then WINDDIR_10M=(${WINDDIR_10M[@]:1}); fi
         WINDDIR_10M[${#WINDDIR_10M[@]}]=${MESSWERTE[$1]}

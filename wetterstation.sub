@@ -486,7 +486,7 @@ winddir() {
         WINDDIR_10M[${#WINDDIR_10M[@]}]=${MESSWERTE[$1]}
         WIND_AVGANGEL_10M=$(do_winddir)
         local WINDDIR_TXT_10M=${WINDDIRS[$(round ${WIND_AVGANGEL_10M}/22.5 0)]}
-        SAPI "Bulk" "setBulk" "${DP_WIND_DIR_TXT_10MIN}=${WINDDIR_TXT_10M}&${DP_WIND_DIR_10MIN}?value=${WIND_AVGANGEL_10M}&ack=true"
+        SAPI "Bulk" "setBulk" "${DP_WIND_DIR_TXT_10MIN}=${WINDDIR_TXT_10M}&${DP_WIND_DIR_10MIN}=${WIND_AVGANGEL_10M}&ack=true"
        ;;
    26) local WINDDIR_TXT_10M=${WINDDIRS[$(round ${MESSWERTE[$1]}/22.5 0)]}
        SAPI "Bulk" "setBulk" "${DP_WIND_DIR_TXT_10MIN}=${WINDDIR_TXT_10M}&ack=true"

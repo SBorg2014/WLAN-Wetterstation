@@ -1,4 +1,4 @@
-//Wetterstation Datenpunkte anlegen V2.18.0
+//Wetterstation Datenpunkte anlegen V2.19.0
  let DP="javascript.0.Wetterstation.";
  let WH31  = 0;  // Anzahl der WH31/WH25 Sensoren  (max. 1 Stück)
  let DP10  = 0;  // Anzahl der DP10/WN35 Sensoren  (max. 8 Stück)
@@ -81,6 +81,7 @@
   createState(DP+"Info.Letzte_Regenmenge"        , 0,    {name: "letzte Regenmenge",                      type: "number", role: "value", unit: "mm" });
   createState(DP+"Info.Station_Batteriestatus"   , 0,    {name: "Batteriestatus [0=OK, 1=Alarm]",         type: "number", role: "value" });
   createState(DP+"Info.Wetterstation_Gateway"    ," ",   {name: "Gateway Informationen",                  type: "string", role: "state" });
+  createState(DP+"Info.Wetterwarnung"            ," ",   {name: "mögliche Wetterereignisse",              type: "string", role: "state" });
   createState(DP+"Info.Wolkenbasis"              , 0,    {name: "Höhe der Wolkenbasis",                   type: "number", role: "state", unit: "m" });
   createState(DP+"Info.Temp_Aussen_24h_max"      , 0,    {name: "höchste Aussentemperatur der letzten 24 Stunden",type: "number", role: "state", unit: "°C" });
   createState(DP+"Info.Temp_Aussen_Heute_max"    , 0,    {name: "bisher höchste Aussentemperatur des heutigen Tages",type: "number", role: "value", unit: "°C" });

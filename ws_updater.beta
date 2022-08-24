@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V2.18.0
+UPDATE_VER=V2.19.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -134,8 +134,9 @@ patcher() {
            V2.14.0) PATCH2150 ;;
            V2.15.0) PATCH2160 ;;
            V2.16.0) PATCH2170 ;;
-           V2.17.0) PATCH2180 && exit 0;;
-           V2.18.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
+           V2.17.0) PATCH2180 ;;
+           V2.18.0) PATCH2190 && exit 0;;
+           V2.19.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
                  *) FEHLER
     esac
 
@@ -424,6 +425,16 @@ PATCH2180() {
  fi
  echo -e "${WE} Fertig...\n"
  echo -e " ${GE}Eventuelle Zusatzsensoren DP10/WN35 können nun eingetragen werden!\n${WE}"
+}
+
+
+#Patch Version V2.18.0 auf V2.19.0
+PATCH2190() {
+ backup
+ echo -e "${WE}\n Patche wetterstation.conf auf V2.19.0 ..."
+ sed -i 's/### Settings V2.18.0/### Settings V2.19.0/' ./wetterstation.conf
+ if [ ${RESTAPI} == "true" ]; then make_objects ".Info.Wetterwarnung" "mögliche Wetterereignisse" "string"; fi
+ echo -e "${WE} Fertig...\n"
 }
 
 

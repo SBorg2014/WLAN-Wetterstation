@@ -2,13 +2,15 @@
 : <<'Versionsinfo'
 
 
- V2.18.0 - 28.07.2022 (c) 2019-2022 SBorg
+ V2.19.0 - 12.08.2022 (c) 2019-2022 SBorg
 
  wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
  die Daten an den ioBroker (alternativ auch an OpenSenseMap, Windy und wetter.com)
 
  benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq', 'bc' und 'dc' unter Linux
 
+ V2.19.0 / 12.08.2022  + Wetterwarnungen Schwüle, Tau/Nebel und Reif
+                       ~ URL-Encoding für Umlaute
  V2.18.0 / 28.07.2022  + Höhe der Wolkenbasis
                        + Windrichtung der letzten 10 Minuten als Text
                        + Unterstützung für DP10/WN35 Blattfeuchte-Sensor
@@ -126,9 +128,9 @@ Versionsinfo
 ### Ende Infoblock
 
  #Versionierung
-  SH_VER="V2.18.0"
-  CONF_V="V2.18.0"
-  SUBVER="V2.18.0"
+  SH_VER="V2.19.0"
+  CONF_V="V2.19.0"
+  SUBVER="V2.19.0"
 
 
  #Installationsverzeichnis feststellen
@@ -350,13 +352,11 @@ while true
    DO_IT=${DO_IT#0}
    if [ $(( $DO_IT % 15 )) -eq "0" ]; then
      if [ $(date +%s) -ge "$TIMER_SET" ]; then wetterprognose
-      if [ ! -z ${INFLUX_DB} ]; then
-        minmax24h
-        minmaxheute
-      fi
+      if [ ! -z ${INFLUX_DB} ]; then minmax24h; minmaxheute; fi
      fi
+     do_Wetterwarnung
      #stündlich Lebenszeichen
-     if [ "$(date +%H)" -ne "${ALIVE}" ]; then ALIVE=$(date +%H); MELDUNG "Skript läuft..."; fi
+     if [ "$(date +%H)" -ne "${ALIVE}" ]; then ALIVE=$(date +%H); MELDUNG "Skript l%C3%A4uft..."; fi
    fi
 
 

@@ -113,8 +113,8 @@ debuging() {
    echo -e "Gefühlte Temperatur\t: $GR${MESSWERTE[3]}$WE °C"
    echo -e "Luftfeuchte Innen\t: $GR${MESSWERTE[4]}$WE %"
    echo -e "Luftfeuchte Aussen\t: $GR${MESSWERTE[5]}$WE %"
-   echo -e "Windgeschwindkeit\t: $GR${MESSWERTE[6]}$WE km/h"
-   echo -e "Windgeschwindkeit 10min\t: $GR${MESSWERTE[27]}$WE km/h"
+   echo -e "Windgeschwindigkeit\t: $GR${MESSWERTE[6]}$WE km/h"
+   echo -e "Windgeschwindigkeit 10min\t: $GR${MESSWERTE[27]}$WE km/h"
    echo -e "Windböengeschwindigkeit\t: $GR${MESSWERTE[7]}$WE km/h"
    echo -e "max. Windböe\t\t: $GR${MESSWERTE[21]}$WE km/h"
    echo -e "Windrichtung\t\t: $GR${MESSWERTE[8]}$WE °"
@@ -158,18 +158,19 @@ debuging() {
    echo -e "\nDATA von Wetterstation:\n$GR${DAT}$WE\n"
 
    echo -e "\nDebug VAR:"
-   echo -e "Installationsverzeichnis: $GE$DIR$WE"
-   echo -e "IPP: $GE${IPP}$WE\tWS_PORT: $GE${WS_PORT}$WE\t\tWS_POLL: $GE${WS_POLL}$WE\t\tPRE_DP: $GE${PRE_DP}$WE"
-   echo -en "WEB: $GE${WEB}\t\t${WE}WS_PROT: $GE";
+   echo -e " Installationsverzeichnis: $GE$DIR$WE"
+   echo -e " IPP: $GE${IPP}$WE\tWS_PORT: $GE${WS_PORT}$WE\t\tWS_POLL: $GE${WS_POLL}$WE\t\tPRE_DP: $GE${PRE_DP}$WE"
+   echo -en " WEB: $GE${WEB}\t\t${WE}WS_PROT: $GE";
     case $WS_PROTOKOLL in
-     1) echo -en "Wunderground";;
-     2) echo -en "Ecowitt";;
-     9) echo -en "DNS";;
-     *) echo -en "unbekannt"
+     1) echo -e "Wunderground";;
+     2) echo -e "Ecowitt";;
+     9) echo -e "DNS";;
+     *) echo -e "unbekannt"
     esac
-   echo -e "$WE\tDP10/DP35/40/50/60/70/100/200/250/300: $GE${ANZAHL_DP10} $WE| $GE${ANZAHL_DP35} $WE| $GE${ANZAHL_DP40} $WE| $GE${ANZAHL_DP50} $WE| $GE${ANZAHL_DP60} $WE| $GE${ANZAHL_DP70} $WE| $GE${ANZAHL_DP100} $WE| $GE${ANZAHL_DP200} $WE| $GE${ANZAHL_DP250} $WE| $GE${ANZAHL_DP300} $WE"
-   echo -e "${WE}WH31: $GE${ANZAHL_WH31} $WE"
-   echo -e "Script-Version: ${GE}${SH_VER}${WE}\tConfig-Version: $GE${CONF_V}$WE\tSub-Version: $GE${SUBVER}$WE"
+   echo -e "\n${WE}Zusatzsensoren:"
+   echo -e " ${WE}DP10/35/40/50/60/70/100/200/250/300: $GE${ANZAHL_DP10} $WE| $GE${ANZAHL_DP35} $WE| $GE${ANZAHL_DP40} $WE| $GE${ANZAHL_DP50} $WE| $GE${ANZAHL_DP60} $WE| $GE${ANZAHL_DP70} $WE| $GE${ANZAHL_DP100} $WE| $GE${ANZAHL_DP200} $WE| $GE${ANZAHL_DP250} $WE| $GE${ANZAHL_DP300} $WE"
+   echo -e " ${WE}WH31: $GE${ANZAHL_WH31}${WE} || WS90: ${GE}${ANZAHL_WS90}${WE}"
+   echo -e "\nScript-Version: ${GE}${SH_VER}${WE}\tConfig-Version: $GE${CONF_V}$WE\tSub-Version: $GE${SUBVER}$WE"
 
    if [ ! -z "$KOMFEHLER" ]; then echo -e "\n${RE}Kommunikationsfehler!$WE\n"; fi
    if [ ! -z "$KOMFEHLER" ] && [ $WS_PROTOKOLL = 1 ]; then echo -e "\n${RE}Kommunikationsfehler! Stimmt die WS_ID in der Konfiguration mit der der WS View-App überein? $WE\n"; fi
@@ -257,6 +258,18 @@ iob_send() {
          if [[ "${MESSWERTE[$i]}" =~ ^leafwetness_ch[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP10.${MESSWERTE[$i]:14:1}.Blattfeuchte=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" =~ ^leaf_batt[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP10.${MESSWERTE[$i]:9:1}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
 
+        #WS90
+         if [[ "${MESSWERTE[$i]}" =~ ^rrain_piezo ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WS90.1.aktuelle_Regenrate=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^erain_piezo ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WS90.1.aktuelle_Regenmenge=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^hrain_piezo ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WS90.1.stuendliche_Regenmenge=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^drain_piezo ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WS90.1.taegliche_Regenmenge=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^wrain_piezo ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WS90.1.woechentliche_Regenmenge=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^mrain_piezo ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WS90.1.monatliche_Regenmenge=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^yrain_piezo ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WS90.1.jaehrliche_Regenmenge=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^ws90_ver ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WS90.1.Firmwareversion=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^wh90batt ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WS90.1.Batterie=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^ws90cap_volt ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WS90.1.Spannung_GoldCap=${MESSWERTE[$(($i+1))]}"; fi
+
       fi
     done
     IOBOUT="${IOBOUT:1}"
@@ -332,7 +345,7 @@ convertLuftdruck() {
 }
 
 convertInchtoMM() {
-     MESSWERTE[$1]=$(echo "scale=1;${MESSWERTE[$1]}*254/10" | bc -l)
+     MESSWERTE[$1]=$(echo "scale=3;${MESSWERTE[$1]}*254/10" | bc -l)
       #Protokoll #9 liefert keine Regenrate(11); also alle Regenberechnungen überspringen
       if [ "$WS_PROTOKOLL" -ne "9" ]; then
 
@@ -777,7 +790,7 @@ setup() {
   case $WS_PROTOKOLL in
    1) MAXDEVICES=22;;
    *) MAXDEVICES=$(( 31 + $ANZAHL_DP35 * 4 + $ANZAHL_DP40 * 2 + $ANZAHL_DP50 * 6 + $ANZAHL_DP100 * 4 + $ANZAHL_DP60 * 8 + $ANZAHL_DP200 * 6 + $ANZAHL_DP70 * 4 + $ANZAHL_DP250 * 18 + $ANZAHL_DP300 *2 ))
-      MAXDEVICES+=$(( $ANZAHL_WH31 * 2 + $ANZAHL_DP10 * 4 ))
+      MAXDEVICES+=$(( $ANZAHL_WH31 * 2 + $ANZAHL_DP10 * 4 + $ANZAHL_WS90 * 20 ))
   esac
 
  #falls reboot warten bis der ioB wieder läuft...
@@ -1297,6 +1310,77 @@ logging() {
 WH31() {
       #WH31-Sensoren
       if [[ ${MESSWERTERAWIN[$i]} =~ ^wh25batt= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+}
+
+WS90() {
+      #WS90-Sensor
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^rrain_piezo= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+         convertInchtoMM $j
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^erain_piezo= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+         convertInchtoMM $j
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^hrain_piezo= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+         convertInchtoMM $j
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^drain_piezo= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+         convertInchtoMM $j
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^wrain_piezo= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+         convertInchtoMM $j
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^mrain_piezo= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+         convertInchtoMM $j
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^yrain_piezo= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+         convertInchtoMM $j
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^ws90_ver= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^wh90batt= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^ws90cap_volt= ]]
          then let "j++"
          MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
          let "j++"

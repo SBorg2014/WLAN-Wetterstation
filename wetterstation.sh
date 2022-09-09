@@ -11,6 +11,7 @@
 
  V2.19.0 / 12.08.2022  + Wetterwarnungen Schwüle, Tau/Nebel und Reif
                        ~ URL-Encoding für Umlaute
+                       + Unterstützung für WS90 "Wittboy"
  V2.18.0 / 28.07.2022  + Höhe der Wolkenbasis
                        + Windrichtung der letzten 10 Minuten als Text
                        + Unterstützung für DP10/WN35 Blattfeuchte-Sensor
@@ -285,6 +286,10 @@ while true
       if [ "${ANZAHL_WH31}" -gt "0" ]; then WH31; fi
      ### zusätzliche WHxxx-Sensoren ################################################### ENDE ###
 
+     ### zusätzliche WSxxx-Sensoren ############################################################
+      if [ "${ANZAHL_WS90}" -gt "0" ]; then WS90; fi
+     ### zusätzliche WHxxx-Sensoren ################################################### ENDE ###
+
    done
 
 
@@ -306,7 +311,7 @@ while true
          let "TEMPFIX_ERR++"
          if [ "${TEMPFIX_ERR}" -gt "10" ]
           then
-           MELDUNG "möglicherweise Batterie des Wettermastes schwach"
+           MELDUNG "m%C3%B6glicherweise Batterie des Wettermastes schwach"
            SAPI "Single" "set/${DP_STATION_BATTERIE}?value=1&ack=true"
           fi
        fi
@@ -341,7 +346,7 @@ while true
         reset_zaehler      #Sonnenscheindauer, Solarenergie zurücksetzen (enthällt auch Speicherung Werte VorJahr)
         minmaxavg365d      #Min-/Max-/Avg-Aussentemperatur vor einem Jahr
         metsommer          #meteorologischer Sommer Durchschnittstemperatur und Regenmenge
-        MELDUNG "Mitternachtjobs durchgeführt"
+        MELDUNG "Mitternachtjobs durchgef%C3%BChrt"
    fi
    if [ $(date +%H) -eq "0" ] && [ $(date +%M) -le "3" ]; then unset MIDNIGHTRUN; fi
 

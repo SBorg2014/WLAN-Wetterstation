@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V2.18.0
+UPDATE_VER=V2.19.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -134,8 +134,9 @@ patcher() {
            V2.14.0) PATCH2150 ;;
            V2.15.0) PATCH2160 ;;
            V2.16.0) PATCH2170 ;;
-           V2.17.0) PATCH2180 && exit 0;;
-           V2.18.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
+           V2.17.0) PATCH2180 ;;
+           V2.18.0) PATCH2190 && exit 0;;
+           V2.19.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
                  *) FEHLER
     esac
 
@@ -427,6 +428,27 @@ PATCH2180() {
 }
 
 
+#Patch Version V2.18.0 auf V2.19.0
+PATCH2190() {
+ backup
+ echo -e "${WE}\n Patche wetterstation.conf auf V2.19.0 ..."
+ sed -i 's/### Settings V2.18.0/### Settings V2.19.0/' ./wetterstation.conf
+ sed -i '/^.*ANZAHL_WH31=.*/a \  ANZAHL_WS90=0' ./wetterstation.conf
+ if [ ${RESTAPI} == "true" ]; then make_objects ".Info.Wetterwarnung" "mögliche Wetterereignisse" "string"
+#     #Abfrage starten zum Anlegen der DPs des WS90
+#     jn_abfrage "${WE} Sollen nun Datenpunkte für den WS90 angelegt werden...(nur sinnvoll wenn man auch einen hat ;-))?"
+#     if [ ! -z $antwort ]; then
+#      make_objects ".WS90" "WS90 Wittboy" "folder"
+#      make_objects ".WS90.1.aktuelle_Regenrate" "WS90 Kanal 1 aktuelle Regenrate" "number" "mm/h"
+#     fi
+ fi
+ echo -e "\n${WE} Fertig...\n"
+ echo -e " ${GE}Eventueller Zusatzsensor WS90 kann nun eingetragen werden!${WE}"
+# if [ ${RESTAPI} != "true" ] || [ -z $antwort ]; then echo -e " ${GE}Dazu noch 'wetterstation.js' im ioB ersetzen, konfigurieren und einmalig ausführen.\n${WE}"; fi
+ echo -e " ${GE}Dazu noch 'wetterstation.js' im ioB ersetzen, konfigurieren und einmalig ausführen.\n${WE}"
+}
+
+
 patch_260() {
 cat <<EoD >patch
 --- wetterstation.conf_250	2021-05-13 13:45:06.297750501 +0200
@@ -648,7 +670,7 @@ make_objects(){
  #3: type
  #4: unit
 
- echo -e " ${WE}Lege neues Object im ioBroker an: $BL${PRE_DP}$1$WE"
+ echo -e "\n ${WE}Lege neues Object im ioBroker an: $BL${PRE_DP}$1$WE"
  local TOKEN=$(echo -n ${RESTAPI_USER}:${RESTAPI_PW} | base64)
 
  #build Data-String
@@ -682,7 +704,9 @@ make_objects(){
  )
 
   #Fehler beim anlegen?
-  if [[ $RESULT == *"error"* ]]; then echo -e "${RE} Fehlermeldung beim Anlegen des Datenpunktes:\n  ${RESULT}${WE}"; fi
+  if [[ $RESULT == *"error"* ]]; then local FEHLER_ioB=$(echo ${RESULT} | jq -r '.error')
+   echo -e "${RE} Fehlermeldung beim Anlegen des Datenpunktes: ${FEHLER_ioB}${WE}\n"
+  fi
   if [ "$RESULT" == "" ]; then echo -e "${RE} Keine Antwort der Rest-API erhalten! Stimmt das Protokoll (http/https), IP-Adresse und der Port?${WE}\n"; fi
 
 }

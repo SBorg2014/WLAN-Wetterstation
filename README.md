@@ -45,6 +45,7 @@ Zusatzsensoren (mittels Station oder Gateway DP1500/GW1000):
 - ein DP250/WH45 5-In-1 CO2 / PM2.5 / PM10 / Temperatur / Luftfeuchte Innenraumsensor
 - ein DP300/WS68 Solarunterstütztes Anemometer mit UV-Lichtsensor
 - ein WH31 (bzw. WH25) Sensor
+- ein WS90 "Wittboy" Sensor
 <br><br>*__Die mögliche Anzahl der Zusatzsensoren ist nicht durch das Skript begrenzt, sondern wird vom Display und/oder Gateway bestimmt.__*
 <br><br>    
      
@@ -90,6 +91,13 @@ Daten in Wetter.com:<br>
 <br><br>
 
 ## Versionen ##
+
+**V2.19.0 - 12.08.2022**
+```
+    + Wetterwarnungen Schwüle, Tau/Nebel und Reif
+    ~ URL-Encoding für Umlaute
+    + Unterstützung für WS90 "Wittboy"
+```
 
 **V2.18.0 - 28.07.2022**
 ```

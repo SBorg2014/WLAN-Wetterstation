@@ -10,7 +10,7 @@
 [![Commits since last release](https://img.shields.io/github/commits-since/SBorg2014/WLAN-Wetterstation/latest.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/releases/latest)
 [![License](https://img.shields.io/github/license/SBorg2014/WLAN-Wetterstation.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/LICENSE)
 
- schafft eine Verbindung von einer WLAN-Wetterstation zum ioBroker und kann optional die Wetterdaten in [openSenseMap](https://opensensemap.org), [Windy](https://www.windy.com) und [wetter.com](https://www.wetter.com) zur Verfügung stellen (__Projekt läuft nur unter Linux__)<br>
+ schafft eine Verbindung von einer WLAN-Wetterstation zum ioBroker und kann optional die Wetterdaten für [openSenseMap](https://opensensemap.org), [Windy](https://www.windy.com) und [wetter.com](https://www.wetter.com) zur Verfügung stellen (__Projekt läuft nur unter Linux__)<br>
  
  Die Wetterstation muss dazu in der Lage sein ihre Daten im "Wunderground/Ecowitt"-Format zu senden.<br><br>
  Bisher getestete Stationen:
@@ -20,6 +20,7 @@
 - ELV WS980WiFi
 - Eurochron EFWS 2900 (baugleich zu Sainlogic 10in1 Wifi, Ambient Weather WS-2902, Chilitec CTW-902 Wifi)
 - Froggit
+  * Gateway/USB-Dongle DP1500
   * HP1000SE Pro
   * WH3000 SE
   * WH4000 SE
@@ -50,7 +51,7 @@ Zusatzsensoren (mittels Station oder Gateway DP1500/GW1000):
 <br><br>    
      
 über eigenen DNS-Server:
-- Stationen ohne Möglichkeit der Konfiguration mittels App *WS View* wie bspw. *Sainlogic Profi Wlan Wetterstation FT0300*
+- Stationen ohne Möglichkeit der Konfiguration mittels App *WS View\[+\]* wie bspw. *Sainlogic Profi Wlan Wetterstation FT0300*
 - Installation siehe [WiKi](https://github.com/SBorg2014/WLAN-Wetterstation/wiki/Installation---eigener-DNS-Server)
 <br><br>
    

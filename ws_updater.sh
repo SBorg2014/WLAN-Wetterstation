@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V2.19.0
+UPDATE_VER=V2.20.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -9,11 +9,17 @@ UPDATE_VER=V2.19.0
       BL='\e[1;36m'
       RE='\e[1;31m'
 
-            echo -e "\n\n\n${GE} ┌────────────────────────┐"
-            echo -e " │                        │"
-            echo -e " │  ${BL} WS-Updater ${UPDATE_VER}${GE}\t  │"
-            echo -e " │                        │"
-            echo -e " └────────────────────────┘${WE}\n"
+
+echo -e "\n\n${BL}"
+echo -e '
+    _       _______       __  __          __      __
+   | |     / / ___/      / / / /___  ____/ /___ _/ /____  _____
+   | | /| / /\__ \______/ / / / __ \/ __  / __ `/ __/ _ \/ ___/
+   | |/ |/ /___/ /_____/ /_/ / /_/ / /_/ / /_/ / /_/  __/ /
+   |__/|__//____/      \____/ .___/\__,_/\__,_/\__/\___/_/'  ${GE}${UPDATE_VER}${BL}
+echo -en '                           /_/'
+echo -e "${WE}\n"
+
 
  #Nicht als root...
  if [ $(whoami) = "root" ]; then echo -e "$RE Ausführung als \"root\" nicht möglich...!\n"; exit 1; fi
@@ -135,8 +141,9 @@ patcher() {
            V2.15.0) PATCH2160 ;;
            V2.16.0) PATCH2170 ;;
            V2.17.0) PATCH2180 ;;
-           V2.18.0) PATCH2190 && exit 0;;
-           V2.19.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
+           V2.18.0) PATCH2190 ;;
+           V2.19.0) PATCH2200 && exit 0;;
+           V2.20.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
                  *) FEHLER
     esac
 
@@ -449,6 +456,14 @@ PATCH2190() {
 }
 
 
+PATCH2200(){
+ backup
+ echo -e "${WE}\n Patche wetterstation.conf auf V2.20.0 ..."
+ sed -i 's/### Settings V2.19.0/### Settings V2.20.0/' ./wetterstation.conf
+ echo -e "\n${WE} Fertig...\n"
+}
+
+
 patch_260() {
 cat <<EoD >patch
 --- wetterstation.conf_250	2021-05-13 13:45:06.297750501 +0200
@@ -646,7 +661,7 @@ menu() {
         echo -e "\t [${BL}3${WE}] Konfigurationsdatei patchen\n"
         echo -e "\t [${BL}4${WE}] Update ausführen\n\n"
         echo -e "\t [${BL}E${WE}] Exit\n\n\n"
-        echo -en "\t Ihre Auswahl: [${GR}1-4${WE}]"
+        echo -en "\t Ihre Auswahl: [${GR}1-4,E${WE}]"
 
         read -n 1 -p ": " MENU_AUSWAHL
         echo -e "\n"

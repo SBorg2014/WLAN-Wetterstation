@@ -2,13 +2,16 @@
 : <<'Versionsinfo'
 
 
- V2.19.0 - 12.08.2022 (c) 2019-2022 SBorg
+ V2.20.0 - 12.12.2022 (c) 2019-2022 SBorg
 
  wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
  die Daten an den ioBroker (alternativ auch an OpenSenseMap, Windy und wetter.com)
 
  benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq', 'bc' und 'dc' unter Linux
 
+ V2.20.0 / 12.12.2022  ~ fix Wolkenbasis (keine Werte falls Taupunkt negativ) / Issue #46 (viper4iob)
+                       ~ fix Wetterwarnung (Reif) / Issue #47 (viper4iob)
+                       ~ fix OpenSenseMap für Stationen die 10-Minutendurchschnittswerte bereits liefern / Issue #48 (viper4iob)
  V2.19.0 / 12.08.2022  + Wetterwarnungen Schwüle, Tau/Nebel und Reif
                        ~ URL-Encoding für Umlaute
                        + Unterstützung für WS90 "Wittboy"
@@ -129,9 +132,9 @@ Versionsinfo
 ### Ende Infoblock
 
  #Versionierung
-  SH_VER="V2.19.0"
-  CONF_V="V2.19.0"
-  SUBVER="V2.19.0"
+  SH_VER="V2.20.0"
+  CONF_V="V2.20.0"
+  SUBVER="V2.20.0"
 
 
  #Installationsverzeichnis feststellen

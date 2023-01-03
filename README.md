@@ -93,6 +93,13 @@ Daten in Wetter.com:<br>
 
 ## Versionen ##
 
+**V2.20.0 - 12.12.2022**
+```
+    ~ fix Wolkenbasis (keine Werte falls Taupunkt negativ) / Issue #46 (viper4iob)
+    ~ fix Wetterwarnung (Reif) / Issue #47 (viper4iob)
+    ~ fix OpenSenseMap für Stationen die 10-Minutendurchschnittswerte bereits liefern / Issue #48 (viper4iob)
+```
+
 **V2.19.0 - 12.08.2022**
 ```
     + Wetterwarnungen Schwüle, Tau/Nebel und Reif

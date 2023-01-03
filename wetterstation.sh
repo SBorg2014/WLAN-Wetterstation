@@ -2,13 +2,14 @@
 : <<'Versionsinfo'
 
 
- V2.20.0 - 12.12.2022 (c) 2019-2022 SBorg
+ V2.21.0 - 02.01.2023 (c) 2019-2023 SBorg
 
  wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
  die Daten an den ioBroker (alternativ auch an OpenSenseMap, Windy und wetter.com)
 
  benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq', 'bc' und 'dc' unter Linux
 
+ V2.21.0 / 02.01.2023  + Support für AWEKAS
  V2.20.0 / 12.12.2022  ~ fix Wolkenbasis (keine Werte falls Taupunkt negativ) / Issue #46 (viper4iob)
                        ~ fix Wetterwarnung (Reif) / Issue #47 (viper4iob)
                        ~ fix OpenSenseMap für Stationen die 10-Minutendurchschnittswerte bereits liefern / Issue #48 (viper4iob)
@@ -132,9 +133,9 @@ Versionsinfo
 ### Ende Infoblock
 
  #Versionierung
-  SH_VER="V2.20.0"
-  CONF_V="V2.20.0"
-  SUBVER="V2.20.0"
+  SH_VER="V2.21.0"
+  CONF_V="V2.21.0"
+  SUBVER="V2.21.0"
 
 
  #Installationsverzeichnis feststellen
@@ -218,7 +219,7 @@ while true
      if [[ ${MESSWERTERAWIN[$i]} == tempinf=* ]] || [[ ${MESSWERTERAWIN[$i]} == indoortempf=* ]]
         then MESSWERTE[0]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); convertFtoC 0; fi
      if [[ ${MESSWERTERAWIN[$i]} == tempf=* ]]
-        then MESSWERTE[1]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); convertFtoC 1; do_trend_aussentemp; fi
+        then MESSWERTE[1]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); TEMPF=${MESSWERTE[1]}; convertFtoC 1; do_trend_aussentemp; fi
      if [[ ${MESSWERTERAWIN[$i]} == dewptf=* ]]
         then MESSWERTE[2]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); convertFtoC 2; fi
      if [[ ${MESSWERTERAWIN[$i]} == windchillf=* ]]
@@ -377,7 +378,6 @@ while true
      if [ ! -z ${WETTERCOM_ID} ]; then wettercom_update; fi
      do_wolkenbasis
 
-
      #run only once
      run_5minjobs_onlyonce=true
 
@@ -399,8 +399,10 @@ while true
    if [ ${openSenseMap} == "true" ]; then opensensemap; fi
 
   #Wunderground
-  if [ ${WUNDERGROUND_UPDATE} == "true" ]; then wunderground_update; fi
+   if [ ${WUNDERGROUND_UPDATE} == "true" ]; then wunderground_update; fi
 
+  #AWEKAS
+   if [ ${use_awekas} == "true" ]; then awekas_update; fi
 
 
   #Logging eingeschaltet?

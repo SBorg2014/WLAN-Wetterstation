@@ -2,14 +2,15 @@
 : <<'Versionsinfo'
 
 
- V2.21.0 - 02.01.2023 (c) 2019-2023 SBorg
+ V2.21.0 - 13.01.2023 (c) 2019-2023 SBorg
 
  wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
  die Daten an den ioBroker (alternativ auch an OpenSenseMap, Windy und wetter.com)
 
  benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq', 'bc' und 'dc' unter Linux
 
- V2.21.0 / 02.01.2023  + Support für AWEKAS
+ V2.21.0 / 13.01.2023  + Support für AWEKAS
+                       ~ fix fehlende Regenwerte wenn nur der WS90 ohne weitere Außeneinheit benutzt wird / Issue #51
  V2.20.0 / 12.12.2022  ~ fix Wolkenbasis (keine Werte falls Taupunkt negativ) / Issue #46 (viper4iob)
                        ~ fix Wetterwarnung (Reif) / Issue #47 (viper4iob)
                        ~ fix OpenSenseMap für Stationen die 10-Minutendurchschnittswerte bereits liefern / Issue #48 (viper4iob)
@@ -238,15 +239,15 @@ while true
         then MESSWERTE[9]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); convertLuftdruck 9; fi
      if [[ ${MESSWERTERAWIN[$i]} == baromrelin=* ]] || [[ ${MESSWERTERAWIN[$i]} == baromin=* ]]
         then MESSWERTE[10]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); convertLuftdruck 10; fi
-     if [[ ${MESSWERTERAWIN[$i]} == rainratein=* ]] || [[ ${MESSWERTERAWIN[$i]} == rainin=* ]]
+     if [[ ${MESSWERTERAWIN[$i]} == rainratein=* ]] || [[ ${MESSWERTERAWIN[$i]} == rainin=* ]] || [[ ${MESSWERTERAWIN[$i]} == rrain_piezo=* ]]
         then MESSWERTE[11]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); convertInchtoMM 11; fi
-     if [[ ${MESSWERTERAWIN[$i]} == dailyrainin=* ]]
+     if [[ ${MESSWERTERAWIN[$i]} == dailyrainin=* ]] || [[ ${MESSWERTERAWIN[$i]} == drain_piezo=* ]]
         then MESSWERTE[12]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); convertInchtoMM 12; fi
-     if [[ ${MESSWERTERAWIN[$i]} == weeklyrainin=* ]]
+     if [[ ${MESSWERTERAWIN[$i]} == weeklyrainin=* ]] || [[ ${MESSWERTERAWIN[$i]} == wrain_piezo=* ]]
         then MESSWERTE[13]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); convertInchtoMM 13; fi
-     if [[ ${MESSWERTERAWIN[$i]} == monthlyrainin=* ]]
+     if [[ ${MESSWERTERAWIN[$i]} == monthlyrainin=* ]] || [[ ${MESSWERTERAWIN[$i]} == mrain_piezo=* ]]
         then MESSWERTE[14]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); convertInchtoMM 14; fi
-     if [[ ${MESSWERTERAWIN[$i]} == yearlyrainin=* ]]
+     if [[ ${MESSWERTERAWIN[$i]} == yearlyrainin=* ]] || [[ ${MESSWERTERAWIN[$i]} == yrain_piezo=* ]]
         then MESSWERTE[15]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); convertInchtoMM 15; fi
      if [[ ${MESSWERTERAWIN[$i]} == solarradiation=* ]]
         then MESSWERTE[16]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); sonnenpuls 16; fi

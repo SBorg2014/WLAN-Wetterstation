@@ -1,4 +1,4 @@
-//Wetterstation Datenpunkte anlegen V2.19.0
+//Wetterstation Datenpunkte anlegen V2.21.0
 let DP = "javascript.0.Wetterstation.";
 let WH31 = 0;   // Anzahl der WH31/WH25 Sensoren  (max. 1 Stück)
 let WS90 = 0;   // Anzahl der WS90 Sensoren       (max. 1 Stück)
@@ -59,10 +59,11 @@ async function dpAnlegen(){
  createState(DP + "Info.Meldungen", " ", { name: "Status- und Fehlermeldungen", type: "string", role: "state" });
  createState(DP + "Info.Hitzeindex", 0, { name: "Hitzeindex (erst ab 20°C)", type: "mixed", role: "state", unit: "°C" });
  createState(DP + "Info.openSenseMap", false, { name: "Datenübertragung openSenseMap erfolgreich", type: "boolean", role: "state" });
- createState(DP + "Info.Shellscriptversion", false, { name: "Versionsnummer des Scriptes", type: "string", role: "state" }); 
+ createState(DP + "Info.Shellscriptversion", false, { name: "Versionsnummer des Scriptes", type: "string", role: "state" });
  createState(DP + "Info.Windy", false, { name: "Datenübertragung Windy erfolgreich", type: "boolean", role: "state" });
  createState(DP + "Info.Wetter_com", false, { name: "Datenübertragung Wetter.com erfolgreich", type: "boolean", role: "state" });
  createState(DP + "Info.Wunderground_com", false, { name: "Datenübertragung Wunderground.com erfolgreich", type: "boolean", role: "state" });
+ await createStateAsync(DP + "Info.Awekas_at", false, { name: "Datenübertragung AWEKAS.at erfolgreich", type: "boolean", role: "state" });
  createState(DP + "Info.Sonnenschein_VorTag", 0, { name: "Sonnenscheindauer Gestern", type: "number", role: "state", unit: "Sek." });
  createState(DP + "Info.Sonnenschein_Tag", 0, { name: "Sonnenscheindauer Heute", type: "number", role: "state", unit: "Sek." });
  createState(DP + "Info.Sonnenschein_Woche", 0, { name: "Sonnenscheindauer diese Woche", type: "number", role: "state", unit: "Sek." });

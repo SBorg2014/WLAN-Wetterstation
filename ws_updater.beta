@@ -477,7 +477,11 @@ PATCH2210(){
  #############################################################################################\
  ###    AWEKAS - Ende der Einstellungen    ###################################################\
  #############################################################################################\n' ./wetterstation.conf
+ if [ ${RESTAPI} == "true" ]; then
+  make_objects ".Info.Awekas_at" "Datenübertragung an AWEKAS.at erfolgreich" "boolean"
+ fi
  echo -e "\n${WE} Fertig...\n"
+ echo -e " ${GE}Die Datenübertragung kann nun (optional) in der wetterstaion.conf nach Eintragung der Zugangsdaten aktiviert werden.${WE}"
 }
 
 

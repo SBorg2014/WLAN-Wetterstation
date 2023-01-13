@@ -44,6 +44,7 @@
   DP_WINDY_TRANSMIT=${PRE_DP}.Info.Windy
   DP_WCOM_TRANSMIT=${PRE_DP}.Info.Wetter_com
   DP_WUCOM_TRANSMIT=${PRE_DP}.Info.Wunderground_com
+  DP_AWEKAS_TRANSMIT=${PRE_DP}.Info.Awekas_at
   DP_SCRIPTVERSION=${PRE_DP}.Info.Shellscriptversion
   DP_SONNENSCHEIN_VORTAG=${PRE_DP}.Info.Sonnenschein_VorTag
   DP_SONNENSCHEIN_TAG=${PRE_DP}.Info.Sonnenschein_Tag
@@ -879,7 +880,7 @@ usage() {
 
 version() {
         clear
-	echo -e "\n$BL WLAN-Wetterstation ${SH_VER} - (c)2019-2022 by SBorg"
+	echo -e "\n$BL WLAN-Wetterstation ${SH_VER} - (c)2019-2023 by SBorg"
 	echo -e " Config-Version: ${CONF_V}"
 	echo -e " Sub-Version   : ${SUBVER}\n"
 
@@ -1941,11 +1942,11 @@ awekas_update(){
 #echo $AWEKAS_URL
 
         #alles Ok?
-#        if echo ${MESSAGE}|grep -qi 'OK'; then
-#           SAPI "Single" "set/${DP_WUCOM_TRANSMIT}?value=true&ack=true"
-#         else
-#           SAPI "Single" "set/${DP_WUCOM_TRANSMIT}?value=false&ack=true"
-#        fi
+        if echo ${MESSAGE}|grep -qi 'OK'; then
+           SAPI "Single" "set/${DP_AWEKAS_TRANSMIT}?value=true&ack=true"
+         else
+           SAPI "Single" "set/${DP_AWEKAS_TRANSMIT}?value=false&ack=true"
+        fi
 }
 
 ###EoF

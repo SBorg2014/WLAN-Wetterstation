@@ -1927,7 +1927,7 @@ awekas_update(){
 
         local AWEKAS_URL="https://ws.awekas.at/weatherstation/updateweatherstation.php?ID=${AWEKAS_USER}&PASSWORD=${AWEKAS_PW}"
         AWEKAS_URL+="&dateutc=${DATEUTC}&tempf=${TEMPF}&humidity=${MESSWERTE[5]}&winddir=${MESSWERTE[8]}&uv=${MESSWERTE[17]}"
-        AWEKAS_URL+="&windspeedmph=${WINDSPEEDMPH}&baromrelin=${BAROMRELIN}&solarradiation=${MESSWERTE[16]}"
+        AWEKAS_URL+="&windspeedmph=${WINDSPEEDMPH}&baromin=${BAROMABSIN}&solarradiation=${MESSWERTE[16]}"
         AWEKAS_URL+="&windgustmph=${WINDGUSTMPH}&rainratein=${REGENRATE_SAVE}&hourlyrainin=${NIEDERSCHLAG_SAVE}"
 
         if [ $debug == "true" ]; then

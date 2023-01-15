@@ -356,8 +356,7 @@ convertLuftdruck() {
 
 convertInchtoMM() {
         #Regenrate und Menge speichern
-         if [ $1 -eq 11 ]; then REGENRATE_SAVE=${MESSWERTE[$1]}; fi
-         if [ $1 -eq 23 ]; then NIEDERSCHLAG_SAVE=${MESSWERTE[$1]}; fi
+         if [ $1 -eq 12 ]; then REGENTAG_SAVE=${MESSWERTE[$1]}; fi
 
      MESSWERTE[$1]=$(echo "scale=3;${MESSWERTE[$1]}*254/10" | bc -l)
       #Protokoll #9 liefert keine Regenrate(11); also alle Regenberechnungen überspringen
@@ -1925,10 +1924,9 @@ awekas_update(){
          if [ "${SKIP_AWEKAS}" == "true" ]; then unset SKIP_AWEKAS; return; fi
          SKIP_AWEKAS=true
 
-        local AWEKAS_URL="https://ws.awekas.at/weatherstation/updateweatherstation.php?ID=${AWEKAS_USER}&PASSWORD=${AWEKAS_PW}"
-        AWEKAS_URL+="&dateutc=${DATEUTC}&tempf=${TEMPF}&humidity=${MESSWERTE[5]}&winddir=${MESSWERTE[8]}&uv=${MESSWERTE[17]}"
-        AWEKAS_URL+="&windspeedmph=${WINDSPEEDMPH}&baromin=${BAROMABSIN}&solarradiation=${MESSWERTE[16]}"
-        AWEKAS_URL+="&windgustmph=${WINDGUSTMPH}&rainratein=${REGENRATE_SAVE}&hourlyrainin=${NIEDERSCHLAG_SAVE}"
+        local AWEKAS_URL="https://ws.awekas.at/weatherstation/updateweatherstation.php?ID=${AWEKAS_USER}&PASSWORD=${AWEKAS_PW}&dateutc=${DATEUTC}"
+        AWEKAS_URL+="&tempf=${TEMPF}&humidity=${MESSWERTE[5]}&winddir=${MESSWERTE[8]}&uv=${MESSWERTE[17]}&windspeedmph=${WINDSPEEDMPH}"
+        AWEKAS_URL+="&baromin=${BAROMABSIN}&solarradiation=${MESSWERTE[16]}&windgustmph=${WINDGUSTMPH}&dailyrainin=${REGENTAG_SAVE}"
 
         if [ $debug == "true" ]; then
            echo -e "${BL}Datenübertragung an awekas.at:"
@@ -1938,8 +1936,6 @@ awekas_update(){
          else
            local MESSAGE=$(wget -qO- "${AWEKAS_URL}")
         fi
-#echo $MESSAGE
-#echo $AWEKAS_URL
 
         #alles Ok?
         if echo ${MESSAGE}|grep -qi 'OK'; then

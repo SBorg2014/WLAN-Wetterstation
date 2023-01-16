@@ -10,7 +10,7 @@
 [![Commits since last release](https://img.shields.io/github/commits-since/SBorg2014/WLAN-Wetterstation/latest.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/releases/latest)
 [![License](https://img.shields.io/github/license/SBorg2014/WLAN-Wetterstation.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/LICENSE)
 
- schafft eine Verbindung von einer WLAN-Wetterstation zum ioBroker und kann optional die Wetterdaten für [openSenseMap](https://opensensemap.org), [Windy](https://www.windy.com) und [wetter.com](https://www.wetter.com) zur Verfügung stellen (__Projekt läuft nur unter Linux__)<br>
+ schafft eine Verbindung von einer WLAN-Wetterstation zum ioBroker und kann optional die Wetterdaten für [AWEKAS.at](https://www.awekas.at), [openSenseMap](https://opensensemap.org), [Windy](https://www.windy.com) und [wetter.com](https://www.wetter.com) zur Verfügung stellen (__Projekt läuft nur unter Linux__)<br>
  
  Die Wetterstation muss dazu in der Lage sein ihre Daten im "Wunderground/Ecowitt"-Format zu senden.<br><br>
  Bisher getestete Stationen:
@@ -76,6 +76,12 @@ Daten in Windy:<br>
 Daten in Wetter.com:<br>
 ![Bild Wetter.com](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/Bilder/wettercom.gif)
 <br><br>
+Daten in Awekas.at (Stationsseite, kostenlos):<br>
+![Bild Stationsseite AWEKAS](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/Bilder/Awekas_Stationsseite.png)
+<br>und kostenpflichtiges "Stationsweb":
+![Bild Stationsweb AWEKAS](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/Bilder/Awekas_Stationsweb.png)
+<br><br>
+
 
 ## Weiterführende Informationen ##
 ***[Thread im ioBroker-Forum](https://forum.iobroker.net/topic/28384/linux-shell-skript-wlan-wetterstation)***
@@ -92,6 +98,12 @@ Daten in Wetter.com:<br>
 <br><br>
 
 ## Versionen ##
+
+**V2.21.0 - 15.01.2023**
+``` 
+    + Support für AWEKAS
+    ~ fix fehlende Regenwerte wenn nur der WS90 ohne weitere Außeneinheit benutzt wird / Issue #51
+```
 
 **V2.20.0 - 12.12.2022**
 ```
@@ -385,7 +397,7 @@ Daten in Wetter.com:<br>
 ## :scroll: License ## 
  MIT License
 
-Copyright (c)2019-2022 by SBorg
+Copyright (c)2019-2023 by SBorg
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

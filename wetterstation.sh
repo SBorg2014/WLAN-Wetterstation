@@ -2,14 +2,14 @@
 : <<'Versionsinfo'
 
 
- V2.21.0 - 13.01.2023 (c) 2019-2023 SBorg
+ V2.21.0 - 15.01.2023 (c) 2019-2023 SBorg
 
  wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
  die Daten an den ioBroker (alternativ auch an OpenSenseMap, Windy und wetter.com)
 
  benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq', 'bc' und 'dc' unter Linux
 
- V2.21.0 / 13.01.2023  + Support für AWEKAS
+ V2.21.0 / 15.01.2023  + Support für AWEKAS
                        ~ fix fehlende Regenwerte wenn nur der WS90 ohne weitere Außeneinheit benutzt wird / Issue #51
  V2.20.0 / 12.12.2022  ~ fix Wolkenbasis (keine Werte falls Taupunkt negativ) / Issue #46 (viper4iob)
                        ~ fix Wetterwarnung (Reif) / Issue #47 (viper4iob)
@@ -218,7 +218,7 @@ while true
    for (( i=1; i<rawinlen; i++ ))
    do
      if [[ ${MESSWERTERAWIN[$i]} == tempinf=* ]] || [[ ${MESSWERTERAWIN[$i]} == indoortempf=* ]]
-        then MESSWERTE[0]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); convertFtoC 0; fi
+        then MESSWERTE[0]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); INDOOR_TEMP=${MESSWERTE[0]}; convertFtoC 0; fi
      if [[ ${MESSWERTERAWIN[$i]} == tempf=* ]]
         then MESSWERTE[1]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); TEMPF=${MESSWERTE[1]}; convertFtoC 1; do_trend_aussentemp; fi
      if [[ ${MESSWERTERAWIN[$i]} == dewptf=* ]]

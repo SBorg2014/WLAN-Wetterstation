@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V2.20.0
+UPDATE_VER=V2.21.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -142,8 +142,9 @@ patcher() {
            V2.16.0) PATCH2170 ;;
            V2.17.0) PATCH2180 ;;
            V2.18.0) PATCH2190 ;;
-           V2.19.0) PATCH2200 && exit 0;;
-           V2.20.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
+           V2.19.0) PATCH2200 ;;
+           V2.20.0) PATCH2210 && exit 0;;
+           V2.21.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
                  *) FEHLER
     esac
 
@@ -456,11 +457,31 @@ PATCH2190() {
 }
 
 
+#Patch Version V2.19.0 auf V2.20.0
 PATCH2200(){
  backup
  echo -e "${WE}\n Patche wetterstation.conf auf V2.20.0 ..."
  sed -i 's/### Settings V2.19.0/### Settings V2.20.0/' ./wetterstation.conf
  echo -e "\n${WE} Fertig...\n"
+}
+
+
+#Patch Version V2.20.0 auf V2.21.0
+PATCH2210(){
+ backup
+ echo -e "${WE}\n Patche wetterstation.conf auf V2.21.0 ..."
+ sed -i 's/### Settings V2.20.0/### Settings V2.21.0/' ./wetterstation.conf
+ sed -i '/^.*Ende Usereinstellungen.*/i \\n #############################################################################################\n ###    AWEKAS - Einstellungen (nur nötig falls AWEKAS benutzt werden soll)                ###\n #############################################################################################' ./wetterstation.conf
+ sed -i '/^.*Ende Usereinstellungen.*/i \\n  #AWEKAS aktivieren [true/false] / default: false\n   use_awekas=false\n\
+  #AWEKAS Login Username und Passwort\n   AWEKAS_USER=\n   AWEKAS_PW=\n\
+ #############################################################################################\
+ ###    AWEKAS - Ende der Einstellungen    ###################################################\
+ #############################################################################################\n' ./wetterstation.conf
+ if [ ${RESTAPI} == "true" ]; then
+  make_objects ".Info.Awekas_at" "Datenübertragung an AWEKAS.at erfolgreich" "boolean"
+ fi
+ echo -e "\n${WE} Fertig...\n"
+ echo -e " ${GE}Die Datenübertragung kann nun (optional) in der wetterstaion.conf nach Eintragung der Zugangsdaten aktiviert werden.${WE}"
 }
 
 

@@ -1,17 +1,18 @@
-//Wetterstation Datenpunkte anlegen V2.21.0
+//Wetterstation Datenpunkte anlegen V2.22.0
 let DP = "javascript.0.Wetterstation.";
-let WH31 = 0;   // Anzahl der WH31/WH25 Sensoren  (max. 1 Stück)
-let WS90 = 0;   // Anzahl der WS90 Sensoren       (max. 1 Stück)
-let DP10 = 0;   // Anzahl der DP10/WN35 Sensoren  (max. 8 Stück)
-let DP35 = 0;   // Anzahl der DP35/WN34 Sensoren  (max. 8 Stück)
-let DP40 = 0;   // Anzahl der DP40/WH32 Sensoren  (max. 1 Stück)
-let DP50 = 0;   // Anzahl der DP50/WH31 Sensoren  (max. 8 Stück)
-let DP60 = 0;   // Anzahl der DP60/WH57 Sensoren  (max. 1 Stück)
-let DP70 = 0;   // Anzahl der DP70/WH55 Sensoren  (max. 4 Stück)
-let DP100 = 0;  // Anzahl der DP100/WH51 Sensoren (max. 8 Stück)
-let DP200 = 0;  // Anzahl der DP200/WH43 Sensoren (max. 4 Stück)
-let DP250 = 0;  // Anzahl der DP250/WH45 Sensoren (max. 1 Stück)
-let DP300 = 0;  // Anzahl der DP300/WS68 Sensoren (max. 1 Stück)
+let WH31 = 0;    // Anzahl der WH31/WH25 Sensoren  (max. 1 Stück)
+let WS90 = 0;    // Anzahl der WS90 Sensoren       (max. 1 Stück)
+let DP10 = 0;    // Anzahl der DP10/WN35 Sensoren  (max. 8 Stück)
+let DP35 = 0;    // Anzahl der DP35/WN34 Sensoren  (max. 8 Stück)
+let DP40 = 0;    // Anzahl der DP40/WH32 Sensoren  (max. 1 Stück)
+let DP50 = 0;    // Anzahl der DP50/WH31 Sensoren  (max. 8 Stück)
+let DP60 = 0;    // Anzahl der DP60/WH57 Sensoren  (max. 1 Stück)
+let DP70 = 0;    // Anzahl der DP70/WH55 Sensoren  (max. 4 Stück)
+let DP100 = 0;   // Anzahl der DP100/WH51 Sensoren (max. 8 Stück)
+let DP200 = 0;   // Anzahl der DP200/WH43 Sensoren (max. 4 Stück)
+let DP250 = 0;   // Anzahl der DP250/WH45 Sensoren (max. 1 Stück)
+let DP300 = 0;   // Anzahl der DP300/WS68 Sensoren (max. 1 Stück)
+let BR7009999 = 0; // Anzahl der Thermo-Hygro-7Ch-Sensoren (max. 7 Stück)
 //Ende der User-Einstellungen -------------------
 
 //Prüfe Objektpfad
@@ -103,6 +104,7 @@ async function dpAnlegen(){
  createState(DP + "Regen_Total", 0, { name: "Regenmenge Insgesammt", type: "number", role: "value", unit: "mm" });
 
     if (WS90 > 0 && WS90 <= 1) { await WS90_anlegen(); console.log("Datenpunkte für WS90 angelegt..."); }
+    if (BR7009999 > 0 && BR7009999 <= 7) { await BR7009999_anlegen(); console.log("Datenpunkte für Bresser #7009999 angelegt..."); }
 }
 
 if (WH31 > 0 && WH31 <= 1) {
@@ -482,6 +484,30 @@ if (DP300 > 0 && DP300 <= 1) {
                 "type": "number",
                 "role": "value",
                 "unit": "Volt"
+            });
+        }
+    }
+}
+
+//Bresser #7009999 - Sensoren
+async function BR7009999_anlegen() {
+    if (!existsState(DP + "BR7009999")) { await createStateAsync(DP + 'BR7009999', '', { name: 'Thermo-Hygro-7Ch-Sensor' }); }
+    for (var i = 1; i <= BR7009999; i++) {
+        if (!existsState(DP + 'BR7009999.' + i)) { await createStateAsync(DP + 'BR7009999.' + i, '', { name: i + '. Kanal' }); }
+        if (!existsState(DP + 'BR7009999.' + i + '.Temperatur')) {
+            await createStateAsync(DP + 'BR7009999.' + i + '.Temperatur', {
+                name: 'BR7009999 Kanal ' + i + ' Temperatur',
+                type: 'number',
+                role: 'state',
+                unit: '°C'
+            });
+        }
+        if (!existsState(DP + 'BR7009999.' + i + '.Luftfeuchte')) {
+            await createStateAsync(DP + 'BR7009999.' + i + '.Luftfeuchte', {
+                name: 'BR7009999 Kanal ' + i + ' Luftfeuchte',
+                type: 'number',
+                role: 'state',
+                unit: '%'
             });
         }
     }

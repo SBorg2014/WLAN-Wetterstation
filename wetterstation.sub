@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V2.21.0 --------------------------------------------------------
+### Subroutinen V2.22.0 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -108,36 +108,36 @@ debuging() {
 
   #Datenfelder ausgeben
    echo -e "\n\nNicht alle Werte werden unterstützt (abhängig vom Modell der Wetterstation und dem verwendeten Protokoll)!"
-   echo -e "\nTemperatur Innen\t: $GR${MESSWERTE[0]}$WE °C"
-   echo -e "Temperatur Aussen\t: $GR${MESSWERTE[1]}$WE °C"
-   echo -e "Taupunkt\t\t: $GR${MESSWERTE[2]}$WE °C"
-   echo -e "Gefühlte Temperatur\t: $GR${MESSWERTE[3]}$WE °C"
-   echo -e "Luftfeuchte Innen\t: $GR${MESSWERTE[4]}$WE %"
-   echo -e "Luftfeuchte Aussen\t: $GR${MESSWERTE[5]}$WE %"
-   echo -e "Windgeschwindigkeit\t: $GR${MESSWERTE[6]}$WE km/h"
-   echo -e "Windgeschwindigkeit 10min\t: $GR${MESSWERTE[27]}$WE km/h"
-   echo -e "Windböengeschwindigkeit\t: $GR${MESSWERTE[7]}$WE km/h"
-   echo -e "max. Windböe\t\t: $GR${MESSWERTE[21]}$WE km/h"
-   echo -e "Windrichtung\t\t: $GR${MESSWERTE[8]}$WE °"
-   echo -e "Windrichtung\t\t: $GR${WINDRICHTUNG}$WE"
-   echo -e "Windrichtung 10min\t: $GR${MESSWERTE[26]}$WE °"
-   echo -e "Luftdruck absolut\t: $GR${MESSWERTE[9]}$WE hPa"
-   echo -e "Luftdruck relativ\t: $GR${MESSWERTE[10]}$WE hPa"
-   echo -e "Regenrate\t\t: $GR${MESSWERTE[11]}$WE mm/h"
-   echo -e "Regenstatus\t\t: $GR${REGENSTATUS}$WE"
-   echo -e "Regen seit Regenbeginn\t: $GR${MESSWERTE[22]}$WE mm"
-   echo -e "Regen Stunde\t\t: $GR${MESSWERTE[23]}$WE mm"
-   echo -e "Regen Tag\t\t: $GR${MESSWERTE[12]}$WE mm"
-   echo -e "Regen Woche\t\t: $GR${MESSWERTE[13]}$WE mm"
-   echo -e "Regen Monat\t\t: $GR${MESSWERTE[14]}$WE mm"
-   echo -e "Regen Jahr\t\t: $GR${MESSWERTE[15]}$WE mm"
-   echo -e "Regen Gesamt\t\t: $GR${MESSWERTE[24]}$WE mm"
-   echo -e "Sonnenstrahlung\t\t: $GR${MESSWERTE[16]}$WE W/m²"
-   echo -e "UV-Index\t\t: $GR${MESSWERTE[17]}$WE"
-   echo -e "Zeitstempel\t\t: $GR${MESSWERTE[18]}$WE" | sed -e 's/%20/ /g'
-   echo -e "Firmware\t\t: $GR${MESSWERTE[19]}$WE"
-   echo -e "Batteriestand:\t\t: $GR${MESSWERTE[20]}$WE"
-   echo -e "Gateway-Modell\t\t: $GR${MESSWERTE[25]}$WE"
+   echo -e "\n Temperatur Innen\t\t: $GR${MESSWERTE[0]}$WE °C"
+   echo -e " Temperatur Aussen\t\t: $GR${MESSWERTE[1]}$WE °C"
+   echo -e " Taupunkt\t\t\t: $GR${MESSWERTE[2]}$WE °C"
+   echo -e " Gefühlte Temperatur\t\t: $GR${MESSWERTE[3]}$WE °C"
+   echo -e " Luftfeuchte Innen\t\t: $GR${MESSWERTE[4]}$WE %"
+   echo -e " Luftfeuchte Aussen\t\t: $GR${MESSWERTE[5]}$WE %"
+   echo -e " Windgeschwindigkeit\t\t: $GR${MESSWERTE[6]}$WE km/h"
+   echo -e " Windgeschwindigkeit 10min\t: $GR${MESSWERTE[27]}$WE km/h"
+   echo -e " Windböengeschwindigkeit\t: $GR${MESSWERTE[7]}$WE km/h"
+   echo -e " max. Windböe\t\t\t: $GR${MESSWERTE[21]}$WE km/h"
+   echo -e " Windrichtung\t\t\t: $GR${MESSWERTE[8]}$WE °"
+   echo -e " Windrichtung\t\t\t: $GR${WINDRICHTUNG}$WE"
+   echo -e " Windrichtung 10min\t\t: $GR${MESSWERTE[26]}$WE °"
+   echo -e " Luftdruck absolut\t\t: $GR${MESSWERTE[9]}$WE hPa"
+   echo -e " Luftdruck relativ\t\t: $GR${MESSWERTE[10]}$WE hPa"
+   echo -e " Regenrate\t\t\t: $GR${MESSWERTE[11]}$WE mm/h"
+   echo -e " Regenstatus\t\t\t: $GR${REGENSTATUS}$WE"
+   echo -e " Regen seit Regenbeginn\t\t: $GR${MESSWERTE[22]}$WE mm"
+   echo -e " Regen Stunde\t\t\t: $GR${MESSWERTE[23]}$WE mm"
+   echo -e " Regen Tag\t\t\t: $GR${MESSWERTE[12]}$WE mm"
+   echo -e " Regen Woche\t\t\t: $GR${MESSWERTE[13]}$WE mm"
+   echo -e " Regen Monat\t\t\t: $GR${MESSWERTE[14]}$WE mm"
+   echo -e " Regen Jahr\t\t\t: $GR${MESSWERTE[15]}$WE mm"
+   echo -e " Regen Gesamt\t\t\t: $GR${MESSWERTE[24]}$WE mm"
+   echo -e " Sonnenstrahlung\t\t: $GR${MESSWERTE[16]}$WE W/m²"
+   echo -e " UV-Index\t\t\t: $GR${MESSWERTE[17]}$WE"
+   echo -e " Zeitstempel\t\t\t: $GR${MESSWERTE[18]}$WE" | sed -e 's/%20/ /g'
+   echo -e " Firmware\t\t\t: $GR${MESSWERTE[19]}$WE"
+   echo -e " Batteriestand:\t\t\t: $GR${MESSWERTE[20]}$WE"
+   echo -e " Gateway-Modell\t\t\t: $GR${MESSWERTE[25]}$WE"
 
    echo -en "\nZusatzsensoren:"
    if [ $WS_PROTOKOLL = 1 ]; then echo -e "$GR keine $WE"; else echo -e "\n"; fi
@@ -171,6 +171,7 @@ debuging() {
    echo -e "\n${WE}Zusatzsensoren:"
    echo -e " ${WE}DP10/35/40/50/60/70/100/200/250/300: $GE${ANZAHL_DP10} $WE| $GE${ANZAHL_DP35} $WE| $GE${ANZAHL_DP40} $WE| $GE${ANZAHL_DP50} $WE| $GE${ANZAHL_DP60} $WE| $GE${ANZAHL_DP70} $WE| $GE${ANZAHL_DP100} $WE| $GE${ANZAHL_DP200} $WE| $GE${ANZAHL_DP250} $WE| $GE${ANZAHL_DP300} $WE"
    echo -e " ${WE}WH31: $GE${ANZAHL_WH31}${WE} || WS90: ${GE}${ANZAHL_WS90}${WE}"
+   echo -e " ${WE}Bresser: 7009999 [$GE${ANZAHL_7009999}${WE}]"
    echo -e "\nScript-Version: ${GE}${SH_VER}${WE}\tConfig-Version: $GE${CONF_V}$WE\tSub-Version: $GE${SUBVER}$WE"
 
    if [ ! -z "$KOMFEHLER" ]; then echo -e "\n${RE}Kommunikationsfehler!$WE\n"; fi
@@ -235,7 +236,7 @@ iob_send() {
          if [[ "${MESSWERTE[$i]}" =~ ^humidity[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP50.${MESSWERTE[$i]:8:1}.Feuchtigkeit=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" =~ ^batt[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP50.${MESSWERTE[$i]:4:1}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" =~ ^soilbatt[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:8:1}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
-         if [[ "${MESSWERTE[$i]}" =~ ^soilmoisture[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:12:1}.Bodenfeuchtigkeit=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soilmoisture[1-8] ]] && [ "$ANZAHL_DP100" -gt "0" ]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:12:1}.Bodenfeuchtigkeit=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" = "lightning" ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP60.1.Entfernung=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" =~ ^lightning_num ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP60.1.Anzahl=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" =~ ^lightning_time ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP60.1.Zeitpunkt=${MESSWERTE[$(($i+1))]}"; fi
@@ -271,6 +272,10 @@ iob_send() {
          if [[ "${MESSWERTE[$i]}" =~ ^ws90_ver ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WS90.1.Firmwareversion=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" =~ ^wh90batt ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WS90.1.Batterie=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" =~ ^ws90cap_volt ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WS90.1.Spannung_GoldCap=${MESSWERTE[$(($i+1))]}"; fi
+
+        #Bresser
+         if [[ "${MESSWERTE[$i]}" =~ ^soiltemp[1-7] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.BR7009999.${MESSWERTE[$i]:8:1}.Temperatur=${MESSWERTE[$(($i+1))]}";fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soilmoisture[1-7] ]] && [ "$ANZAHL_7009999" -gt "0" ]; then IOBOUT="${IOBOUT}&${PRE_DP}.BR7009999.${MESSWERTE[$i]:12:1}.Luftfeuchte=${MESSWERTE[$(($i+1))]}"; fi
 
       fi
     done
@@ -807,6 +812,7 @@ setup() {
    1) MAXDEVICES=22;;
    *) MAXDEVICES=$(( 31 + $ANZAHL_DP35 * 4 + $ANZAHL_DP40 * 2 + $ANZAHL_DP50 * 6 + $ANZAHL_DP100 * 4 + $ANZAHL_DP60 * 8 + $ANZAHL_DP200 * 6 + $ANZAHL_DP70 * 4 + $ANZAHL_DP250 * 18 + $ANZAHL_DP300 *2 ))
       MAXDEVICES+=$(( $ANZAHL_WH31 * 2 + $ANZAHL_DP10 * 4 + $ANZAHL_WS90 * 20 ))
+      MAXDEVICES+=$(( $ANZAHL_7009999 * 2 ))
   esac
 
  #falls reboot warten bis der ioB wieder läuft...
@@ -1625,6 +1631,25 @@ DP300() {
          MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
       fi
 }
+
+
+BR_001() {
+      #7009999-Sensoren
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^soiltemp[1-7]f= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+         convertFtoC $j
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^soilmoisture[1-7]= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+}
+
 
 
 windy_register(){

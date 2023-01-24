@@ -2,13 +2,14 @@
 : <<'Versionsinfo'
 
 
- V2.21.0 - 15.01.2023 (c) 2019-2023 SBorg
+ V2.22.0 - 23.01.2023 (c) 2019-2023 SBorg
 
  wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
- die Daten an den ioBroker (alternativ auch an OpenSenseMap, Windy und wetter.com)
+ die Daten an den ioBroker (alternativ auch an AWEKAS, OpenSenseMap, Windy und wetter.com)
 
  benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq', 'bc' und 'dc' unter Linux
 
+ V2.22.0 / 23.01.2023  + Support für Bresser Thermo-Hygro-7Ch-Sensor #7009999 / Issue #53
  V2.21.0 / 15.01.2023  + Support für AWEKAS
                        ~ fix fehlende Regenwerte wenn nur der WS90 ohne weitere Außeneinheit benutzt wird / Issue #51
  V2.20.0 / 12.12.2022  ~ fix Wolkenbasis (keine Werte falls Taupunkt negativ) / Issue #46 (viper4iob)
@@ -134,9 +135,9 @@ Versionsinfo
 ### Ende Infoblock
 
  #Versionierung
-  SH_VER="V2.21.0"
-  CONF_V="V2.21.0"
-  SUBVER="V2.21.0"
+  SH_VER="V2.22.0"
+  CONF_V="V2.22.0"
+  SUBVER="V2.22.0"
 
 
  #Installationsverzeichnis feststellen
@@ -294,6 +295,11 @@ while true
      ### zusätzliche WSxxx-Sensoren ############################################################
       if [ "${ANZAHL_WS90}" -gt "0" ]; then WS90; fi
      ### zusätzliche WHxxx-Sensoren ################################################### ENDE ###
+
+     ### zusätzliche Bresser-Sensoren ##########################################################
+      if [ "${ANZAHL_7009999}" -gt "0" ]; then BR_001; fi
+     ### zusätzliche WHxxx-Sensoren ################################################### ENDE ###
+
 
    done
 

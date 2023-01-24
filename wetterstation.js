@@ -12,7 +12,7 @@ let DP100 = 0;   // Anzahl der DP100/WH51 Sensoren (max. 8 Stück)
 let DP200 = 0;   // Anzahl der DP200/WH43 Sensoren (max. 4 Stück)
 let DP250 = 0;   // Anzahl der DP250/WH45 Sensoren (max. 1 Stück)
 let DP300 = 0;   // Anzahl der DP300/WS68 Sensoren (max. 1 Stück)
-let BR7009999 = 0; // Anzahl der Thermo-Hygro-7Ch-Sensoren (max. 7 Stück)
+let BR7009999 = 0; // Anzahl der Thermo-Hygro-7Ch-Sensoren (max. 4 Stück)
 //Ende der User-Einstellungen -------------------
 
 //Prüfe Objektpfad
@@ -104,7 +104,7 @@ async function dpAnlegen(){
  createState(DP + "Regen_Total", 0, { name: "Regenmenge Insgesammt", type: "number", role: "value", unit: "mm" });
 
     if (WS90 > 0 && WS90 <= 1) { await WS90_anlegen(); console.log("Datenpunkte für WS90 angelegt..."); }
-    if (BR7009999 > 0 && BR7009999 <= 7) { await BR7009999_anlegen(); console.log("Datenpunkte für Bresser #7009999 angelegt..."); }
+    if (BR7009999 > 0 && BR7009999 <= 4) { await BR7009999_anlegen(); console.log("Datenpunkte für Bresser #7009999 angelegt..."); }
 }
 
 if (WH31 > 0 && WH31 <= 1) {

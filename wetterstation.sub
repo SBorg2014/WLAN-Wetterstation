@@ -227,7 +227,7 @@ iob_send() {
        if [[ ! -z "${MESSWERTE[$i]}" ]]; then IOBOUT="${IOBOUT}&${IOBPAR[$i]}=${MESSWERTE[$i]}"; fi
     done
 
-    #Sensoren DP/WH für ioBroker
+    #Sensoren DP/WH/Bresser für ioBroker
     for (( i = 31; i < $MAXDEVICES; i+=2 )); do
       if [[ ! -z "${MESSWERTE[$i]}" ]]; then
          if [[ "${MESSWERTE[$i]}" =~ ^tf_ch[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP35.${MESSWERTE[$i]:5:1}.Temperatur=${MESSWERTE[$(($i+1))]}"; fi
@@ -274,8 +274,10 @@ iob_send() {
          if [[ "${MESSWERTE[$i]}" =~ ^ws90cap_volt ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WS90.1.Spannung_GoldCap=${MESSWERTE[$(($i+1))]}"; fi
 
         #Bresser
-         if [[ "${MESSWERTE[$i]}" =~ ^soiltemp[1-7] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.BR7009999.${MESSWERTE[$i]:8:1}.Temperatur=${MESSWERTE[$(($i+1))]}";fi
-         if [[ "${MESSWERTE[$i]}" =~ ^soilmoisture[1-7] ]] && [ "$ANZAHL_7009999" -gt "0" ]; then IOBOUT="${IOBOUT}&${PRE_DP}.BR7009999.${MESSWERTE[$i]:12:1}.Luftfeuchte=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soiltempf ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.BR7009999.1.Temperatur=${MESSWERTE[$(($i+1))]}";fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soiltemp[2-4]f ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.BR7009999.${MESSWERTE[$i]:8:1}.Temperatur=${MESSWERTE[$(($i+1))]}";fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soilmoisture ]] && [ "$ANZAHL_7009999" -gt "0" ]; then IOBOUT="${IOBOUT}&${PRE_DP}.BR7009999.1.Luftfeuchte=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soilmoisture[2-4] ]] && [ "$ANZAHL_7009999" -gt "0" ]; then IOBOUT="${IOBOUT}&${PRE_DP}.BR7009999.${MESSWERTE[$i]:12:1}.Luftfeuchte=${MESSWERTE[$(($i+1))]}"; fi
 
       fi
     done

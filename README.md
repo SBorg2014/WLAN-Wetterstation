@@ -14,7 +14,9 @@
  
  Die Wetterstation muss dazu in der Lage sein ihre Daten im "Wunderground/Ecowitt"-Format zu senden.<br><br>
  Bisher getestete Stationen:
-- BRESSER® WLAN Farb-Wetter Center mit 5-in-1 Profi-Sensor V <sup>(*)</sup>
+- BRESSER®
+  * WLAN Farb-Wetter Center mit 5-in-1 Profi-Sensor V <sup>(*)</sup>
+  * WLAN Comfort Wetterstation mit 7-in-1 Profi-Sensor <sup>(*)</sup>
 - ChiliTec Funk Wetterstation 12in1
 - DNT Weatherscreen PRO
 - ELV WS980WiFi

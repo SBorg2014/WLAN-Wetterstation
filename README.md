@@ -14,7 +14,7 @@
  
  Die Wetterstation muss dazu in der Lage sein ihre Daten im "Wunderground/Ecowitt"-Format zu senden.<br><br>
  Bisher getestete Stationen:
-- BRESSER WLAN Farb-Wetter Center mit 5-in-1 Profi-Sensor V <sup>(*)</sup>
+- BRESSER® WLAN Farb-Wetter Center mit 5-in-1 Profi-Sensor V <sup>(*)</sup>
 - ChiliTec Funk Wetterstation 12in1
 - DNT Weatherscreen PRO
 - ELV WS980WiFi
@@ -47,11 +47,15 @@ Zusatzsensoren (mittels Station oder Gateway DP1500/GW1000):
 - ein DP300/WS68 Solarunterstütztes Anemometer mit UV-Lichtsensor
 - ein WH31 (bzw. WH25) Sensor
 - ein WS90 "Wittboy" Sensor
-<br><br>*__Die mögliche Anzahl der Zusatzsensoren ist nicht durch das Skript begrenzt, sondern wird vom Display und/oder Gateway bestimmt.__*
+- BRESSER®
+  * bis zu 4 Stück<sup>(1)</sup> _BRESSER® Thermo-/Hygro-Sensor 7 Kanal_ #7009999
+  
+<br><br>*<sup>(1)</sup> durch das verwendete Wunderground-Protokoll limitiert<br>
+__Die mögliche Anzahl der Zusatzsensoren ist nicht durch das Skript begrenzt, sondern wird vom Display und/oder Gateway bestimmt.__*
 <br><br>    
      
 über eigenen DNS-Server:
-- Stationen ohne Möglichkeit der Konfiguration mittels App *WS View\[+\]* wie bspw. *Sainlogic Profi Wlan Wetterstation FT0300*
+- Stationen ohne Möglichkeit der Konfiguration mittels App *WS View\[+\]* wie bspw. *Sainlogic Profi Wlan Wetterstation FT0300* oder Stationen der Firma BRESSER®
 - Installation siehe [WiKi](https://github.com/SBorg2014/WLAN-Wetterstation/wiki/Installation---eigener-DNS-Server)
 <br><br>
    

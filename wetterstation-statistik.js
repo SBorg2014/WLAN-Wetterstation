@@ -5,7 +5,8 @@
    Wichtig: funktioniert nur mit der Default-Datenstruktur des WLAN-Wetterstation-Skriptes!
             Auch keine Aliase unter Influx nutzen!
 
-   (c)2020-2022 by SBorg
+   (c)2020-2023 by SBorg
+   V1.3.1 - 01.02.2023  ~Bugfix keine Daten für Vorjahresmonatswerte 
    V1.3.0 - 09.09.2022  +Regentage (Issue #40)
    V1.2.0 - 04.08.2022  +Wüstentage und Tropennächte
    V1.1.3 - 01.08.2022  +Rekordwerte auch bei Einstellung "LAST_RAIN=DATUM [+UNIX]" in der wetterstation.conf
@@ -76,7 +77,7 @@ const DP_Check ='aktueller_Monat.Regentage';
 if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 //Start des Scripts
-    const ScriptVersion = "V1.3.0";
+    const ScriptVersion = "V1.3.1";
     const dayOfYear = date => Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
     let Tiefstwert, Hoechstwert, Temp_Durchschnitt, Max_Windboe, Max_Regenmenge, Regenmenge_Monat, warme_Tage, Sommertage;
     let heisse_Tage, Frost_Tage, kalte_Tage, Eistage, sehr_kalte_Tage, Wuestentage, Tropennaechte, Trockenperiode_akt;
@@ -406,8 +407,8 @@ function VorJahr() {
     let datum = new Date(zeitstempel.getFullYear(),zeitstempel.getMonth(),zeitstempel.getDate());
     let monatsdatenpunkt = '.Data.'+ (datum.getFullYear()-1) +'.'+pad(datum.getMonth()+1);
     if (existsState(PRE_DP+monatsdatenpunkt)) { //der einfache Weg: wir haben schon Daten vom Vorjahr...
-        let VorJahr_tmp = JSON.stringify(getState(PRE_DP+monatsdatenpunkt).val[0]);
-        let VorJahr = JSON.parse(VorJahr_tmp);
+        let VorJahr = getState(PRE_DP+monatsdatenpunkt).val;
+        VorJahr = JSON.parse(VorJahr.substring(1, VorJahr.length-1));
         setState(PRE_DP+'.Vorjahres_Monat.Tiefstwert', VorJahr.Tiefstwert, true);
         setState(PRE_DP+'.Vorjahres_Monat.Hoechstwert', VorJahr.Hoechstwert, true);
         setState(PRE_DP+'.Vorjahres_Monat.Temperatur_Durchschnitt', VorJahr.Temp_Durchschnitt, true); 

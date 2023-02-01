@@ -6,7 +6,7 @@
             Auch keine Aliase unter Influx nutzen!
 
    (c)2020-2023 by SBorg
-   V1.3.1 - 01.02.2023  ~Bugfix keine Daten für Vorjahresmonatswerte 
+   V1.3.1 - 01.02.2023  ~Bugfix keine Daten für Vorjahresmonatswerte (Fix Issue #54)
    V1.3.0 - 09.09.2022  +Regentage (Issue #40)
    V1.2.0 - 04.08.2022  +Wüstentage und Tropennächte
    V1.1.3 - 01.08.2022  +Rekordwerte auch bei Einstellung "LAST_RAIN=DATUM [+UNIX]" in der wetterstation.conf

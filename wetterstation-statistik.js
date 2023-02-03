@@ -6,7 +6,8 @@
             Auch keine Aliase unter Influx nutzen!
 
    (c)2020-2023 by SBorg
-   V1.3.1 - 01.02.2023  ~Bugfix keine Daten für Vorjahresmonatswerte (Fix Issue #54)
+   V1.3.2 - 03.02.2023  ~Verbesserung des JSON-handlings "VorJahr" (@Boronsbruder)
+   V1.3.1 - 01.02.2023  ~Bugfix keine Daten für Vorjahresmonatswerte (Fix Issue #54) 
    V1.3.0 - 09.09.2022  +Regentage (Issue #40)
    V1.2.0 - 04.08.2022  +Wüstentage und Tropennächte
    V1.1.3 - 01.08.2022  +Rekordwerte auch bei Einstellung "LAST_RAIN=DATUM [+UNIX]" in der wetterstation.conf
@@ -77,7 +78,7 @@ const DP_Check ='aktueller_Monat.Regentage';
 if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 //Start des Scripts
-    const ScriptVersion = "V1.3.1";
+    const ScriptVersion = "V1.3.2";
     const dayOfYear = date => Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
     let Tiefstwert, Hoechstwert, Temp_Durchschnitt, Max_Windboe, Max_Regenmenge, Regenmenge_Monat, warme_Tage, Sommertage;
     let heisse_Tage, Frost_Tage, kalte_Tage, Eistage, sehr_kalte_Tage, Wuestentage, Tropennaechte, Trockenperiode_akt;
@@ -397,9 +398,9 @@ function speichern_Monat() {
     setState(PRE_DP+'.aktueller_Monat.kalte_Tage', 0, true);
     setState(PRE_DP+'.aktueller_Monat.Eistage', 0, true);
     setState(PRE_DP+'.aktueller_Monat.sehr_kalte_Tage', 0, true);
-    setState(PRE_DP + '.aktueller_Monat.Wuestentage', 0, true);
-    setState(PRE_DP + '.aktueller_Monat.Tropennaechte', 0, true);
-    setState(PRE_DP + '.aktueller_Monat.Regentage', 0, true);
+    setState(PRE_DP+'.aktueller_Monat.Wuestentage', 0, true);
+    setState(PRE_DP+'.aktueller_Monat.Tropennaechte', 0, true);
+    setState(PRE_DP+'.aktueller_Monat.Regentage', 0, true);
 } //end function
 
 function VorJahr() {   
@@ -407,24 +408,19 @@ function VorJahr() {
     let datum = new Date(zeitstempel.getFullYear(),zeitstempel.getMonth(),zeitstempel.getDate());
     let monatsdatenpunkt = '.Data.'+ (datum.getFullYear()-1) +'.'+pad(datum.getMonth()+1);
     if (existsState(PRE_DP+monatsdatenpunkt)) { //der einfache Weg: wir haben schon Daten vom Vorjahr...
+                    
         let VorJahr = getState(PRE_DP+monatsdatenpunkt).val;
-        VorJahr = JSON.parse(VorJahr.substring(1, VorJahr.length-1));
-        setState(PRE_DP+'.Vorjahres_Monat.Tiefstwert', VorJahr.Tiefstwert, true);
-        setState(PRE_DP+'.Vorjahres_Monat.Hoechstwert', VorJahr.Hoechstwert, true);
-        setState(PRE_DP+'.Vorjahres_Monat.Temperatur_Durchschnitt', VorJahr.Temp_Durchschnitt, true); 
-        setState(PRE_DP+'.Vorjahres_Monat.Max_Windboe', VorJahr.Max_Windboe, true); 
-        setState(PRE_DP+'.Vorjahres_Monat.Max_Regenmenge', VorJahr.Max_Regenmenge, true);
-        setState(PRE_DP+'.Vorjahres_Monat.Regenmenge_Monat', VorJahr.Regenmenge_Monat, true);
-        setState(PRE_DP+'.Vorjahres_Monat.warme_Tage', VorJahr.warme_Tage, true);
-        setState(PRE_DP+'.Vorjahres_Monat.Sommertage', VorJahr.Sommertage, true);
-        setState(PRE_DP+'.Vorjahres_Monat.heisse_Tage', VorJahr.heisse_Tage, true);
-        setState(PRE_DP+'.Vorjahres_Monat.Frost_Tage', VorJahr.Frost_Tage, true);
-        setState(PRE_DP+'.Vorjahres_Monat.kalte_Tage', VorJahr.kalte_Tage, true);
-        setState(PRE_DP+'.Vorjahres_Monat.Eistage', VorJahr.Eistage, true);
-        setState(PRE_DP+'.Vorjahres_Monat.sehr_kalte_Tage', VorJahr.sehr_kalte_Tage, true);
-        setState(PRE_DP + '.Vorjahres_Monat.Wuestentage', VorJahr.Wuestentage, true);
-        setState(PRE_DP + '.Vorjahres_Monat.Tropennaechte', VorJahr.Tropennaechte, true);
-        setState(PRE_DP + '.Vorjahres_Monat.Regentage', VorJahr.Regentage, true);
+
+        // Daten vom Vorjahr durchiterieren und Datenpunkte befüllen
+        VorJahr.forEach(obj => {
+                    Object.keys(obj).forEach(key => {
+                        // fix für Datenpunktname
+                        let setkey = key;                                       
+                        if (key == 'Temp_Durchschnitt') setkey = "Temperatur_Durchschnitt";
+        
+                        setState(PRE_DP+'.Vorjahres_Monat.' +setkey, obj[key], true);
+                    });
+                });
 
     } else {
         //leider noch keine Daten vom Vorjahr; wir haben was zu tun...

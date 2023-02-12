@@ -300,6 +300,12 @@ while true
       if [ "${ANZAHL_7009999}" -gt "0" ]; then BR_001; fi
      ### zusätzliche WHxxx-Sensoren ################################################### ENDE ###
 
+     ### zusätzliche Sainlogic oder Curconsa Sensoren, Station FT0300 ###########################
+     if [[ ${MESSWERTERAWIN[$i]} == temp1f=* ]]
+        then MESSWERTE[28]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); convertFtoC 28; fi
+     if [[ ${MESSWERTERAWIN[$i]} == humidity1=* ]]
+        then MESSWERTE[29]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); fi
+     ### zusätzliche Sainlogic oder Curconsa Sensoren, Station FT0300 ################## ENDE ###
 
    done
 

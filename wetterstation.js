@@ -102,6 +102,8 @@ async function dpAnlegen(){
  createState(DP + "Regen_Event", 0, { name: "Regenmenge Event", type: "number", role: "value", unit: "mm" });
  createState(DP + "Regen_Stunde", 0, { name: "Regenmenge Stunde", type: "number", role: "value", unit: "mm" });
  createState(DP + "Regen_Total", 0, { name: "Regenmenge Insgesammt", type: "number", role: "value", unit: "mm" });
+ createState(DP + "FT0300_Temperatur_1", 0, { name: "Temperatur FT0300 Sensor 1", type: "number", role: "state", unit: "°C" });
+ createState(DP + "FT0300_Feuchte_1", 0, { name: "Feuchtigkeit FT0300 Sensor 1", type: "number", role: "state", unit: "%" });
 
     if (WS90 > 0 && WS90 <= 1) { await WS90_anlegen(); console.log("Datenpunkte für WS90 angelegt..."); }
     if (BR7009999 > 0 && BR7009999 <= 4) { await BR7009999_anlegen(); console.log("Datenpunkte für Bresser #7009999 angelegt..."); }

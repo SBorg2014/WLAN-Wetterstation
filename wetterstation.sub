@@ -84,6 +84,12 @@
   DP_AVG_TEMP_365D=${PRE_DP}.Info.Temp_Aussen_365t_avg
   DP_MET_SOMMER_TEMP=${PRE_DP}.Info.Temp_Met_Sommer_avg
   DP_MET_SOMMER_REGEN=${PRE_DP}.Info.Regenmenge_Met_Sommer
+
+ ### zusätzliche Sainlogic oder Curconsa Sensoren, Station FT0300 ###########################
+  DP_TEMP_FT0300_1=${PRE_DP}.FT0300_Temperatur_1
+  DP_FEUCHTE_FT0300_1=${PRE_DP}.FT0300_Feuchte_1
+ ### zusätzliche Sainlogic oder Curconsa Sensoren, Station FT0300 ################## ENDE ###
+
 ###  Ende Usereinstellungen
 
 
@@ -219,11 +225,11 @@ iob_send() {
     IOBPAR=(${DP_TEMP_INNEN} ${DP_TEMP_AUSSEN} ${DP_TAUPUNKT} ${DP_WCHILL} ${DP_FEUCHTE_INNEN} ${DP_FEUCHTE_AUSSEN} ${DP_WIND} ${DP_WIND_MAX} \
     ${DP_WIND_DIR} ${DP_DRUCK_ABS} ${DP_DRUCK_REL} ${DP_REGENRATE} ${DP_REGEN_TAG} ${DP_REGEN_WOCHE} ${DP_REGEN_MONAT} ${DP_REGEN_JAHR} \
     ${DP_SONNE} ${DP_UV_INDEX} ${DP_DP50_1_TEMP} ${DP_ZEITSTEMPEL} ${DP_FW_VERSION} ${DP_STATION_BATTERIE} ${DP_WINDBOEEN_MAX} ${DP_REGEN_EVENT} \
-    ${DP_REGEN_STUNDE} ${DP_REGEN_TOTAL} ${DP_GATEWAY_NAME} ${DP_WIND_DIR_10MIN} ${DP_WIND_10MIN})
+    ${DP_REGEN_STUNDE} ${DP_REGEN_TOTAL} ${DP_GATEWAY_NAME} ${DP_WIND_DIR_10MIN} ${DP_WIND_10MIN} ${DP_TEMP_FT0300_1} ${DP_FEUCHTE_FT0300_1})
 
     IOBOUT=""
     #Standard DP für ioBroker
-    for (( i = 0; i < 28; i++ )); do
+    for (( i = 0; i < 30; i++ )); do
        if [[ ! -z "${MESSWERTE[$i]}" ]]; then IOBOUT="${IOBOUT}&${IOBPAR[$i]}=${MESSWERTE[$i]}"; fi
     done
 

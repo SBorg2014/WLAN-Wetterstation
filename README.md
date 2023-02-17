@@ -18,6 +18,7 @@
   * WLAN Farb-Wetter Center mit 5-in-1 Profi-Sensor V <sup>(*)</sup>
   * WLAN Comfort Wetterstation mit 7-in-1 Profi-Sensor <sup>(*)</sup>
 - ChiliTec Funk Wetterstation 12in1
+- Curconsa FT0300 <sup>(*)</sup> (inkl. Zusatzsensor)
 - DNT Weatherscreen PRO
 - ELV WS980WiFi
 - Eurochron EFWS 2900 (baugleich zu Sainlogic 10in1 Wifi, Ambient Weather WS-2902, Chilitec CTW-902 Wifi)
@@ -104,6 +105,14 @@ Daten in Awekas.at (Stationsseite, kostenlos):<br>
 <br><br>
 
 ## Versionen ##
+
+**V3.0.0 - 08.02.2023   Breaking Release**  
+``` 
+    ~ Breaking Release / Support für (und nur noch!) InfluxDB V2.x / Issue #41
+    ~ Mindestintervall von 65 Sekunden beim Datenversand an AWEKAS.at
+    + Support Zusatzsensor Curconsa FT0300 / Pull Request #55 (LukasTr1980)
+    ~ Anzahl maximaler interner Sensoren von 30 auf 35 angehoben
+```
 
 **V2.21.0 - 15.01.2023**
 ``` 

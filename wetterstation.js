@@ -1,5 +1,5 @@
-//Wetterstation Datenpunkte anlegen V2.22.0
-let DP = "javascript.0.Wetterstation.";
+//Wetterstation Datenpunkte anlegen V3.0.0
+let DP = "0_userdata.0.Wetterstation.";
 let WH31 = 0;    // Anzahl der WH31/WH25 Sensoren  (max. 1 Stück)
 let WS90 = 0;    // Anzahl der WS90 Sensoren       (max. 1 Stück)
 let DP10 = 0;    // Anzahl der DP10/WN35 Sensoren  (max. 8 Stück)
@@ -13,6 +13,7 @@ let DP200 = 0;   // Anzahl der DP200/WH43 Sensoren (max. 4 Stück)
 let DP250 = 0;   // Anzahl der DP250/WH45 Sensoren (max. 1 Stück)
 let DP300 = 0;   // Anzahl der DP300/WS68 Sensoren (max. 1 Stück)
 let BR7009999 = 0; // Anzahl der Thermo-Hygro-7Ch-Sensoren (max. 4 Stück)
+let FT0300 = 0;  // Anzahl der FT0300 Sensoren     (max. 1 Stück)
 //Ende der User-Einstellungen -------------------
 
 //Prüfe Objektpfad
@@ -21,90 +22,92 @@ if (DP[DP.length - 1] != '.') { DP += '.'; }
 dpAnlegen();
 
 async function dpAnlegen(){
- createState(DP + "Innentemperatur", 0, { name: "Temperatur im Haus", type: "number", role: "state", unit: "°C" });
- createState(DP + "Aussentemperatur", 0, { name: "Temperatur Außen", type: "number", role: "state", unit: "°C" });
- createState(DP + "Aussentemperatur_Trend", 0, { name: "Trend der Aussentemperatur der letzten Stunde", type: "number", role: "state", unit: "°C" });
- createState(DP + "Taupunkt", 0, { name: "Taupunkt", type: "number", role: "state", unit: "°C" });
- createState(DP + "Gefuehlte_Temperatur", 0, { name: "Windchill", type: "number", role: "state", unit: "°C" });
- createState(DP + "Innenfeuchtigkeit", 0, { name: "Luftfeuchtigkeit Innen", type: "number", role: "state", unit: "%" });
- createState(DP + "Aussenfeuchtigkeit", 0, { name: "Luftfeuchtigkeit Außen", type: "number", role: "state", unit: "%" });
- createState(DP + "Wind", 0, { name: "Windgeschwindigkeit", type: "number", role: "state", unit: "km/h" });
- createState(DP + "Wind_max", 0, { name: "Windgeschwindigkeit maximal", type: "number", role: "state", unit: "km/h" });
- createState(DP + "Wind_10min", 0, { name: "Windgeschwindigkeit Durchschnitt 10min", type: "number", role: "state", unit: "km/h" });
- createState(DP + "Windrichtung", 0, { name: "Windrichtung in Grad", type: "number", role: "state", unit: "°" });
- createState(DP + "Windrichtung_Text", " ", { name: "Windrichtung als Text", type: "string", role: "state" });
- createState(DP + "Windrichtung_Text_10min", " ", { name: "Windrichtung Durchschnitt 10 Minuten als Text", type: "string", role: "state" });
- createState(DP + "Windrichtung_10min", 0, { name: "Windrichtung Durchschnitt 10 Minuten", type: "number", role: "state", unit: "°" });
- createState(DP + "Druck_absolut", 0, { name: "Luftdruck absolut", type: "number", role: "state", unit: "hPa" });
- createState(DP + "Druck_relativ", 0, { name: "Luftdruck relativ", type: "number", role: "state", unit: "hPa" });
- createState(DP + "Druck_Tendenz", "", { name: "Luftdrucktendenz", type: "mixed", role: "state" });
- createState(DP + "Wetter_Trend", " ", { name: "Wettertrend", type: "string", role: "state" });
- createState(DP + "Wetter_aktuell", " ", { name: "aktuelles Wetter", type: "string", role: "state" });
- createState(DP + "Regenrate", 0, { name: "Regenrate", type: "number", role: "state", unit: "mm/h" });
- createState(DP + "Regenstatus", "--", { name: "aktueller Regenstatus", type: "string", role: "state" });
- createState(DP + "Regen_Tag", 0, { name: "Regenmenge Heute", type: "number", role: "state", unit: "mm" });
- createState(DP + "Regen_Woche", 0, { name: "Regenmenge Woche", type: "number", role: "state", unit: "mm" });
- createState(DP + "Regen_Monat", 0, { name: "Regenmenge Monat", type: "number", role: "state", unit: "mm" });
- createState(DP + "Regen_Jahr", 0, { name: "Regenmenge Jahr aus Station", type: "number", role: "state", unit: "mm" });
- createState(DP + "Regen_Jahr_kumuliert", 0, { name: "Regenmenge Jahr berechnet", type: "number", role: "state", unit: "mm" });
- createState(DP + "Sonnenstrahlung", 0, { name: "Sonnenstrahlung", type: "number", role: "state", unit: "W/m²" });
- createState(DP + "UV_Index", 0, { name: "UV Index", type: "number", role: "state" });
- createState(DP + "UV_Belastung", " ", { name: "UV-Belastung", type: "string", role: "state" });
- createState(DP + "Zeitstempel", " ", { name: "von wann ist die Messung", type: "string", role: "state" });
- createState(DP + "_Kommunikationsfehler", false, { name: "liegt ein Problem vor", type: "boolean", role: "state" });
- createState(DP + "tempData.Wetterdaten", " ", { name: "temporär gespeicherte Wetterdaten", type: "string", role: "state" });
- createState(DP + "tempData.Sonnenschein", " ", { name: "temporäre Daten Tag, Woche, Monat, Jahr", type: "string", role: "state" });
- createState(DP + "tempData.Solarenergie", "0", { name: "temporäre Daten Tag, Woche, Monat, Jahr", type: "string", role: "state" });
- createState(DP + "Info.FW_Upgrade", false, { name: "neue Firmware für die Station", type: "boolean", role: "state" });
- createState(DP + "Info.FW_Version", " ", { name: "Firmwareversion der Station", type: "string", role: "state" });
- createState(DP + "Info.Meldungen", " ", { name: "Status- und Fehlermeldungen", type: "string", role: "state" });
- createState(DP + "Info.Hitzeindex", 0, { name: "Hitzeindex (erst ab 20°C)", type: "mixed", role: "state", unit: "°C" });
- createState(DP + "Info.openSenseMap", false, { name: "Datenübertragung openSenseMap erfolgreich", type: "boolean", role: "state" });
- createState(DP + "Info.Shellscriptversion", false, { name: "Versionsnummer des Scriptes", type: "string", role: "state" });
- createState(DP + "Info.Windy", false, { name: "Datenübertragung Windy erfolgreich", type: "boolean", role: "state" });
- createState(DP + "Info.Wetter_com", false, { name: "Datenübertragung Wetter.com erfolgreich", type: "boolean", role: "state" });
- createState(DP + "Info.Wunderground_com", false, { name: "Datenübertragung Wunderground.com erfolgreich", type: "boolean", role: "state" });
+ await createStateAsync(DP + "Innentemperatur", 0, { name: "Temperatur im Haus", type: "number", role: "state", unit: "°C" });
+ await createStateAsync(DP + "Aussentemperatur", 0, { name: "Temperatur Außen", type: "number", role: "state", unit: "°C" });
+ await createStateAsync(DP + "Aussentemperatur_Trend", 0, { name: "Trend der Aussentemperatur der letzten Stunde", type: "number", role: "state", unit: "°C" });
+ await createStateAsync(DP + "Taupunkt", 0, { name: "Taupunkt", type: "number", role: "state", unit: "°C" });
+ await createStateAsync(DP + "Gefuehlte_Temperatur", 0, { name: "Windchill", type: "number", role: "state", unit: "°C" });
+ await createStateAsync(DP + "Innenfeuchtigkeit", 0, { name: "Luftfeuchtigkeit Innen", type: "number", role: "state", unit: "%" });
+ await createStateAsync(DP + "Aussenfeuchtigkeit", 0, { name: "Luftfeuchtigkeit Außen", type: "number", role: "state", unit: "%" });
+ await createStateAsync(DP + "Wind", 0, { name: "Windgeschwindigkeit", type: "number", role: "state", unit: "km/h" });
+ await createStateAsync(DP + "Wind_max", 0, { name: "Windgeschwindigkeit maximal", type: "number", role: "state", unit: "km/h" });
+ await createStateAsync(DP + "Wind_10min", 0, { name: "Windgeschwindigkeit Durchschnitt 10min", type: "number", role: "state", unit: "km/h" });
+ await createStateAsync(DP + "Windrichtung", 0, { name: "Windrichtung in Grad", type: "number", role: "state", unit: "°" });
+ await createStateAsync(DP + "Windrichtung_Text", " ", { name: "Windrichtung als Text", type: "string", role: "state" });
+ await createStateAsync(DP + "Windrichtung_Text_10min", " ", { name: "Windrichtung Durchschnitt 10 Minuten als Text", type: "string", role: "state" });
+ await createStateAsync(DP + "Windrichtung_10min", 0, { name: "Windrichtung Durchschnitt 10 Minuten", type: "number", role: "state", unit: "°" });
+ await createStateAsync(DP + "Druck_absolut", 0, { name: "Luftdruck absolut", type: "number", role: "state", unit: "hPa" });
+ await createStateAsync(DP + "Druck_relativ", 0, { name: "Luftdruck relativ", type: "number", role: "state", unit: "hPa" });
+ await createStateAsync(DP + "Druck_Tendenz", "", { name: "Luftdrucktendenz", type: "mixed", role: "state" });
+ await createStateAsync(DP + "Wetter_Trend", " ", { name: "Wettertrend", type: "string", role: "state" });
+ await createStateAsync(DP + "Wetter_aktuell", " ", { name: "aktuelles Wetter", type: "string", role: "state" });
+ await createStateAsync(DP + "Regenrate", 0, { name: "Regenrate", type: "number", role: "state", unit: "mm/h" });
+ await createStateAsync(DP + "Regenstatus", "--", { name: "aktueller Regenstatus", type: "string", role: "state" });
+ await createStateAsync(DP + "Regen_Tag", 0, { name: "Regenmenge Heute", type: "number", role: "state", unit: "mm" });
+ await createStateAsync(DP + "Regen_Woche", 0, { name: "Regenmenge Woche", type: "number", role: "state", unit: "mm" });
+ await createStateAsync(DP + "Regen_Monat", 0, { name: "Regenmenge Monat", type: "number", role: "state", unit: "mm" });
+ await createStateAsync(DP + "Regen_Jahr", 0, { name: "Regenmenge Jahr aus Station", type: "number", role: "state", unit: "mm" });
+ await createStateAsync(DP + "Regen_Jahr_kumuliert", 0, { name: "Regenmenge Jahr berechnet", type: "number", role: "state", unit: "mm" });
+ await createStateAsync(DP + "Sonnenstrahlung", 0, { name: "Sonnenstrahlung", type: "number", role: "state", unit: "W/m²" });
+ await createStateAsync(DP + "UV_Index", 0, { name: "UV Index", type: "number", role: "state" });
+ await createStateAsync(DP + "UV_Belastung", " ", { name: "UV-Belastung", type: "string", role: "state" });
+ await createStateAsync(DP + "Zeitstempel", " ", { name: "von wann ist die Messung", type: "string", role: "state" });
+ await createStateAsync(DP + "_Kommunikationsfehler", false, { name: "liegt ein Problem vor", type: "boolean", role: "state" });
+ await createStateAsync(DP + "tempData.Wetterdaten", " ", { name: "temporär gespeicherte Wetterdaten", type: "string", role: "state" });
+ await createStateAsync(DP + "tempData.Sonnenschein", " ", { name: "temporäre Daten Tag, Woche, Monat, Jahr", type: "string", role: "state" });
+ await createStateAsync(DP + "tempData.Solarenergie", "0", { name: "temporäre Daten Tag, Woche, Monat, Jahr", type: "string", role: "state" });
+ await createStateAsync(DP + "Info.FW_Upgrade", false, { name: "neue Firmware für die Station", type: "boolean", role: "state" });
+ await createStateAsync(DP + "Info.FW_Version", " ", { name: "Firmwareversion der Station", type: "string", role: "state" });
+ await createStateAsync(DP + "Info.Meldungen", " ", { name: "Status- und Fehlermeldungen", type: "string", role: "state" });
+ await createStateAsync(DP + "Info.Hitzeindex", 0, { name: "Hitzeindex (erst ab 20°C)", type: "mixed", role: "state", unit: "°C" });
+ await createStateAsync(DP + "Info.openSenseMap", false, { name: "Datenübertragung openSenseMap erfolgreich", type: "boolean", role: "state" });
+ await createStateAsync(DP + "Info.Shellscriptversion", false, { name: "Versionsnummer des Scriptes", type: "string", role: "state" }); 
+ await createStateAsync(DP + "Info.Windy", false, { name: "Datenübertragung Windy erfolgreich", type: "boolean", role: "state" });
+ await createStateAsync(DP + "Info.Wetter_com", false, { name: "Datenübertragung Wetter.com erfolgreich", type: "boolean", role: "state" });
+ await createStateAsync(DP + "Info.Wunderground_com", false, { name: "Datenübertragung Wunderground.com erfolgreich", type: "boolean", role: "state" });
  await createStateAsync(DP + "Info.Awekas_at", false, { name: "Datenübertragung AWEKAS.at erfolgreich", type: "boolean", role: "state" });
- createState(DP + "Info.Sonnenschein_VorTag", 0, { name: "Sonnenscheindauer Gestern", type: "number", role: "state", unit: "Sek." });
- createState(DP + "Info.Sonnenschein_Tag", 0, { name: "Sonnenscheindauer Heute", type: "number", role: "state", unit: "Sek." });
- createState(DP + "Info.Sonnenschein_Woche", 0, { name: "Sonnenscheindauer diese Woche", type: "number", role: "state", unit: "Sek." });
- createState(DP + "Info.Sonnenschein_Monat", 0, { name: "Sonnenscheindauer diesen Monat", type: "number", role: "state", unit: "Sek." });
- createState(DP + "Info.Sonnenschein_Jahr", 0, { name: "Sonnenscheindauer dieses Jahr", type: "number", role: "state", unit: "Sek." });
- createState(DP + "Info.Sonnenschein_VorTag_Text", " ", { name: "Sonnenscheindauer Gestern als Text", type: "string", role: "state" });
- createState(DP + "Info.Sonnenschein_Tag_Text", " ", { name: "Sonnenscheindauer Heute als Text", type: "string", role: "state" });
- createState(DP + "Info.Sonnenschein_Woche_Text", " ", { name: "Sonnenscheindauer diese Woche als Text", type: "string", role: "state" });
- createState(DP + "Info.Sonnenschein_Monat_Text", " ", { name: "Sonnenscheindauer diesen Monat als Text", type: "string", role: "state" });
- createState(DP + "Info.Sonnenschein_Jahr_Text", " ", { name: "Sonnenscheindauer dieses Jahr als Text", type: "string", role: "state" });
- createState(DP + "Info.Sonnenschein_VorJahr", 0, { name: "Sonnenscheindauer letztes Jahr", type: "number", role: "state", unit: "Sek." });
- createState(DP + "Info.Regenmenge_VorJahr", 0, { name: "Regenmenge letztes Jahr", type: "number", role: "state", unit: "mm" });
- createState(DP + "Info.Regenmenge_Met_Sommer", 0, { name: "Regenmenge des meteorologischen Sommers", type: "number", role: "value", unit: "l/m²" });
- createState(DP + "Info.Solarenergie_VorTag", 0, { name: "Solarenergie Gestern", type: "number", role: "state", unit: "Wh/m²" });
- createState(DP + "Info.Solarenergie_Tag", 0, { name: "Solarenergie Heute", type: "number", role: "state", unit: "Wh/m²" });
- createState(DP + "Info.Solarenergie_Woche", 0, { name: "Solarenergie diese Woche", type: "number", role: "state", unit: "kWh/m²" });
- createState(DP + "Info.Solarenergie_Monat", 0, { name: "Solarenergie diesen Monat", type: "number", role: "state", unit: "kWh/m²" });
- createState(DP + "Info.Solarenergie_Jahr", 0, { name: "Solarenergie dieses Jahr", type: "number", role: "state", unit: "kWh/m²" });
- createState(DP + "Info.Solarenergie_VorJahr", 0, { name: "Solarenergie letztes Jahr", type: "number", role: "state", unit: "kWh/m²" });
- createState(DP + "Info.Letzter_Regen", " ", { name: "letztes Regenereignis", type: "string", role: "state" });
- createState(DP + "Info.Letzte_Regenmenge", 0, { name: "letzte Regenmenge", type: "number", role: "value", unit: "mm" });
- createState(DP + "Info.Station_Batteriestatus", 0, { name: "Batteriestatus [0=OK, 1=Alarm]", type: "number", role: "value" });
- createState(DP + "Info.Wetterstation_Gateway", " ", { name: "Gateway Informationen", type: "string", role: "state" });
- createState(DP + "Info.Wetterwarnung" ," ", {name: "mögliche Wetterereignisse", type: "string", role: "state" });
- createState(DP + "Info.Wolkenbasis", 0, { name: "Höhe der Wolkenbasis", type: "number", role: "state", unit: "m" });
- createState(DP + "Info.Temp_Aussen_24h_max", 0, { name: "höchste Aussentemperatur der letzten 24 Stunden", type: "number", role: "state", unit: "°C" });
- createState(DP + "Info.Temp_Aussen_Heute_max", 0, { name: "bisher höchste Aussentemperatur des heutigen Tages", type: "number", role: "value", unit: "°C" });
- createState(DP + "Info.Temp_Aussen_Heute_min", 0, { name: "bisher niedrigste Aussentemperatur des heutigen Tages", type: "number", role: "value", unit: "°C" });
- createState(DP + "Info.Temp_Aussen_24h_min", 0, { name: "tiefste Aussentemperatur der letzten 24 Stunden", type: "number", role: "value", unit: "°C" });
- createState(DP + "Info.Temp_Aussen_365t_min", 0, { name: "tiefste Aussentemperatur vor einem Jahr", type: "number", role: "value", unit: "°C" });
- createState(DP + "Info.Temp_Aussen_365t_max", 0, { name: "höchste Aussentemperatur vor einem Jahr", type: "number", role: "value", unit: "°C" });
- createState(DP + "Info.Temp_Aussen_365t_avg", 0, { name: "durchschnittliche Aussentemperatur vor einem Jahr", type: "number", role: "value", unit: "°C" });
- createState(DP + "Info.Temp_Met_Sommer_avg", 0, { name: "Durchschnittstemperatur des meteorologischen Sommers", type: "number", role: "value", unit: "°C" });
- createState(DP + "Windboeen_max", 0, { name: "Windböengeschwindigkeit maximal", type: "number", role: "value", unit: "km/h" });
- createState(DP + "Regen_Event", 0, { name: "Regenmenge Event", type: "number", role: "value", unit: "mm" });
- createState(DP + "Regen_Stunde", 0, { name: "Regenmenge Stunde", type: "number", role: "value", unit: "mm" });
- createState(DP + "Regen_Total", 0, { name: "Regenmenge Insgesammt", type: "number", role: "value", unit: "mm" });
+ await createStateAsync(DP + "Info.Sonnenschein_VorTag", 0, { name: "Sonnenscheindauer Gestern", type: "number", role: "state", unit: "Sek." });
+ await createStateAsync(DP + "Info.Sonnenschein_Tag", 0, { name: "Sonnenscheindauer Heute", type: "number", role: "state", unit: "Sek." });
+ await createStateAsync(DP + "Info.Sonnenschein_Woche", 0, { name: "Sonnenscheindauer diese Woche", type: "number", role: "state", unit: "Sek." });
+ await createStateAsync(DP + "Info.Sonnenschein_Monat", 0, { name: "Sonnenscheindauer diesen Monat", type: "number", role: "state", unit: "Sek." });
+ await createStateAsync(DP + "Info.Sonnenschein_Jahr", 0, { name: "Sonnenscheindauer dieses Jahr", type: "number", role: "state", unit: "Sek." });
+ await createStateAsync(DP + "Info.Sonnenschein_VorTag_Text", " ", { name: "Sonnenscheindauer Gestern als Text", type: "string", role: "state" });
+ await createStateAsync(DP + "Info.Sonnenschein_Tag_Text", " ", { name: "Sonnenscheindauer Heute als Text", type: "string", role: "state" });
+ await createStateAsync(DP + "Info.Sonnenschein_Woche_Text", " ", { name: "Sonnenscheindauer diese Woche als Text", type: "string", role: "state" });
+ await createStateAsync(DP + "Info.Sonnenschein_Monat_Text", " ", { name: "Sonnenscheindauer diesen Monat als Text", type: "string", role: "state" });
+ await createStateAsync(DP + "Info.Sonnenschein_Jahr_Text", " ", { name: "Sonnenscheindauer dieses Jahr als Text", type: "string", role: "state" });
+ await createStateAsync(DP + "Info.Sonnenschein_VorJahr", 0, { name: "Sonnenscheindauer letztes Jahr", type: "number", role: "state", unit: "Sek." });
+ await createStateAsync(DP + "Info.Regenmenge_VorJahr", 0, { name: "Regenmenge letztes Jahr", type: "number", role: "state", unit: "mm" });
+ await createStateAsync(DP + "Info.Regenmenge_Met_Sommer", 0, { name: "Regenmenge des meteorologischen Sommers", type: "number", role: "value", unit: "l/m²" });
+ await createStateAsync(DP + "Info.Solarenergie_VorTag", 0, { name: "Solarenergie Gestern", type: "number", role: "state", unit: "Wh/m²" });
+ await createStateAsync(DP + "Info.Solarenergie_Tag", 0, { name: "Solarenergie Heute", type: "number", role: "state", unit: "Wh/m²" });
+ await createStateAsync(DP + "Info.Solarenergie_Woche", 0, { name: "Solarenergie diese Woche", type: "number", role: "state", unit: "kWh/m²" });
+ await createStateAsync(DP + "Info.Solarenergie_Monat", 0, { name: "Solarenergie diesen Monat", type: "number", role: "state", unit: "kWh/m²" });
+ await createStateAsync(DP + "Info.Solarenergie_Jahr", 0, { name: "Solarenergie dieses Jahr", type: "number", role: "state", unit: "kWh/m²" });
+ await createStateAsync(DP + "Info.Solarenergie_VorJahr", 0, { name: "Solarenergie letztes Jahr", type: "number", role: "state", unit: "kWh/m²" });
+ await createStateAsync(DP + "Info.Letzter_Regen", " ", { name: "letztes Regenereignis", type: "string", role: "state" });
+ await createStateAsync(DP + "Info.Letzte_Regenmenge", 0, { name: "letzte Regenmenge", type: "number", role: "value", unit: "mm" });
+ await createStateAsync(DP + "Info.Station_Batteriestatus", 0, { name: "Batteriestatus [0=OK, 1=Alarm]", type: "number", role: "value" });
+ await createStateAsync(DP + "Info.Wetterstation_Gateway", " ", { name: "Gateway Informationen", type: "string", role: "state" });
+ await createStateAsync(DP + "Info.Wetterwarnung" ," ", {name: "mögliche Wetterereignisse", type: "string", role: "state" });
+ await createStateAsync(DP + "Info.Wolkenbasis", 0, { name: "Höhe der Wolkenbasis", type: "number", role: "state", unit: "m" });
+ await createStateAsync(DP + "Info.Temp_Aussen_24h_max", 0, { name: "höchste Aussentemperatur der letzten 24 Stunden", type: "number", role: "state", unit: "°C" });
+ await createStateAsync(DP + "Info.Temp_Aussen_Heute_max", 0, { name: "bisher höchste Aussentemperatur des heutigen Tages", type: "number", role: "value", unit: "°C" });
+ await createStateAsync(DP + "Info.Temp_Aussen_Heute_min", 0, { name: "bisher niedrigste Aussentemperatur des heutigen Tages", type: "number", role: "value", unit: "°C" });
+ await createStateAsync(DP + "Info.Temp_Aussen_24h_min", 0, { name: "tiefste Aussentemperatur der letzten 24 Stunden", type: "number", role: "value", unit: "°C" });
+ await createStateAsync(DP + "Info.Temp_Aussen_365t_min", 0, { name: "tiefste Aussentemperatur vor einem Jahr", type: "number", role: "value", unit: "°C" });
+ await createStateAsync(DP + "Info.Temp_Aussen_365t_max", 0, { name: "höchste Aussentemperatur vor einem Jahr", type: "number", role: "value", unit: "°C" });
+ await createStateAsync(DP + "Info.Temp_Aussen_365t_avg", 0, { name: "durchschnittliche Aussentemperatur vor einem Jahr", type: "number", role: "value", unit: "°C" });
+ await createStateAsync(DP + "Info.Temp_Met_Sommer_avg", 0, { name: "Durchschnittstemperatur des meteorologischen Sommers", type: "number", role: "value", unit: "°C" });
+ await createStateAsync(DP + "Windboeen_max", 0, { name: "Windböengeschwindigkeit maximal", type: "number", role: "value", unit: "km/h" });
+ await createStateAsync(DP + "Regen_Event", 0, { name: "Regenmenge Event", type: "number", role: "value", unit: "mm" });
+ await createStateAsync(DP + "Regen_Stunde", 0, { name: "Regenmenge Stunde", type: "number", role: "value", unit: "mm" });
+ await createStateAsync(DP + "Regen_Total", 0, { name: "Regenmenge Insgesammt", type: "number", role: "value", unit: "mm" });
 
-    if (WS90 > 0 && WS90 <= 1) { await WS90_anlegen(); console.log("Datenpunkte für WS90 angelegt..."); }
+    if (WS90 > 0 && WS90 <= 1)           { await WS90_anlegen(); console.log("Datenpunkte für WS90 angelegt..."); }
     if (BR7009999 > 0 && BR7009999 <= 4) { await BR7009999_anlegen(); console.log("Datenpunkte für Bresser #7009999 angelegt..."); }
+    if (FT0300 > 0 && FT0300 <= 1)       { await FT0300_anlegen(); console.log("Datenpunkte für Zusatzsensor FT0300 angelegt..."); }
+    console.log("Anlegen der Datenpunkte beendet. Skript kann nun gestoppt werden...");
 }
 
 if (WH31 > 0 && WH31 <= 1) {
@@ -511,4 +514,10 @@ async function BR7009999_anlegen() {
             });
         }
     }
+}
+
+//FT0300 - Sensoren
+async function FT0300_anlegen() {
+    await createStateAsync(DP + "FT0300_Temperatur_1", 0, { name: "Temperatur FT0300 Sensor 1", type: "number", role: "state", unit: "°C" });
+    await createStateAsync(DP + "FT0300_Feuchte_1", 0, { name: "Feuchtigkeit FT0300 Sensor 1", type: "number", role: "state", unit: "%" });
 }

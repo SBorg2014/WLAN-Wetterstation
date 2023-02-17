@@ -2,13 +2,17 @@
 : <<'Versionsinfo'
 
 
- V2.22.0 - 23.01.2023 (c) 2019-2023 SBorg
+ V3.0.0 - 08.02.2023 (c) 2019-2023 SBorg
 
  wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
  die Daten an den ioBroker (alternativ auch an AWEKAS, OpenSenseMap, Windy und wetter.com)
 
  benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq', 'bc' und 'dc' unter Linux
 
+ V3.0.0 / 08.02.2023   ~ Breaking Release / Support für (und nur noch!) InfluxDB V2.x / Issue #41
+                       ~ Mindestintervall von 65 Sekunden beim Datenversand an AWEKAS.at
+                       + Support Zusatzsensor Curconsa FT0300 / Pull Request #55 (LukasTr1980)
+                       ~ Anzahl maximaler interner Sensoren von 30 auf 35 angehoben
  V2.22.0 / 23.01.2023  + Support für Bresser Thermo-Hygro-7Ch-Sensor #7009999 / Issue #53
  V2.21.0 / 15.01.2023  + Support für AWEKAS
                        ~ fix fehlende Regenwerte wenn nur der WS90 ohne weitere Außeneinheit benutzt wird / Issue #51
@@ -135,9 +139,9 @@ Versionsinfo
 ### Ende Infoblock
 
  #Versionierung
-  SH_VER="V2.22.0"
-  CONF_V="V2.22.0"
-  SUBVER="V2.22.0"
+  SH_VER="V3.0.0"
+  CONF_V="V3.0.0"
+  SUBVER="V3.0.0"
 
 
  #Installationsverzeichnis feststellen
@@ -215,7 +219,7 @@ while true
    unset MESSWERTE; unset MESSWERTERAWIN
    MESSWERTERAWIN=(${DATA//&/ })
    rawinlen=${#MESSWERTERAWIN[@]}
-   j=30
+   j=35
    for (( i=1; i<rawinlen; i++ ))
    do
      if [[ ${MESSWERTERAWIN[$i]} == tempinf=* ]] || [[ ${MESSWERTERAWIN[$i]} == indoortempf=* ]]
@@ -300,6 +304,12 @@ while true
       if [ "${ANZAHL_7009999}" -gt "0" ]; then BR_001; fi
      ### zusätzliche WHxxx-Sensoren ################################################### ENDE ###
 
+     ### zusätzliche Sainlogic oder Curconsa Sensoren, Station FT0300 ###########################
+     if [[ ${MESSWERTERAWIN[$i]} == temp1f=* ]]
+        then MESSWERTE[28]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); convertFtoC 28; fi
+     if [[ ${MESSWERTERAWIN[$i]} == humidity1=* ]]
+        then MESSWERTE[29]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); fi
+     ### zusätzliche Sainlogic oder Curconsa Sensoren, Station FT0300 ################## ENDE ###
 
    done
 
@@ -359,7 +369,10 @@ while true
         metsommer          #meteorologischer Sommer Durchschnittstemperatur und Regenmenge
         MELDUNG "Mitternachtjobs durchgef%C3%BChrt"
    fi
-   if [ $(date +%H) -eq "0" ] && [ $(date +%M) -le "3" ]; then unset MIDNIGHTRUN; fi
+   if [ $(date +%H) -eq "0" ] && [ $(date +%M) -le "3" ]; then
+       unset MIDNIGHTRUN
+       if [ $(date +%Z) == "CEST" ]; then ZULU=22; else ZULU=23; fi
+   fi
 
 
 
@@ -368,7 +381,7 @@ while true
    DO_IT=${DO_IT#0}
    if [ $(( $DO_IT % 15 )) -eq "0" ]; then
      if [ $(date +%s) -ge "$TIMER_SET" ]; then wetterprognose
-      if [ ! -z ${INFLUX_DB} ]; then minmax24h; minmaxheute; fi
+      if [ ! -z ${INFLUX_BUCKET} ]; then minmax24h; minmaxheute; fi
      fi
      do_Wetterwarnung
      #stündlich Lebenszeichen

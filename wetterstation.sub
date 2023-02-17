@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V2.22.0 --------------------------------------------------------
+### Subroutinen V3.0.0 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -84,6 +84,9 @@
   DP_AVG_TEMP_365D=${PRE_DP}.Info.Temp_Aussen_365t_avg
   DP_MET_SOMMER_TEMP=${PRE_DP}.Info.Temp_Met_Sommer_avg
   DP_MET_SOMMER_REGEN=${PRE_DP}.Info.Regenmenge_Met_Sommer
+  ### zusätzliche Sainlogic oder Curconsa Sensoren, Station FT0300 ###########################
+  DP_TEMP_FT0300_1=${PRE_DP}.FT0300_Temperatur_1
+  DP_FEUCHTE_FT0300_1=${PRE_DP}.FT0300_Feuchte_1
 ###  Ende Usereinstellungen
 
 
@@ -141,7 +144,7 @@ debuging() {
 
    echo -en "\nZusatzsensoren:"
    if [ $WS_PROTOKOLL = 1 ]; then echo -e "$GR keine $WE"; else echo -e "\n"; fi
-   for ((i=31; i<$MAXDEVICES; i++))
+   for ((i=36; i<$MAXDEVICES; i++))
    do
      if [ ! -z ${MESSWERTE[$i]} ]; then
         echo -en " \033[s ${MESSWERTE[$i]} \033[u"
@@ -185,8 +188,8 @@ debuging() {
    if [ ${use_awekas} == "true" ]; then awekas_update; fi
 
    #Influx-Version prüfen
-   if [ ! -z ${INFLUX_DB} ] && [ $(which influxd) ]; then
-    if [ ! $(influxd version|cut -d" " -f2|grep v1.) ]; then echo -e "\n${RE} Offizieller Support nur für Influx V1.x!\n\n${NO}"; fi
+   if [ ! -z ${INFLUX_API} ]; then
+    if [ ! $(curl -skL -I "${INFLUX_WEB}://${INFLUX_API}/ping" | grep X-Influxdb-Version | cut -d" " -f2 | grep v2.[0-9].[0-9]) ]; then echo -e "\n${RE} Offizieller Support nur noch für Influx V2.x!\n\n${NO}"; fi
    fi
 
    #Shell-Skript mit Fehler beenden
@@ -219,16 +222,16 @@ iob_send() {
     IOBPAR=(${DP_TEMP_INNEN} ${DP_TEMP_AUSSEN} ${DP_TAUPUNKT} ${DP_WCHILL} ${DP_FEUCHTE_INNEN} ${DP_FEUCHTE_AUSSEN} ${DP_WIND} ${DP_WIND_MAX} \
     ${DP_WIND_DIR} ${DP_DRUCK_ABS} ${DP_DRUCK_REL} ${DP_REGENRATE} ${DP_REGEN_TAG} ${DP_REGEN_WOCHE} ${DP_REGEN_MONAT} ${DP_REGEN_JAHR} \
     ${DP_SONNE} ${DP_UV_INDEX} ${DP_DP50_1_TEMP} ${DP_ZEITSTEMPEL} ${DP_FW_VERSION} ${DP_STATION_BATTERIE} ${DP_WINDBOEEN_MAX} ${DP_REGEN_EVENT} \
-    ${DP_REGEN_STUNDE} ${DP_REGEN_TOTAL} ${DP_GATEWAY_NAME} ${DP_WIND_DIR_10MIN} ${DP_WIND_10MIN})
+    ${DP_REGEN_STUNDE} ${DP_REGEN_TOTAL} ${DP_GATEWAY_NAME} ${DP_WIND_DIR_10MIN} ${DP_WIND_10MIN} ${DP_TEMP_FT0300_1} ${DP_FEUCHTE_FT0300_1})
 
     IOBOUT=""
     #Standard DP für ioBroker
-    for (( i = 0; i < 28; i++ )); do
+    for (( i = 0; i < 35; i++ )); do
        if [[ ! -z "${MESSWERTE[$i]}" ]]; then IOBOUT="${IOBOUT}&${IOBPAR[$i]}=${MESSWERTE[$i]}"; fi
     done
 
     #Sensoren DP/WH/Bresser für ioBroker
-    for (( i = 31; i < $MAXDEVICES; i+=2 )); do
+    for (( i = 36; i < $MAXDEVICES; i+=2 )); do
       if [[ ! -z "${MESSWERTE[$i]}" ]]; then
          if [[ "${MESSWERTE[$i]}" =~ ^tf_ch[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP35.${MESSWERTE[$i]:5:1}.Temperatur=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" =~ ^tf_batt[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP35.${MESSWERTE[$i]:7:1}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
@@ -792,6 +795,8 @@ setup() {
   TEMPFIX_ERR=0                    #Zähler Temperaturfix
   ALIVE=$(date +%H)                #Lebenszeichen
   WETTER_TREND="noch --- Minuten"  #Anzeige bis Daten komplett
+  SKIP_AWEKAS_TIMER=65             #nur alle x Sekunden ein Datenpaket an AWEKAS senden (dynamisch)
+  if [ $(date +%Z) == "CEST" ]; then ZULU=22; else ZULU=23;fi #Zuluzeitkorrektur für InfluxDB
 
   if [ "$WEB_IGN_SSL_ERROR" == "true" ]; then
     SAPI_CURL_OPTS="-k"
@@ -812,7 +817,7 @@ setup() {
  #Anzahl der DP Berechnen
   case $WS_PROTOKOLL in
    1) MAXDEVICES=22;;
-   *) MAXDEVICES=$(( 31 + $ANZAHL_DP35 * 4 + $ANZAHL_DP40 * 2 + $ANZAHL_DP50 * 6 + $ANZAHL_DP100 * 4 + $ANZAHL_DP60 * 8 + $ANZAHL_DP200 * 6 + $ANZAHL_DP70 * 4 + $ANZAHL_DP250 * 18 + $ANZAHL_DP300 *2 ))
+   *) MAXDEVICES=$(( 36 + $ANZAHL_DP35 * 4 + $ANZAHL_DP40 * 2 + $ANZAHL_DP50 * 6 + $ANZAHL_DP100 * 4 + $ANZAHL_DP60 * 8 + $ANZAHL_DP200 * 6 + $ANZAHL_DP70 * 4 + $ANZAHL_DP250 * 18 + $ANZAHL_DP300 *2 ))
       MAXDEVICES+=$(( $ANZAHL_WH31 * 2 + $ANZAHL_DP10 * 4 + $ANZAHL_WS90 * 20 ))
       MAXDEVICES+=$(( $ANZAHL_7009999 * 2 ))
   esac
@@ -1197,33 +1202,44 @@ hitzeindex() {
 END_BC
 }
 
+influx_query() {
+   #1 Timerange start
+   #2 Timerange stop
+   #3 Measurement
+   #4 min,max,mean
+
+        IFS=","
+        ii=0
+        local TMP_DATA=$(curl -s --request POST "${INFLUX_WEB}://${INFLUX_API}/api/v2/query?org=${INFLUX_ORG}" --header 'Content-Type: application/vnd.flux' \
+        --header 'Accept: application/csv' --header "Authorization: Token ${INFLUX_TOKEN}" \
+        --data 'from(bucket: "'${INFLUX_BUCKET}'") |> range(start: '$1', stop: '$2') |> filter(fn: (r) => r._measurement == "'${PRE_DP}'.'$3'" and r._field == "value") |> '$4'()')
+
+        local TDATA=(${TMP_DATA[*]})
+        for i in "${TDATA[@]}"; do
+         let "ii++"
+         if [ "$i" == "value" ]; then echo ${TDATA[$ii-2]}; fi
+        done
+        unset TDATA
+        unset TMP_DATA
+}
 
 minmax24h() {
-        MIN_TEMP_24H=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
-        --data-urlencode "u=${INFLUX_USER}" --data-urlencode "p=${INFLUX_PASSWORD}" \
-        --data-urlencode "q=SELECT min(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time >= now() - 1d" |\
-        jq -r '.results | .[].series | .[].values[] | .[1]')
-        MAX_TEMP_24H=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
-        --data-urlencode "u=${INFLUX_USER}" --data-urlencode "p=${INFLUX_PASSWORD}" \
-        --data-urlencode "q=SELECT max(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time >= now() - 1d" |\
-        jq -r '.results | .[].series | .[].values[] | .[1]')
+        local FLUXSTART="-1d"
+        local FLUXENDE="now()"
+
+        MIN_TEMP_24H=$(influx_query "${FLUXSTART}" "${FLUXENDE}" "Aussentemperatur" "min")
+        MAX_TEMP_24H=$(influx_query "${FLUXSTART}" "${FLUXENDE}" "Aussentemperatur" "max")
 
         SAPI "Single" "set/${DP_MIN_TEMP_24H}?value=${MIN_TEMP_24H}&ack=true"
         SAPI "Single" "set/${DP_MAX_TEMP_24H}?value=${MAX_TEMP_24H}&ack=true"
 }
 
-
 minmaxheute() {
-        local TIMESTAMP=$(date +%Y-%m-%d)" 00:00:00"
-        MIN_TEMP_HEUTE=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
-        --data-urlencode "u=${INFLUX_USER}" --data-urlencode "p=${INFLUX_PASSWORD}" \
-        --data-urlencode "q=SELECT min(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time <= now() and time >= '${TIMESTAMP}'")
-        if [[ "${MIN_TEMP_HEUTE}" =~ "values" ]]; then MIN_TEMP_HEUTE=$(echo ${MIN_TEMP_HEUTE}|jq -r '.results | .[].series | .[].values[] | .[1]'); else MIN_TEMP_HEUTE=; fi
-        MAX_TEMP_HEUTE=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
-        --data-urlencode "u=${INFLUX_USER}" --data-urlencode "p=${INFLUX_PASSWORD}" \
-        --data-urlencode "q=SELECT max(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time <= now() and time >= '${TIMESTAMP}'")
-        if [[ "${MAX_TEMP_HEUTE}" =~ "values" ]]; then MAX_TEMP_HEUTE=$(echo ${MAX_TEMP_HEUTE}|jq -r '.results | .[].series | .[].values[] | .[1]'); else MAX_TEMP_HEUTE=; fi
+        local FLUXSTART=$(date +%Y-%m-%d --date="-1 day")"T${ZULU}:00:00Z"
+        local FLUXENDE="now()"
 
+        MIN_TEMP_HEUTE=$(influx_query "${FLUXSTART}" "${FLUXENDE}" "Aussentemperatur" "min")
+        MAX_TEMP_HEUTE=$(influx_query "${FLUXSTART}" "${FLUXENDE}" "Aussentemperatur" "max")
 
         #keine Werte vorhanden?
         if [ -z ${MIN_TEMP_HEUTE} ] || [ -z ${MAX_TEMP_HEUTE} ]; then
@@ -1237,31 +1253,26 @@ minmaxheute() {
 
 
 minmaxavg365d() {
-     if [ ! -z ${INFLUX_DB} ]; then
-        MIN_TEMP_365D=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
-        --data-urlencode "u=${INFLUX_USER}" --data-urlencode "p=${INFLUX_PASSWORD}" \
-        --data-urlencode "q=SELECT min(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time >= now() - 366d AND time <= now() - 365d" |\
-        jq -r '.results | .[].series | .[].values[] | .[1]' 2> /dev/null)
+     if [ ! -z ${INFLUX_BUCKET} ]; then
+        local FLUXSTART=$(date +%Y-%m-%d --date="-366 day")"T${ZULU}:00:00Z"
+        local FLUXENDE=$(date +%Y-%m-%d --date="-365 day")"T${ZULU}:59:59Z"
+
+        MIN_TEMP_365D=$(influx_query "${FLUXSTART}" "${FLUXENDE}" "Aussentemperatur" "min")
+        MAX_TEMP_365D=$(influx_query "${FLUXSTART}" "${FLUXENDE}" "Aussentemperatur" "max")
+        AVG_TEMP_365D=$(influx_query "${FLUXSTART}" "${FLUXENDE}" "Aussentemperatur" "mean")
+
         if [ -z "${MIN_TEMP_365D}" ]; then
           SAPI "Single" "set/${DP_MIN_TEMP_365D}?value=-99.99&ack=true"
          else
           SAPI "Single" "set/${DP_MIN_TEMP_365D}?value=${MIN_TEMP_365D}&ack=true"
         fi
 
-        MAX_TEMP_365D=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
-        --data-urlencode "u=${INFLUX_USER}" --data-urlencode "p=${INFLUX_PASSWORD}" \
-        --data-urlencode "q=SELECT max(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time >= now() - 366d AND time <= now() - 365d" |\
-        jq -r '.results | .[].series | .[].values[] | .[1]' 2> /dev/null)
         if [ -z "${MAX_TEMP_365D}" ]; then
           SAPI "Single" "set/${DP_MAX_TEMP_365D}?value=-99.99&ack=true"
          else
           SAPI "Single" "set/${DP_MAX_TEMP_365D}?value=${MAX_TEMP_365D}&ack=true"
         fi
 
-        AVG_TEMP_365D=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
-        --data-urlencode "u=${INFLUX_USER}" --data-urlencode "p=${INFLUX_PASSWORD}" \
-        --data-urlencode "q=SELECT mean(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time >= now() - 366d AND time <= now() - 365d" |\
-        jq -r '.results | .[].series | .[].values[] | .[1]' 2> /dev/null)
         if [ -z "${AVG_TEMP_365D}" ]; then
           SAPI "Single" "set/${DP_AVG_TEMP_365D}?value=-99.99&ack=true"
          else
@@ -1274,16 +1285,14 @@ minmaxavg365d() {
 
 
 metsommer() {
-     if [ ! -z ${INFLUX_DB} ]; then
+     if [ ! -z ${INFLUX_BUCKET} ]; then
       if [ $(date +%m) -ge "6" ] && [ $(date +%m) -le "8" ] || [ ! -z ${metsom_override} ]; then
         if [ $(date +%m) -le "5" ]; then echo -e "\n ${RE}Eine Berechnung der meteorologischen Sommerwerte kann für das aktuelle Jahr $(date +%Y) erst ab dem 01. Juni durchgeführt werden!${NO}\n";exit 1; fi
-        local TIMESTART=$(date +%Y-06-01)" 00:00:00"
-        local TIMESTOP=$(date +%Y-08-31)" 23:59:59"
+        local FLUXSTART=$(date +Y%-06-01)"T00:00:00Z"
+        local FLUXENDE=$(date +Y%-08-31)"T23:59:59Z"
 
-        local MET_SOMMER_TEMP_AVG=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
-        --data-urlencode "u=${INFLUX_USER}" --data-urlencode "p=${INFLUX_PASSWORD}" \
-        --data-urlencode "q=SELECT mean(value) FROM \"${PRE_DP}.Aussentemperatur\" WHERE time >= '${TIMESTART}' AND time <= '${TIMESTOP}'" |\
-        jq -r '.results | .[].series | .[].values[] | .[1]' 2> /dev/null)
+        MET_SOMMER_TEMP_AVG=$(influx_query "${FLUXSTART}" "${FLUXENDE}" "Aussentemperatur" "mean")
+
         if [ -z "${MET_SOMMER_TEMP_AVG}" ]; then
           SAPI "Single" "set/${DP_MET_SOMMER_TEMP}?value=99.99&ack=true"
          else
@@ -1291,19 +1300,13 @@ metsommer() {
           SAPI "Single" "set/${DP_MET_SOMMER_TEMP}?value=${MET_SOMMER_TEMP_AVG}&ack=true"
         fi
 
-        local TMP_STR=$(curl -sG "http://${INFLUX_API}/query?pretty=true" --data-urlencode "epoch=s" --data-urlencode "db=${INFLUX_DB}" \
-        --data-urlencode "u=${INFLUX_USER}" --data-urlencode "p=${INFLUX_PASSWORD}" \
-        --data-urlencode "q=SELECT max(value) FROM \"${PRE_DP}.Regen_Tag\" WHERE (time >= '${TIMESTART}' AND time <= '${TIMESTOP}') group by time(1d)" |\
-        jq -r '.results | .[].series | .[].values[] | .[1]'| tr '\n' ' ' | sed -e 's/null//g')
+        local TMP_REGEN=$(curl -s --request POST "${INFLUX_WEB}://${INFLUX_API}/api/v2/query?org=${INFLUX_ORG}" --header 'Content-Type: application/vnd.flux' \
+        --header 'Accept: application/csv' --header "Authorization: Token ${INFLUX_TOKEN}" \
+        --data 'from(bucket: "'${INFLUX_BUCKET}'") |> range(start: '${FLUXSTART}', stop: '${FLUXENDE}') |> filter(fn: (r) => r._measurement == "'${PREDP}'.Regen_Tag" and r._field == "value") |> aggregateWindow(every: 1d, fn: max) |> sum()')
 
-        #Konvertiere String to Array
-        IFS=" " && read -r -a REGEN_ARR <<< "${TMP_STR}"
-
-        #Summe des Arrays bilden
-         local MET_REGEN=0
-         for i in ${REGEN_ARR[@]}; do
-          MET_REGEN=$(echo "scale=1; ${MET_REGEN}+$i" | bc -l)
-         done
+        IFS=","
+        local TDATA=(${TMP_REGEN[*]})
+        MET_REGEN=$(echo ${TDATA[14]} | tr -cd [:digit:]\.)
 
         if [ -z "${MET_REGEN}" ]; then
           SAPI "Single" "set/${DP_MET_SOMMER_REGEN}?value=999.9&ack=true"
@@ -1317,7 +1320,6 @@ metsommer() {
           echo -e "\t Ø-Temperatur: ${GR}${MET_SOMMER_TEMP_AVG} °C${NO}"
           echo -e "\t Regenmenge  : ${GR}${MET_REGEN} l/m²${NO}\n"
         fi
-        unset REGEN_ARR
         unset metsom_override
 
       fi
@@ -1959,10 +1961,9 @@ do_Wetterwarnung(){
 
 awekas_update(){
         #Daten an AWEKAS senden
-        #Nur jeden 2. Messwert senden (Mindestabstand 1 Minute; sonst blockt AWEKAS)
-         ###if [ $(expr $(date +"%M") % 2) != "0" ]; then return; fi
-         if [ "${SKIP_AWEKAS}" == "true" ]; then unset SKIP_AWEKAS; return; fi
-         SKIP_AWEKAS=true
+        #Nur minimal jede 65 Sekunden Messwert senden (Mindestabstand 1 Minute; sonst blockt AWEKAS)
+        if (( $(date +%s) < $SKIP_AWEKAS_TIMER )); then return 0; fi
+        SKIP_AWEKAS_TIMER=$(echo "$(date +%s) + 65" | bc)
 
         local AWEKAS_URL="https://ws.awekas.at/weatherstation/updateweatherstation.php?ID=${AWEKAS_USER}&PASSWORD=${AWEKAS_PW}&dateutc=${DATEUTC}"
         AWEKAS_URL+="&tempf=${TEMPF}&humidity=${MESSWERTE[5]}&winddir=${MESSWERTE[8]}&uv=${MESSWERTE[17]}&windspeedmph=${WINDSPEEDMPH}"

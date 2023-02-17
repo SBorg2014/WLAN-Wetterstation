@@ -18,6 +18,7 @@
   * WLAN Farb-Wetter Center mit 5-in-1 Profi-Sensor V <sup>(*)</sup>
   * WLAN Comfort Wetterstation mit 7-in-1 Profi-Sensor <sup>(*)</sup>
 - ChiliTec Funk Wetterstation 12in1
+- Curconsa FT0300 <sup>(*)</sup> (inkl. Zusatzsensor)
 - DNT Weatherscreen PRO
 - ELV WS980WiFi
 - Eurochron EFWS 2900 (baugleich zu Sainlogic 10in1 Wifi, Ambient Weather WS-2902, Chilitec CTW-902 Wifi)

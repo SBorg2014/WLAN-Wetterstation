@@ -1,11 +1,14 @@
 /* Wetterstation-Statistiken 
 
-   holt die Messdaten aus einer InfluxDB und erstellt eine Monats-, Vorjahresmonat- und
+   holt die Messdaten aus einer InfluxDB V2 und erstellt eine Monats-, Vorjahresmonat- und
    Rekordwerte-Statistik
    Wichtig: funktioniert nur mit der Default-Datenstruktur des WLAN-Wetterstation-Skriptes!
             Auch keine Aliase unter Influx nutzen!
 
    (c)2020-2023 by SBorg
+   V2.0.0 - 15.02.2023  ~Umstellung auf Influx V2 
+                        +Fix "{ack=true}" bei Wüstentage, Tropennächte und Regentage in VorJahres-Anzeige
+                        ~Windboe nach Windboee umbenannt
    V1.3.2 - 03.02.2023  ~Verbesserung des JSON-handlings "VorJahr" (@Boronsbruder)
    V1.3.1 - 01.02.2023  ~Bugfix keine Daten für Vorjahresmonatswerte (Fix Issue #54) 
    V1.3.0 - 09.09.2022  +Regentage (Issue #40)
@@ -52,8 +55,9 @@
 
 
 // *** User-Einstellungen **********************************************************************************************************************************
-    const WET_DP='javascript.0.Wetterstation';          // wo liegen die Datenpunkte mit den Daten der Wetterstation  [default: javascript.0.Wetterstation]                          
+    const WET_DP='0_userdata.0.Wetterstation';          // wo liegen die Datenpunkte mit den Daten der Wetterstation  [default: 0_userdata.0.Wetterstation]                          
     const INFLUXDB_INSTANZ='0';                         // unter welcher Instanz läuft die InfluxDB [default: 0]
+    const INFLUXDB_BUCKET='Wetter';                     // Name des zu benutzenden Buckets
     const PRE_DP='0_userdata.0.Statistik.Wetter';       // wo sollen die Statistikwerte abgelegt werden. Nur unter "0_userdata" oder "javascript" möglich!
     let REKORDWERTE_AUSGABEFORMAT="[WERT] im [MONAT] [JAHR]";   /* Wie soll die Ausgabe der Rekordwerte formatiert werden (Template-Vorlage)?
                                                                     [WERT]      = Messwert (zB. '22.42' bei Temperatur, '12' bei Tagen)
@@ -71,16 +75,15 @@
 
 
 
-
 //ab hier gibt es nix mehr zu ändern :)
 //first start?
 const DP_Check ='aktueller_Monat.Regentage';
 if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 //Start des Scripts
-    const ScriptVersion = "V1.3.2";
+    const ScriptVersion = "V2.0.0";
     const dayOfYear = date => Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
-    let Tiefstwert, Hoechstwert, Temp_Durchschnitt, Max_Windboe, Max_Regenmenge, Regenmenge_Monat, warme_Tage, Sommertage;
+    let Tiefstwert, Hoechstwert, Temp_Durchschnitt, Max_Windboee, Max_Regenmenge, Regenmenge_Monat, warme_Tage, Sommertage;
     let heisse_Tage, Frost_Tage, kalte_Tage, Eistage, sehr_kalte_Tage, Wuestentage, Tropennaechte, Trockenperiode_akt;
     let kalte_Tage_Jahr, warme_Tage_Jahr, Sommertage_Jahr, heisse_Tage_Jahr, Frosttage_Jahr, Eistage_Jahr, sehrkalte_Tage_Jahr, Wuestentage_Jahr, Tropennaechte_Jahr;
     let Regentage, Regentage_Jahr;
@@ -96,11 +99,11 @@ if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 // ### Funktionen ###############################################################################################
 function main() {
-    let result = [], temps = [], wind = [], regen = [], start, end, zeitstempel = new Date();
-    start = new Date(zeitstempel.getFullYear(),zeitstempel.getMonth(),zeitstempel.getDate()-1,0,0,0);
-    start = start.getTime();
-    end = new Date(zeitstempel.getFullYear(),zeitstempel.getMonth(),zeitstempel.getDate()-1,23,59,59);
-    end = end.getTime();
+    let temps = [], wind = [], regen = [], start, end, zeitstempel = new Date();
+    let start_ts = new Date(zeitstempel.getFullYear(),zeitstempel.getMonth(),zeitstempel.getDate()-1,0,0,0);
+    start = start_ts.getTime();
+    let end_ts = new Date(zeitstempel.getFullYear(),zeitstempel.getMonth(),zeitstempel.getDate()-1,23,59,59);
+    end = end_ts.getTime();
 
     //Jobs Monatserster
  if (zeitstempel.getDate() == 1) { 
@@ -159,24 +162,24 @@ function main() {
 
  }//End Jobs Monatserster
 
-            //InfluxDB abfragen (Regen +1min Startverzögerung wg. ev. Ungenauigkeit der Systemzeit des Wetterstation-Displays)
-            sendTo('influxdb.'+INFLUXDB_INSTANZ, 'query', 
-            'select * FROM "' + WET_DP + '.Aussentemperatur" WHERE time >= ' + (start *1000000) + ' AND time <= ' + (end *1000000)
-             + '; select * FROM "' + WET_DP + '.Wind_max" WHERE time >= '  + (start *1000000) + ' AND time <= ' + (end *1000000)
-             + '; select * FROM "' + WET_DP + '.Regen_Tag" WHERE time >= ' + ((start+72000) *1000000) + ' AND time <= ' + (end *1000000)
+  //InfluxDB abfragen (Regen +1min Startverzögerung wg. ev. Ungenauigkeit der Systemzeit des Wetterstation-Displays)
+    sendTo('influxdb.'+INFLUXDB_INSTANZ, 'query', 
+            'from(bucket: "'+INFLUXDB_BUCKET+'") |> range(start: '+(start/1000)+', stop: '+(end/1000)+') |> filter(fn: (r) => r._measurement == "' + WET_DP + '.Aussentemperatur") |> filter(fn: (r) => r._field == "value"); from(bucket: "'+INFLUXDB_BUCKET+'") |> range(start: '+(start/1000)+', stop: '+(end/1000)+') |> filter(fn: (r) => r.measurement == "' + WET_DP + '.Wind_max") |> filter(fn: (r) => r._field == "value"); from(bucket: "'+INFLUXDB_BUCKET+'") |> range(start: '+((start+72000)/1000)+', stop: '+(end/1000)+') |> filter(fn: (r) => r._measurement == "' + WET_DP + '.Regen_Tag") |> filter(fn: (r) => r._field == "value")'
+  
          , function (result) {
              //Anlegen der Arrays + befüllen mit den relevanten Daten
             if (result.error) {
                console.error('Fehler beim Lesen der InfluxDB: '+result.error);
                Statusmeldung('Fehler beim Lesen der InfluxDB: '+result.error);
             } else {
-                //console.log('Rows: ' + JSON.stringify(result.result[2]));
-                for (let i = 0; i < result.result[0].length; i++) { temps[i] = result.result[0][i].value; }
-                for (let i = 0; i < result.result[1].length; i++) { wind[i] = result.result[1][i].value; }
-                for (let i = 0; i < result.result[2].length; i++) { regen[i] = result.result[2][i].value; }
-            }           
-                    
-  //Temperaturen
+                //console.log('Rows: ' + JSON.stringify(result.result[0], null, 2));
+                for (let i = 0; i < result.result[0].length; i++) { temps[i] = result.result[0][i]._value; }
+                for (let i = 0; i < result.result[1].length; i++) { wind[i] = result.result[1][i]._value; }
+                for (let i = 0; i < result.result[2].length; i++) { regen[i] = result.result[2][i]._value; }
+            }
+                                   
+
+    //Temperaturen
     Tiefstwert = Math.min(...temps);
     Hoechstwert = Math.max(...temps);
     //Math.sum = (...temps) => Array.prototype.reduce.call(temps,(a,b) => a+b);
@@ -195,7 +198,7 @@ function main() {
     if (Tiefstwert < -10) { sehr_kalte_Tage = 1; } else { sehr_kalte_Tage = 0; }
 
   //Wind
-    if (wind.length == 0) { Max_Windboe = 0; } else { Max_Windboe = Math.max(...wind); }     
+    if (wind.length == 0) { Max_Windboee = 0; } else { Max_Windboee = Math.max(...wind); }     
 
   //Regen (Regentag = Mindestmenge größer oder gleich 0.1mm)
     if (regen.length == 0) { Max_Regenmenge = 0; } 
@@ -218,7 +221,7 @@ function main() {
     setState(PRE_DP+'.VorTag.Temperatur_Hoechstwert', Hoechstwert, true);
     setState(PRE_DP+'.VorTag.Temperatur_Durchschnitt', Temp_Durchschnitt, true);
     setState(PRE_DP+'.VorTag.Regenmenge', Max_Regenmenge, true);
-    setState(PRE_DP+'.VorTag.Windboe_max', Max_Windboe, true);
+    setState(PRE_DP+'.VorTag.Windboee_max', Max_Windboee, true);
 
  //nun beenden falls Monatserster    
   if (zeitstempel.getDate() == 1) { 
@@ -239,7 +242,7 @@ function main() {
    if (getState(PRE_DP+'.aktueller_Monat.Tiefstwert').val > Tiefstwert) {setState(PRE_DP+'.aktueller_Monat.Tiefstwert', Tiefstwert, true);}    
    if (getState(PRE_DP+'.aktueller_Monat.Hoechstwert').val < Hoechstwert) {setState(PRE_DP+'.aktueller_Monat.Hoechstwert', Hoechstwert, true);}    
    if (getState(PRE_DP+'.aktueller_Monat.Temperatur_Durchschnitt').val != MonatsTemp_Durchschnitt) {setState(PRE_DP+'.aktueller_Monat.Temperatur_Durchschnitt', MonatsTemp_Durchschnitt, true);}
-   if (getState(PRE_DP+'.aktueller_Monat.Max_Windboe').val < Max_Windboe) {setState(PRE_DP+'.aktueller_Monat.Max_Windboe', Max_Windboe, true);}
+   if (getState(PRE_DP+'.aktueller_Monat.Max_Windboee').val < Max_Windboee) {setState(PRE_DP+'.aktueller_Monat.Max_Windboee', Max_Windboee, true);}
    if (getState(PRE_DP+'.aktueller_Monat.Max_Regenmenge').val < Max_Regenmenge) {setState(PRE_DP+'.aktueller_Monat.Max_Regenmenge', Max_Regenmenge, true);}
    if (Max_Regenmenge > 0) {Regenmenge_Monat = getState(PRE_DP+'.aktueller_Monat.Regenmenge_Monat').val + Max_Regenmenge; setState(PRE_DP+'.aktueller_Monat.Regenmenge_Monat', Number((Regenmenge_Monat).toFixed(2)), true);}
    if (warme_Tage) {warme_Tage = getState(PRE_DP+'.aktueller_Monat.warme_Tage').val +1; setState(PRE_DP+'.aktueller_Monat.warme_Tage', warme_Tage, true);
@@ -275,7 +278,7 @@ function main() {
        //Regenmenge
        if (getState(PRE_DP+'.Jahreswerte.Regenmengetag').val < Max_Regenmenge) {setState(PRE_DP+'.Jahreswerte.Regenmengetag', Max_Regenmenge, true);}
        //Windböe
-       if (getState(PRE_DP+'.Jahreswerte.Windboe_max').val <= Max_Windboe) {setState(PRE_DP+'.Jahreswerte.Windboe_max', Max_Windboe, true);} 
+       if (getState(PRE_DP+'.Jahreswerte.Windboee_max').val <= Max_Windboee) {setState(PRE_DP+'.Jahreswerte.Windboee_max', Max_Windboee, true);} 
     if (getState(WET_DP + '.Info.Letzter_Regen').val.match(/:/g)) { //LAST_RAIN=DATUM (01.08.2022 12:40)
         Trockenperiode_akt=dayOfYear(new Date()) - dayOfYear(new Date(getState(WET_DP + '.Info.Letzter_Regen').lc));
         if (Trockenperiode_akt<=0) { Trockenperiode_akt+=365; } // Jahrewechsel
@@ -296,7 +299,7 @@ function main() {
     //Rekordwerte 
     Rekordwerte();
 
- });
+  }); //end sendTo
  if (getState(PRE_DP+'.Control.Reset_Jahresstatistik').val === true) { Reset_Jahresstatistik(); }
  console.log('Auswertung durchgeführt...');
  if (getState(PRE_DP+'.Control.ScriptVersion_UpdateCheck').val) { check_update(); } // neue Script-Version vorhanden?
@@ -310,7 +313,7 @@ function Reset_Jahresstatistik() {
         setState(PRE_DP + '.Jahreswerte.Trockenperiode',          0,    true);
         setState(PRE_DP + '.Jahreswerte.Regenmengetag',           0,    true);
         setState(PRE_DP + '.Jahreswerte.Regenmengemonat',         0,    true);
-        setState(PRE_DP + '.Jahreswerte.Windboe_max',             0,    true);
+        setState(PRE_DP + '.Jahreswerte.Windboee_max',            0,    true);
         setState(PRE_DP + '.Jahreswerte.Gradtage_kalteTage',      0,    true);
         setState(PRE_DP + '.Jahreswerte.Gradtage_warmeTage',      0,    true);
         setState(PRE_DP + '.Jahreswerte.Gradtage_Sommertage',     0,    true);
@@ -361,7 +364,7 @@ function speichern_Monat() {
     Tiefstwert=getState(PRE_DP+'.aktueller_Monat.Tiefstwert').val;
     Hoechstwert=getState(PRE_DP+'.aktueller_Monat.Hoechstwert').val;
     Temp_Durchschnitt=getState(PRE_DP+'.aktueller_Monat.Temperatur_Durchschnitt').val;
-    Max_Windboe=getState(PRE_DP+'.aktueller_Monat.Max_Windboe').val;
+    Max_Windboee=getState(PRE_DP+'.aktueller_Monat.Max_Windboee').val;
     Max_Regenmenge=getState(PRE_DP+'.aktueller_Monat.Max_Regenmenge').val;
     Regenmenge_Monat=getState(PRE_DP+'.aktueller_Monat.Regenmenge_Monat').val;
     warme_Tage=getState(PRE_DP+'.aktueller_Monat.warme_Tage').val;
@@ -377,7 +380,7 @@ function speichern_Monat() {
     //ggf. höchste Monatsregenmenge im Jahr schreiben
     if (getState(PRE_DP+'.Jahreswerte.Regenmengemonat').val <= Regenmenge_Monat) {setState(PRE_DP+'.Jahreswerte.Regenmengemonat', Regenmenge_Monat, true);} 
     jsonSummary.push(
-        {"Tiefstwert": Tiefstwert, "Hoechstwert": Hoechstwert, "Temp_Durchschnitt": Temp_Durchschnitt, "Max_Windboe": Max_Windboe, 
+        {"Tiefstwert": Tiefstwert, "Hoechstwert": Hoechstwert, "Temp_Durchschnitt": Temp_Durchschnitt, "Max_Windboee": Max_Windboee, 
         "Max_Regenmenge": Max_Regenmenge, "Regenmenge_Monat": Regenmenge_Monat, "warme_Tage": warme_Tage,
         "Sommertage": Sommertage, "heisse_Tage": heisse_Tage, "Frost_Tage": Frost_Tage, "kalte_Tage": kalte_Tage, "Eistage": Eistage, 
         "sehr_kalte_Tage": sehr_kalte_Tage, "Wuestentage": Wuestentage, "Tropennaechte": Tropennaechte, "Regentage": Regentage})
@@ -388,7 +391,7 @@ function speichern_Monat() {
     setState(PRE_DP+'.aktueller_Monat.Tiefstwert', initialTemp, true);
     setState(PRE_DP+'.aktueller_Monat.Hoechstwert', initialTemp, true);
     setState(PRE_DP+'.aktueller_Monat.Temperatur_Durchschnitt', initialTemp, true);
-    setState(PRE_DP+'.aktueller_Monat.Max_Windboe', 0, true);
+    setState(PRE_DP+'.aktueller_Monat.Max_Windboee', 0, true);
     setState(PRE_DP+'.aktueller_Monat.Max_Regenmenge', 0, true);
     setState(PRE_DP+'.aktueller_Monat.Regenmenge_Monat', 0, true);
     setState(PRE_DP+'.aktueller_Monat.warme_Tage', 0, true);
@@ -439,15 +442,15 @@ function VorJahr() {
                     let VRegentage = 99999;
 
         //Abfrage der Influx-Datenbank
-        let start, end, result = [], temps = [], wind = [], regen = [];
+        let start, end, temps = [], wind = [], regen = [];
         start = new Date(zeitstempel.getFullYear()-1,zeitstempel.getMonth(),1,0,0,0);
         start = start.getTime();
         end = new Date(zeitstempel.getFullYear()-1,zeitstempel.getMonth(),monatstage[zeitstempel.getMonth()],23,59,59);
-        end = end.getTime();
-            sendTo('influxdb.'+INFLUXDB_INSTANZ, 'query', 
-             'select * FROM "' + WET_DP + '.Aussentemperatur" WHERE time >= ' + (start *1000000) + ' AND time <= ' + (end *1000000)
-             + '; select * FROM "' + WET_DP + '.Wind_max" WHERE time >= '  + (start *1000000) + ' AND time <= ' + (end *1000000)
-             + '; select * FROM "' + WET_DP + '.Regen_Tag" WHERE time >= ' + (start *1000000) + ' AND time <= ' + (end *1000000)
+        end = end.getTime(); 
+            
+             sendTo('influxdb.'+INFLUXDB_INSTANZ, 'query', 
+            'from(bucket: "'+INFLUXDB_BUCKET+'") |> range(start: '+(start/1000)+', stop: '+(end/1000)+') |> filter(fn: (r) => r._measurement == "' + WET_DP + '.Aussentemperatur") |> filter(fn: (r) => r._field == "value"); from(bucket: "'+INFLUXDB_BUCKET+'") |> range(start: '+(start/1000)+', stop: '+(end/1000)+') |> filter(fn: (r) => r.measurement == "' + WET_DP + '.Wind_max") |> filter(fn: (r) => r._field == "value"); from(bucket: "'+INFLUXDB_BUCKET+'") |> range(start: '+(start/1000)+', stop: '+(end/1000)+') |> filter(fn: (r) => r._measurement == "' + WET_DP + '.Regen_Tag") |> filter(fn: (r) => r._field == "value")'
+  
                 , function (result) {
                 //Anlegen der Arrays + befüllen mit den relevanten Daten
                 if (result.error) {
@@ -464,9 +467,9 @@ function VorJahr() {
                     regen[0]=99999;
 
                    } else {               
-                    for (let i = 0; i < result.result[0].length; i++) { temps[i] = result.result[0][i].value; }
-                    for (let i = 0; i < result.result[1].length; i++) { wind[i] = result.result[1][i].value; }
-                    for (let i = 0; i < result.result[2].length; i++) { regen[i] = result.result[2][i].value; }
+                    for (let i = 0; i < result.result[0].length; i++) { temps[i] = result.result[0][i]._value; }
+                    for (let i = 0; i < result.result[1].length; i++) { wind[i] = result.result[1][i]._value; }
+                    for (let i = 0; i < result.result[2].length; i++) { regen[i] = result.result[2][i]._value; }
                    }
                 }           
       
@@ -499,7 +502,7 @@ function VorJahr() {
                 } 
 
                 //Wind
-                let VMax_Windboe = Math.max(...wind);
+                let VMax_Windboee = Math.max(...wind);
 
                 //Regen
                 let VMax_Regenmenge = Math.max(...regen);
@@ -519,7 +522,7 @@ function VorJahr() {
                 setState(PRE_DP+'.Vorjahres_Monat.Tiefstwert', VTiefstwert, true);
                 setState(PRE_DP+'.Vorjahres_Monat.Hoechstwert', VHoechstwert, true);
                 setState(PRE_DP+'.Vorjahres_Monat.Temperatur_Durchschnitt', VTemp_Durchschnitt, true);
-                setState(PRE_DP+'.Vorjahres_Monat.Max_Windboe', VMax_Windboe, true);
+                setState(PRE_DP+'.Vorjahres_Monat.Max_Windboee', VMax_Windboee, true);
                 setState(PRE_DP+'.Vorjahres_Monat.Max_Regenmenge', VMax_Regenmenge, true);
                 setState(PRE_DP+'.Vorjahres_Monat.Regenmenge_Monat', VRegenmenge_Monat, true);
                 setState(PRE_DP+'.Vorjahres_Monat.warme_Tage', Vwarme_Tage, true);
@@ -573,10 +576,9 @@ function Statusmeldung(Text) {
 
 // Test auf neue Skriptversion
 function check_update() {
-    const axios = require('axios').default;
+    const axios = require('axios');
 
-    axios.get('https://github.com/SBorg2014/WLAN-Wetterstation/commits/master/wetterstation-statistik.js')
-     .then(function (response) {
+    axios.get('https://github.com/SBorg2014/WLAN-Wetterstation/commits/master/wetterstation-statistik.js').then(response => {
      
      // /<a aria-label="V.*[\r\n]+.*<\/a>/
 
@@ -603,7 +605,7 @@ function Backup_Jahresstatistik() {
     let Temperatur_Durchschnitt = getState(PRE_DP+'.Jahreswerte.Temperatur_Durchschnitt').val;
     let Regenmengetag = getState(PRE_DP+'.Jahreswerte.Regenmengetag').val;
     let Regenmengemonat = getState(PRE_DP+'.Jahreswerte.Regenmengemonat').val;
-    let Windboe_max = getState(PRE_DP+'.Jahreswerte.Windboe_max').val;
+    let Windboee_max = getState(PRE_DP+'.Jahreswerte.Windboee_max').val;
     let Trockenperiode = getState(PRE_DP+'.Jahreswerte.Trockenperiode').val;
     let kalte_Tage_Jahr = getState(PRE_DP+'.Jahreswerte.Gradtage_kalteTage').val;
     let warme_Tage_Jahr = getState(PRE_DP+'.Jahreswerte.Gradtage_warmeTage').val;
@@ -619,7 +621,7 @@ function Backup_Jahresstatistik() {
 
     jsonSummary.push({
         "Temperatur Tiefstwert": Temperatur_Tiefstwert, "Temperatur Höchstwert": Temperatur_Hoechstwert, "Temperatur Durchschnitt": Temperatur_Durchschnitt,
-        "Regenmengetag": Regenmengetag, "höchste Regenmengemonat": Regenmengemonat, "Windböe": Windboe_max,
+        "Regenmengetag": Regenmengetag, "höchste Regenmengemonat": Regenmengemonat, "Windböe": Windboee_max,
         "Trockenperiode": Trockenperiode,
         "kalte Tage": kalte_Tage_Jahr, "warme Tage": warme_Tage_Jahr, "Sommertage": Sommertage_Jahr, "heiße Tage": heisse_Tage_Jahr, "Frosttage": Frosttage_Jahr, "Eistage": Eistage_Jahr,
         "sehr kalte Tage": sehrkalte_Tage_Jahr, "Wuestentage": Wuestentage_Jahr, "Tropennaechte": Tropennaechte_Jahr, "Regentage": Regentage_Jahr});
@@ -648,8 +650,8 @@ function Rekordwerte() {
     }
 
     //Windböe
-    if (getState(PRE_DP+'.Rekordwerte.value.Windboe').val <= Max_Windboe) {
-        setState(PRE_DP+'.Rekordwerte.value.Windboe', Max_Windboe, true, () => { Template_Rekordwerte('Windboe','Rekordwerte.Windboe'); });
+    if (getState(PRE_DP+'.Rekordwerte.value.Windboee').val <= Max_Windboee) {
+        setState(PRE_DP+'.Rekordwerte.value.Windboee', Max_Windboee, true, () => { Template_Rekordwerte('Windboee','Rekordwerte.Windboee'); });
     }
 
     //Trockenperiode
@@ -710,7 +712,7 @@ async function createDP(DP_Check) {
     createState(PRE_DP+'.aktueller_Monat.Tiefstwert',             100,  { name: "niedrigste Temperatur",                        type: "number", role: "state", unit: "°C" });
     createState(PRE_DP+'.aktueller_Monat.Hoechstwert',            -100, { name: "höchste Temperatur",                           type: "number", role: "state", unit: "°C" });
     createState(PRE_DP+'.aktueller_Monat.Temperatur_Durchschnitt',0,    { name: "Durchschnittstemperatur",                      type: "number", role: "state", unit: "°C" });
-    createState(PRE_DP+'.aktueller_Monat.Max_Windboe',            0,    { name: "stärkste Windböe",                             type: "number", role: "state", unit: "km/h" });
+    createState(PRE_DP+'.aktueller_Monat.Max_Windboee',           0,    { name: "stärkste Windböe",                             type: "number", role: "state", unit: "km/h" });
     createState(PRE_DP+'.aktueller_Monat.Max_Regenmenge',         0,    { name: "maximale Regenmenge pro Tag",                  type: "number", role: "state", unit: "l/m²" });
     createState(PRE_DP+'.aktueller_Monat.Regenmenge_Monat',       0,    { name: "Regenmenge im Monat",                          type: "number", role: "state", unit: "l/m²" });
     createState(PRE_DP+'.aktueller_Monat.warme_Tage',             0,    { name: "Tage mit einer Temperatur über 20°",           type: "number", role: "state", unit: "Tage" });
@@ -727,7 +729,7 @@ async function createDP(DP_Check) {
     createState(PRE_DP+'.Vorjahres_Monat.Tiefstwert',             99999, { name: "niedrigste Temperatur",                       type: "number", role: "state", unit: "°C" });
     createState(PRE_DP+'.Vorjahres_Monat.Hoechstwert',            99999, { name: "höchste Temperatur",                          type: "number", role: "state", unit: "°C" });
     createState(PRE_DP+'.Vorjahres_Monat.Temperatur_Durchschnitt',99999, { name: "Durchschnittstemperatur",                     type: "number", role: "state", unit: "°C" });
-    createState(PRE_DP+'.Vorjahres_Monat.Max_Windboe',            99999, { name: "stärkste Windböe",                            type: "number", role: "state", unit: "km/h" });
+    createState(PRE_DP+'.Vorjahres_Monat.Max_Windboee',           99999, { name: "stärkste Windböe",                            type: "number", role: "state", unit: "km/h" });
     createState(PRE_DP+'.Vorjahres_Monat.Max_Regenmenge',         99999, { name: "maximale Regenmenge pro Tag",                 type: "number", role: "state", unit: "l/m²" });
     createState(PRE_DP+'.Vorjahres_Monat.Regenmenge_Monat',       99999, { name: "Regenmenge im Monat",                         type: "number", role: "state", unit: "l/m²" });
     createState(PRE_DP+'.Vorjahres_Monat.warme_Tage',             99999, { name: "Tage mit einer Temperatur über 20°",          type: "number", role: "state", unit: "Tage" });
@@ -745,7 +747,7 @@ async function createDP(DP_Check) {
     createState(PRE_DP+'.VorTag.Temperatur_Hoechstwert',          99999, { name: "höchste Tagestemperatur",                     type: "number", role: "state", unit: "°C" });
     createState(PRE_DP+'.VorTag.Temperatur_Durchschnitt',         99999, { name: "Durchschnittstemperatur",                     type: "number", role: "state", unit: "°C" });
     createState(PRE_DP+'.VorTag.Regenmenge',                      0,     { name: "Regenmenge vom Vortag",                       type: "number", role: "state", unit: "l/m²" });
-    createState(PRE_DP+'.VorTag.Windboe_max',                     0,     { name: "stärkste Windböe vom Vortag",                 type: "number", role: "state", unit: "km/h" });
+    createState(PRE_DP+'.VorTag.Windboee_max',                    0,     { name: "stärkste Windböe vom Vortag",                 type: "number", role: "state", unit: "km/h" });
 
     createState(PRE_DP+'.Jahreswerte.Temperatur_Hoechstwert',     -100,  { name: "höchste Tagestemperatur des Jahres",          type: "number", role: "state", unit: "°C" });
     createState(PRE_DP+'.Jahreswerte.Temperatur_Tiefstwert',      100,   { name: "niedrigste Tagestemperatur des Jahres",       type: "number", role: "state", unit: "°C" });
@@ -753,7 +755,7 @@ async function createDP(DP_Check) {
     createState(PRE_DP+'.Jahreswerte.Trockenperiode',             0,     { name: "längste Periode ohne Regen",                  type: "number", role: "state", unit: "Tage" });
     createState(PRE_DP+'.Jahreswerte.Regenmengetag',              0,     { name: "höchste Regenmenge an einem Tag",             type: "number", role: "state", unit: "l/m²" });
     createState(PRE_DP+'.Jahreswerte.Regenmengemonat',            0,     { name: "höchste Regenmenge innerhalb eines Monats",   type: "number", role: "state", unit: "l/m²" });
-    createState(PRE_DP+'.Jahreswerte.Windboe_max',                0,     { name: "stärkste Windböe des Jahres",                 type: "number", role: "state", unit: "km/h" });
+    createState(PRE_DP+'.Jahreswerte.Windboee_max',               0,     { name: "stärkste Windböe des Jahres",                 type: "number", role: "state", unit: "km/h" });
     createState(PRE_DP+'.Jahreswerte.Gradtage_kalteTage',         0,     { name: "Tage mit einer Höchsttemperatur unter 10°",   type: "number", role: "state", unit: "Tage" });
     createState(PRE_DP+'.Jahreswerte.Gradtage_warmeTage',         0,     { name: "Tage mit einer Höchsttemperatur über 20°",    type: "number", role: "state", unit: "Tage" });
     createState(PRE_DP+'.Jahreswerte.Gradtage_Sommertage',        0,     { name: "Tage mit einer Höchsttemperatur über 25°",    type: "number", role: "state", unit: "Tage" });
@@ -772,14 +774,14 @@ async function createDP(DP_Check) {
     createState(PRE_DP+'.Rekordwerte.value.Temp_Durchschnitt_Max',-99.99,{ name: "höchster Jahrestemperaturdurchschnitt",       type: "number", role: "state", unit: "°C" });
     createState(PRE_DP+'.Rekordwerte.value.Regenmengetag',        0,     { name: "höchste je gemessene Regenmenge an einem Tag",type: "number", role: "state", unit: "l/m²" });
     createState(PRE_DP+'.Rekordwerte.value.Regenmengemonat',      0,     { name: "höchste je gemessene Regenmenge eines Monats",type: "number", role: "state", unit: "l/m²" });
-    createState(PRE_DP+'.Rekordwerte.value.Windboe',              0,     { name: "stärkste je gemessene Windböe"               ,type: "number", role: "state", unit: "km/h" });
+    createState(PRE_DP+'.Rekordwerte.value.Windboee',             0,     { name: "stärkste je gemessene Windböe"               ,type: "number", role: "state", unit: "km/h" });
     createState(PRE_DP+'.Rekordwerte.Temperatur_Spitzenhoechstwert', '', { name: "höchste je gemessene Tagestemperatur",        type: "string", role: "state" });
     createState(PRE_DP+'.Rekordwerte.Temperatur_Spitzentiefstwert',  '', { name: "niedrigste je gemessene Tagestemperatur",     type: "string", role: "state" });
     createState(PRE_DP+'.Rekordwerte.Temperatur_Jahresdurchschnitt_Max', '', { name: "höchster Jahrestemperaturdurchschnitt",   type: "string", role: "state" });
     createState(PRE_DP+'.Rekordwerte.Temperatur_Jahresdurchschnitt_Min', '', { name: "niedrigster Jahrestemperaturdurchschnitt",type: "string", role: "state" });
     createState(PRE_DP+'.Rekordwerte.Regenmengetag',             '',     { name: "höchste je gemessene Regenmenge an einem Tag",type: "string", role: "state" });
     createState(PRE_DP+'.Rekordwerte.Regenmengemonat',           '',     { name: "höchste je gemessene Regenmenge eines Monats",type: "string", role: "state" });
-    createState(PRE_DP+'.Rekordwerte.Windboe',                   '',     { name: "stärkste je gemessene Windböe"               ,type: "string", role: "state" });
+    createState(PRE_DP+'.Rekordwerte.Windboee',                  '',     { name: "stärkste je gemessene Windböe"               ,type: "string", role: "state" });
     createState(PRE_DP+'.Rekordwerte.Trockenperiode',            '',     { name: "längste je andauernde Trockenperiode",        type: "string", role: "state" });
 
     createState(PRE_DP+'.Control.Statusmeldung',                  '',    { name: "Statusmeldungen",                             type: "string", role: "state"});

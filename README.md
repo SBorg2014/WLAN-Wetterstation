@@ -106,6 +106,14 @@ Daten in Awekas.at (Stationsseite, kostenlos):<br>
 
 ## Versionen ##
 
+**V3.0.0 - 08.02.2023   Breaking Release**  
+``` 
+    ~ Breaking Release / Support für (und nur noch!) InfluxDB V2.x / Issue #41
+    ~ Mindestintervall von 65 Sekunden beim Datenversand an AWEKAS.at
+    + Support Zusatzsensor Curconsa FT0300 / Pull Request #55 (LukasTr1980)
+    ~ Anzahl maximaler interner Sensoren von 30 auf 35 angehoben
+```
+
 **V2.21.0 - 15.01.2023**
 ``` 
     + Support für AWEKAS

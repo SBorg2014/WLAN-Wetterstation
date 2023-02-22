@@ -6,6 +6,8 @@
             Auch keine Aliase unter Influx nutzen!
 
    (c)2020-2023 by SBorg
+   V2.0.1 - 22.02.2023  ~Bugfix Influx-Abfrage "Wind" (@Latzi)
+                        ~Bugfix fester Datenpunkt auf "javascript.0..." bei Trockenperiode
    V2.0.0 - 15.02.2023  ~Umstellung auf Influx V2 
                         +Fix "{ack=true}" bei Wüstentage, Tropennächte und Regentage in VorJahres-Anzeige
                         ~Windboe nach Windboee umbenannt
@@ -81,7 +83,7 @@ const DP_Check ='aktueller_Monat.Regentage';
 if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 //Start des Scripts
-    const ScriptVersion = "V2.0.0";
+    const ScriptVersion = "V2.0.1";
     const dayOfYear = date => Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
     let Tiefstwert, Hoechstwert, Temp_Durchschnitt, Max_Windboee, Max_Regenmenge, Regenmenge_Monat, warme_Tage, Sommertage;
     let heisse_Tage, Frost_Tage, kalte_Tage, Eistage, sehr_kalte_Tage, Wuestentage, Tropennaechte, Trockenperiode_akt;
@@ -164,7 +166,7 @@ function main() {
 
   //InfluxDB abfragen (Regen +1min Startverzögerung wg. ev. Ungenauigkeit der Systemzeit des Wetterstation-Displays)
     sendTo('influxdb.'+INFLUXDB_INSTANZ, 'query', 
-            'from(bucket: "'+INFLUXDB_BUCKET+'") |> range(start: '+(start/1000)+', stop: '+(end/1000)+') |> filter(fn: (r) => r._measurement == "' + WET_DP + '.Aussentemperatur") |> filter(fn: (r) => r._field == "value"); from(bucket: "'+INFLUXDB_BUCKET+'") |> range(start: '+(start/1000)+', stop: '+(end/1000)+') |> filter(fn: (r) => r.measurement == "' + WET_DP + '.Wind_max") |> filter(fn: (r) => r._field == "value"); from(bucket: "'+INFLUXDB_BUCKET+'") |> range(start: '+((start+72000)/1000)+', stop: '+(end/1000)+') |> filter(fn: (r) => r._measurement == "' + WET_DP + '.Regen_Tag") |> filter(fn: (r) => r._field == "value")'
+            'from(bucket: "'+INFLUXDB_BUCKET+'") |> range(start: '+(start/1000)+', stop: '+(end/1000)+') |> filter(fn: (r) => r._measurement == "' + WET_DP + '.Aussentemperatur") |> filter(fn: (r) => r._field == "value"); from(bucket: "'+INFLUXDB_BUCKET+'") |> range(start: '+(start/1000)+', stop: '+(end/1000)+') |> filter(fn: (r) => r._measurement == "' + WET_DP + '.Wind_max") |> filter(fn: (r) => r._field == "value"); from(bucket: "'+INFLUXDB_BUCKET+'") |> range(start: '+((start+72000)/1000)+', stop: '+(end/1000)+') |> filter(fn: (r) => r._measurement == "' + WET_DP + '.Regen_Tag") |> filter(fn: (r) => r._field == "value")'
   
          , function (result) {
              //Anlegen der Arrays + befüllen mit den relevanten Daten
@@ -286,7 +288,7 @@ function main() {
         if (Trockenperiode_akt >= Trockenperiode_alt) { setState(PRE_DP + '.Jahreswerte.Trockenperiode', Trockenperiode_akt, true); }
     }    
     if (getState(WET_DP + '.Info.Letzter_Regen').val.match(/^\d{10}$/)) { //LAST_RAIN=UNIX (0123456789)
-        Trockenperiode_akt = parseInt((Date.now() - getState("javascript.0.Wetterstation.Info.Letzter_Regen").lc) / 1000 / 86400);
+        Trockenperiode_akt = parseInt((Date.now() - getState(WET_DP + '.Info.Letzter_Regen').lc) / 1000 / 86400);
         let Trockenperiode_alt = getState(PRE_DP + '.Jahreswerte.Trockenperiode').val;
         if (Trockenperiode_akt >= Trockenperiode_alt) { setState(PRE_DP + '.Jahreswerte.Trockenperiode', Trockenperiode_akt, true); }
     }
@@ -449,7 +451,7 @@ function VorJahr() {
         end = end.getTime(); 
             
              sendTo('influxdb.'+INFLUXDB_INSTANZ, 'query', 
-            'from(bucket: "'+INFLUXDB_BUCKET+'") |> range(start: '+(start/1000)+', stop: '+(end/1000)+') |> filter(fn: (r) => r._measurement == "' + WET_DP + '.Aussentemperatur") |> filter(fn: (r) => r._field == "value"); from(bucket: "'+INFLUXDB_BUCKET+'") |> range(start: '+(start/1000)+', stop: '+(end/1000)+') |> filter(fn: (r) => r.measurement == "' + WET_DP + '.Wind_max") |> filter(fn: (r) => r._field == "value"); from(bucket: "'+INFLUXDB_BUCKET+'") |> range(start: '+(start/1000)+', stop: '+(end/1000)+') |> filter(fn: (r) => r._measurement == "' + WET_DP + '.Regen_Tag") |> filter(fn: (r) => r._field == "value")'
+            'from(bucket: "'+INFLUXDB_BUCKET+'") |> range(start: '+(start/1000)+', stop: '+(end/1000)+') |> filter(fn: (r) => r._measurement == "' + WET_DP + '.Aussentemperatur") |> filter(fn: (r) => r._field == "value"); from(bucket: "'+INFLUXDB_BUCKET+'") |> range(start: '+(start/1000)+', stop: '+(end/1000)+') |> filter(fn: (r) => r._measurement == "' + WET_DP + '.Wind_max") |> filter(fn: (r) => r._field == "value"); from(bucket: "'+INFLUXDB_BUCKET+'") |> range(start: '+(start/1000)+', stop: '+(end/1000)+') |> filter(fn: (r) => r._measurement == "' + WET_DP + '.Regen_Tag") |> filter(fn: (r) => r._field == "value")'
   
                 , function (result) {
                 //Anlegen der Arrays + befüllen mit den relevanten Daten

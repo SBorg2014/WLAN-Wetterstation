@@ -3020,7 +3020,7 @@
         {
           "targetBlank": true,
           "title": "Wetter.com",
-          "url": "http://www.wetter.com/community/wetternetzwerk/station/wettermeldungen/?uid=9270"
+          "url": "http://www.wetter.com/community/wetternetzwerk/station/wettermeldungen"
         }
       ],
       "maxDataPoints": 100,

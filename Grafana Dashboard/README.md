@@ -2,6 +2,46 @@ Ersteller: crunchip@forum.iobroker.net
 Modifikationen: sborg@forum.iobroker.net
 
 Das Grafana-Dashboard als JSON-Export.   
+
+V3.0 des Dashboards ist speziell auf InfluxDB V2.x angepasst. Die Abfrage erfolgt mittels Flux.
+Benötigt :
+ * Boom Theme Plugin (für das Hintergrundbild)
+ * Spectraphilic Windrose Plugin
+ * Blendstat Panel (by farski) Plugin
+ * Table Plugin
+
+Installation des Windrose-Plugins:
+```
+sudo su -
+cd /var/lib/grafana/plugins
+git clone https://github.com/spectraphilic/grafana-windrose.git
+```
+Das Plugin in Grafana laden, dazu die `grafana.ini` bearbeiten:
+```
+nano /etc/grafana/grafana.ini
+```
+und unter **[plugins]** das laden erlauben:
+```
+[plugins]
+allow_loading_unsigned_plugins = spectraphilic-windrose-panel
+```
+Nun noch den Grafana Service neu starten.
+
+Für die Wetter- und Regenvorhersage werden weitere Datenpunkte aus den Adaptern "Das Wetter" und "Weatherunderground" 
+benötigt, sowie weitere Datenpunkte aus dem ioBroker (bspw. "Ozon" oder "Strahlenbelastung" etc.).
+
+Die Konfiguration des Dashboardes erfolgt in dessen Settings über die Variablen:
+![Konfiguration Dashboard](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/Bilder/Grafana-Settings_V3.png)
+
+Hier besteht die Möglichkeit mit zwei unterschiedlichen Buckets zu arbeiten. Nutzt man nur eines für alles (was ich nicht 
+unbedingt empfehlen würde) trägt man bei beiden den gleichen Bucketnamen ein.
+
+Bilder zur V3.0:<br>
+![Übersicht Teil 1](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/Bilder/Grafana_V3a.png)
+![Übersicht Teil 2](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/Bilder/Grafana_V3b.png)
+---
+
+
 V2.0 ist für Grafana V8.x angepasst und enthällt zahlreiche Fixes für die einzelnen Panels. 
 
 Benötigt :

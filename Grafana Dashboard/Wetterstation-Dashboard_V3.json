@@ -1,4 +1,73 @@
 {
+  "__inputs": [
+    {
+      "name": "DS_TEMPDATA",
+      "label": "TempData",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "influxdb",
+      "pluginName": "InfluxDB"
+    },
+    {
+      "name": "DS_WETTERDATEN",
+      "label": "Wetterdaten",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "influxdb",
+      "pluginName": "InfluxDB"
+    }
+  ],
+  "__elements": {},
+  "__requires": [
+    {
+      "type": "panel",
+      "id": "farski-blendstat-panel",
+      "name": "Blendstat",
+      "version": "1.0.3"
+    },
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "9.3.6"
+    },
+    {
+      "type": "datasource",
+      "id": "influxdb",
+      "name": "InfluxDB",
+      "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "spectraphilic-windrose-panel",
+      "name": "Windrose",
+      "version": "0.0.1"
+    },
+    {
+      "type": "panel",
+      "id": "stat",
+      "name": "Stat",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "table",
+      "name": "Table",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "timeseries",
+      "name": "Time series",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "yesoreyeram-boomtheme-panel",
+      "name": "Boom Theme",
+      "version": "0.2.1"
+    }
+  ],
   "annotations": {
     "list": [
       {
@@ -26,7 +95,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 20,
+  "id": null,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -41,7 +110,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "format": "none",
       "gauge": {
@@ -95,7 +164,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [],
           "measurement": "daswetter.0.NextDays.Location_1.Day_1.Wetterbedingungen_value",
@@ -141,7 +210,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "format": "none",
       "gauge": {
@@ -196,7 +265,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [],
           "measurement": "0_userdata.0.Wetterstation.Zeitstempel",
@@ -244,7 +313,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "format": "none",
       "gauge": {
@@ -278,7 +347,7 @@
       "pluginVersion": "8.0.1",
       "postfix": "",
       "postfixFontSize": "50%",
-      "prefix": "Vorhersage f�r Morgen: ",
+      "prefix": "Vorhersage für Morgen: ",
       "prefixFontSize": "50%",
       "rangeMaps": [
         {
@@ -298,7 +367,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [],
           "measurement": "daswetter.0.NextDays.Location_1.Day_2.Wetterbedingungen_value",
@@ -344,7 +413,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "CWYczFJ4z"
+        "uid": "${DS_WETTERDATEN}"
       },
       "decimals": 2,
       "format": "celsius",
@@ -402,7 +471,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "CWYczFJ4z"
+            "uid": "${DS_WETTERDATEN}"
           },
           "groupBy": [
             {
@@ -421,7 +490,7 @@
           "measurement": "0_userdata.0.Wetterstation.Gefuehlte_Temperatur",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Gefuehlte_Temperatur\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"gef�hlte Temperatur\")\r\n  ",
+          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Gefuehlte_Temperatur\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"gefühlte Temperatur\")\r\n  ",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -442,7 +511,7 @@
         }
       ],
       "thresholds": "15,28",
-      "title": "gef�hlte Temperatur",
+      "title": "gefühlte Temperatur",
       "transparent": true,
       "type": "farski-blendstat-panel",
       "valueFontSize": "80%",
@@ -467,7 +536,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "CWYczFJ4z"
+        "uid": "${DS_WETTERDATEN}"
       },
       "decimals": 2,
       "format": "celsius",
@@ -525,7 +594,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "CWYczFJ4z"
+            "uid": "${DS_WETTERDATEN}"
           },
           "groupBy": [
             {
@@ -541,6 +610,7 @@
               "type": "fill"
             }
           ],
+          "measurement": "0_userdata.0.Wetterstation.Aussentemperatur",
           "orderByTime": "ASC",
           "policy": "autogen",
           "query": "from(bucket: \"${longtermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Aussentemperatur\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"last\")\r\n  ",
@@ -564,7 +634,7 @@
         }
       ],
       "thresholds": "15,28",
-      "title": "Au�entemperatur",
+      "title": "Außentemperatur",
       "transparent": true,
       "type": "farski-blendstat-panel",
       "valueFontSize": "80%",
@@ -591,7 +661,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "decimals": 1,
       "format": "humidity",
@@ -649,7 +719,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -668,7 +738,7 @@
           "measurement": "0_userdata.0.Wetterstation.Aussenfeuchtigkeit",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Aussenfeuchtigkeit\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Aussenfeuchte\")\r\n  ",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"0_userdata.0.Wetterstation.Aussenfeuchtigkeit\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Aussenfeuchte\")\r\n  ",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -689,7 +759,7 @@
         }
       ],
       "thresholds": "35,75",
-      "title": "Au�enfeuchte",
+      "title": "Außenfeuchte",
       "transparent": true,
       "type": "farski-blendstat-panel",
       "valueFontSize": "80%",
@@ -706,7 +776,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "fieldConfig": {
         "defaults": {
@@ -766,7 +836,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -812,7 +882,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "fieldConfig": {
         "defaults": {
@@ -838,7 +908,7 @@
               }
             ]
           },
-          "unit": "con�gm3"
+          "unit": "conμgm3"
         },
         "overrides": []
       },
@@ -871,7 +941,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -918,7 +988,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "fieldConfig": {
         "defaults": {
@@ -977,7 +1047,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -1032,7 +1102,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_WETTERDATEN}"
       },
       "decimals": 3,
       "format": "watt",
@@ -1067,7 +1137,7 @@
       "maxDataPoints": 100,
       "nullPointMode": "connected",
       "pluginVersion": "8.0.1",
-      "postfix": "h/m�",
+      "postfix": "h/m²",
       "postfixFontSize": "70%",
       "prefix": "",
       "prefixFontSize": "50%",
@@ -1089,7 +1159,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_WETTERDATEN}"
           },
           "groupBy": [
             {
@@ -1154,7 +1224,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "decimals": 3,
       "format": "kwatt",
@@ -1187,7 +1257,7 @@
       "maxDataPoints": 100,
       "nullPointMode": "connected",
       "pluginVersion": "8.0.1",
-      "postfix": "h/m�",
+      "postfix": "h/m²",
       "postfixFontSize": "70%",
       "prefix": "",
       "prefixFontSize": "50%",
@@ -1209,7 +1279,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -1228,7 +1298,7 @@
           "measurement": "0_userdata.0.Wetterstation.Info.Solarenergie_Tag",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Solarenergie_Tag\" and r._field == \"value\")\r\n  |> map(fn: (r) => ({r with _value: r._value / 1000.0}))\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Solar Heute\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"0_userdata.0.Wetterstation.Info.Solarenergie_Tag\" and r._field == \"value\")\r\n  |> map(fn: (r) => ({r with _value: r._value / 1000.0}))\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Solar Heute\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -1279,7 +1349,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "decimals": 3,
       "format": "kwatt",
@@ -1312,7 +1382,7 @@
       "maxDataPoints": 100,
       "nullPointMode": "connected",
       "pluginVersion": "8.0.1",
-      "postfix": "h/m�",
+      "postfix": "h/m²",
       "postfixFontSize": "70%",
       "prefix": "",
       "prefixFontSize": "50%",
@@ -1334,7 +1404,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -1353,7 +1423,7 @@
           "measurement": "0_userdata.0.Wetterstation.Info.Solarenergie_Woche",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Solarenergie_Woche\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Solar Woche\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"0_userdata.0.Wetterstation.Info.Solarenergie_Woche\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Solar Woche\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -1398,7 +1468,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "decimals": 3,
       "format": "kwatt",
@@ -1431,7 +1501,7 @@
       "maxDataPoints": 100,
       "nullPointMode": "connected",
       "pluginVersion": "8.0.1",
-      "postfix": "h/m�",
+      "postfix": "h/m²",
       "postfixFontSize": "70%",
       "prefix": "",
       "prefixFontSize": "50%",
@@ -1453,7 +1523,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -1472,7 +1542,7 @@
           "measurement": "0_userdata.0.Wetterstation.Info.Solarenergie_Monat",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Solarenergie_Monat\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Solar Monat\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"0_userdata.0.Wetterstation.Info.Solarenergie_Monat\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Solar Monat\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -1517,7 +1587,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "decimals": 3,
       "format": "kwatt",
@@ -1550,7 +1620,7 @@
       "maxDataPoints": 100,
       "nullPointMode": "connected",
       "pluginVersion": "8.0.1",
-      "postfix": "h/m�",
+      "postfix": "h/m²",
       "postfixFontSize": "70%",
       "prefix": "",
       "prefixFontSize": "50%",
@@ -1572,7 +1642,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -1591,7 +1661,7 @@
           "measurement": "0_userdata.0.Wetterstation.Info.Solarenergie_Jahr",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Solarenergie_Jahr\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Solar Jahr\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"0_userdata.0.Wetterstation.Info.Solarenergie_Jahr\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Solar Jahr\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -1636,7 +1706,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "decimals": 2,
       "format": "celsius",
@@ -1692,7 +1762,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -1711,7 +1781,7 @@
           "measurement": "0_userdata.0.Wetterstation.Taupunkt",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Taupunkt\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Taupunkt\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"0_userdata.0.Wetterstation.Taupunkt\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Taupunkt\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -1758,7 +1828,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "decimals": 2,
       "format": "celsius",
@@ -1814,7 +1884,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -1833,7 +1903,7 @@
           "measurement": "0_userdata.0.Wetterstation.Innentemperatur",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Innentemperatur\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Innentemperatur\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"0_userdata.0.Wetterstation.Innentemperatur\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Innentemperatur\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -1878,7 +1948,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "decimals": 1,
       "format": "humidity",
@@ -1934,7 +2004,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -1953,7 +2023,7 @@
           "measurement": "0_userdata.0.Wetterstation.Innenfeuchtigkeit",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Innenfeuchtigkeit\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Innenfeuchtigkeit\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"0_userdata.0.Wetterstation.Innenfeuchtigkeit\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Innenfeuchtigkeit\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -1990,7 +2060,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "fieldConfig": {
         "defaults": {
@@ -2042,7 +2112,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -2088,7 +2158,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "fieldConfig": {
         "defaults": {
@@ -2165,7 +2235,7 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "H�he"
+                "value": "Höhe"
               }
             ]
           }
@@ -2200,7 +2270,7 @@
           "alias": " ",
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -2219,7 +2289,7 @@
           "measurement": "0_userdata.0.Wetterstation.Info.Wolkenbasis",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"0_userdata.0.Wetterstation.Info.Wolkenbasis\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Wolkenbasis\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"0_userdata.0.Wetterstation.Info.Wolkenbasis\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Wolkenbasis\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -2255,7 +2325,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "format": "pressurehpa",
       "gauge": {
@@ -2309,7 +2379,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -2328,7 +2398,7 @@
           "measurement": "0_userdata.0.Wetterstation.Druck_absolut",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Druck_absolut\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Luftdruck Ort\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"0_userdata.0.Wetterstation.Druck_absolut\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Luftdruck Ort\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -2373,7 +2443,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "format": "pressurehpa",
       "gauge": {
@@ -2427,7 +2497,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -2446,7 +2516,7 @@
           "measurement": "0_userdata.0.Wetterstation.Druck_relativ",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Druck_relativ\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Luftdruck �NN\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"0_userdata.0.Wetterstation.Druck_relativ\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Luftdruck ÜNN\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -2467,7 +2537,7 @@
         }
       ],
       "thresholds": "",
-      "title": "Luftdruck relativ (�NN)",
+      "title": "Luftdruck relativ (ÜNN)",
       "transparent": true,
       "type": "farski-blendstat-panel",
       "valueFontSize": "80%",
@@ -2483,7 +2553,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "fieldConfig": {
         "defaults": {
@@ -2565,7 +2635,7 @@
           "alias": "Hitzeindex",
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -2584,7 +2654,7 @@
           "measurement": "0_userdata.0.Wetterstation.Info.Hitzeindex",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Hitzeindex\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Hitzeindex\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"0_userdata.0.Wetterstation.Info.Hitzeindex\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Hitzeindex\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -2611,7 +2681,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "description": "",
       "fieldConfig": {
@@ -2690,7 +2760,7 @@
           "alias": "Windy",
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -2703,7 +2773,7 @@
           "measurement": "alias.0.Wetterstation.AWEKAS",
           "orderByTime": "ASC",
           "policy": "autogen",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"alias.0.Wetterstation.AWEKAS\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"AWEKAS\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"alias.0.Wetterstation.AWEKAS\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"AWEKAS\")",
           "rawQuery": false,
           "refId": "A",
           "resultFormat": "time_series",
@@ -2731,7 +2801,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "description": "",
       "fieldConfig": {
@@ -2811,7 +2881,7 @@
           "alias": "OSEM",
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -2824,7 +2894,7 @@
           "measurement": "alias.0.Wetterstation.openSenseMap",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"alias.0.Wetterstation.openSenseMap\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"OSeM\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"alias.0.Wetterstation.openSenseMap\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"OSeM\")",
           "rawQuery": false,
           "refId": "A",
           "resultFormat": "time_series",
@@ -2851,7 +2921,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "description": "",
       "fieldConfig": {
@@ -2930,7 +3000,7 @@
           "alias": "Windy",
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -2943,7 +3013,7 @@
           "measurement": "alias.0.Wetterstation.Windy",
           "orderByTime": "ASC",
           "policy": "autogen",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"alias.0.Wetterstation.Windy\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Windy\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"alias.0.Wetterstation.Windy\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Windy\")",
           "rawQuery": false,
           "refId": "A",
           "resultFormat": "time_series",
@@ -2971,7 +3041,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "description": "",
       "fieldConfig": {
@@ -3020,7 +3090,7 @@
         {
           "targetBlank": true,
           "title": "Wetter.com",
-          "url": "http://www.wetter.com/community/wetternetzwerk/station/wettermeldungen"
+          "url": "http://www.wetter.com/community/wetternetzwerk/station/wettermeldungen/"
         }
       ],
       "maxDataPoints": 100,
@@ -3050,7 +3120,7 @@
           "alias": "W.com",
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -3063,7 +3133,7 @@
           "measurement": "alias.0.Wetterstation.Wetter_com",
           "orderByTime": "ASC",
           "policy": "autogen",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"alias.0.Wetterstation.Wetter_com\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Wetter.com\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"alias.0.Wetterstation.Wetter_com\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Wetter.com\")",
           "rawQuery": false,
           "refId": "A",
           "resultFormat": "time_series",
@@ -3091,7 +3161,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "description": "",
       "fieldConfig": {
@@ -3170,7 +3240,7 @@
           "alias": "",
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -3183,7 +3253,7 @@
           "measurement": "alias.0.Wetterstation.FW_Upgrade",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"alias.0.Wetterstation.FW_Upgrade\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Firmwareupgrade\")\r\n",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"alias.0.Wetterstation.FW_Upgrade\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Firmwareupgrade\")\r\n",
           "rawQuery": false,
           "refId": "A",
           "resultFormat": "time_series",
@@ -3210,7 +3280,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "description": "",
       "fieldConfig": {
@@ -3281,7 +3351,7 @@
           "alias": "",
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -3294,7 +3364,7 @@
           "measurement": "0_userdata.0.Wetterstation.Info.Station_Batteriestatus",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"0_userdata.0.Wetterstation.Info.Station_Batteriestatus\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Batteriestatus\")\r\n",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"0_userdata.0.Wetterstation.Info.Station_Batteriestatus\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Batteriestatus\")\r\n",
           "rawQuery": false,
           "refId": "A",
           "resultFormat": "time_series",
@@ -3329,7 +3399,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "decimals": 2,
       "format": "none",
@@ -3386,13 +3456,13 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [],
           "measurement": "weatherunderground.0.forecast.0d.precipitationAllDay",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"weatherunderground.0.forecast.0d.precipitationAllDay\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Regenvorschau\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"weatherunderground.0.forecast.0d.precipitationAllDay\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Regenvorschau\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -3433,7 +3503,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "format": "none",
       "gauge": {
@@ -3487,13 +3557,13 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [],
           "measurement": "0_userdata.0.Wetterstation.Wetter_aktuell",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Wetter_aktuell\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Wetter aktuell\")\r\n",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"0_userdata.0.Wetterstation.Wetter_aktuell\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Wetter aktuell\")\r\n",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -3533,7 +3603,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "format": "none",
       "gauge": {
@@ -3587,7 +3657,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -3606,7 +3676,7 @@
           "measurement": "0_userdata.0.Wetterstation.Windrichtung_Text_10min",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Windrichtung_Text_10min\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Windrichtung Text\")\r\n",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"0_userdata.0.Wetterstation.Windrichtung_Text_10min\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Windrichtung Text\")\r\n",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -3651,7 +3721,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "description": "",
       "format": "degree",
@@ -3709,7 +3779,7 @@
           "alias": "Windrichtung",
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -3728,7 +3798,7 @@
           "measurement": "0_userdata.0.Wetterstation.Windrichtung_10min",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Windrichtung_10min\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Windrichtung Grad\")\r\n",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"0_userdata.0.Wetterstation.Windrichtung_10min\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Windrichtung Grad\")\r\n",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -3749,7 +3819,7 @@
         }
       ],
       "thresholds": "",
-      "title": "Windrichtung �",
+      "title": "Windrichtung Ø",
       "transparent": true,
       "type": "farski-blendstat-panel",
       "valueFontSize": "80%",
@@ -3766,7 +3836,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "fieldConfig": {
         "defaults": {
@@ -3836,7 +3906,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -3855,7 +3925,7 @@
           "measurement": "0_userdata.0.Wetterstation.UV_Index",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.UV_Index\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"UV-Index\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"0_userdata.0.Wetterstation.UV_Index\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"UV-Index\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -3890,7 +3960,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "format": "celsius",
       "gauge": {
@@ -3946,13 +4016,13 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [],
           "measurement": "Aussentemperatur in 3h",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"Aussentemperatur in 3h\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Temperatur in 3h\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"Aussentemperatur in 3h\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Temperatur in 3h\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -3991,7 +4061,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "description": "",
       "fieldConfig": {
@@ -4070,7 +4140,7 @@
           "alias": "Fehler",
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -4083,7 +4153,7 @@
           "measurement": "alias.0.Wetterstation.Kommunikationsfehler",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"alias.0.Wetterstation.Kommunikationsfehler\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Kommunikationsfehler\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"alias.0.Wetterstation.Kommunikationsfehler\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Kommunikationsfehler\")",
           "rawQuery": false,
           "refId": "A",
           "resultFormat": "time_series",
@@ -4118,7 +4188,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "format": "percent",
       "gauge": {
@@ -4172,13 +4242,13 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [],
           "measurement": "weatherunderground.0.forecast.0d.precipitationChance",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"weatherunderground.0.forecast.0d.precipitationChance\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Regenrisiko\")\r\n",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"weatherunderground.0.forecast.0d.precipitationChance\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Regenrisiko\")\r\n",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -4218,7 +4288,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "format": "none",
       "gauge": {
@@ -4272,13 +4342,13 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [],
           "measurement": "0_userdata.0.Wetterstation.Wetter_Trend",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Wetter_Trend\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Wettertrend\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"0_userdata.0.Wetterstation.Wetter_Trend\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Wettertrend\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -4318,7 +4388,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "decimals": 2,
       "format": "celsius",
@@ -4375,13 +4445,13 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [],
-          "measurement": "Au�entemperatur min vor einem Jahr",
+          "measurement": "Außentemperatur min vor einem Jahr",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Temp_Aussen_365t_min\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Temperaturtiefstwert vor einem Jahr\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"0_userdata.0.Wetterstation.Info.Temp_Aussen_365t_min\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Temperaturtiefstwert vor einem Jahr\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -4428,7 +4498,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "description": "",
       "format": "none",
@@ -4485,13 +4555,13 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [],
           "measurement": "0_userdata.0.Wetterstation.Regenstatus",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Regenstatus\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Regenstatus\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"0_userdata.0.Wetterstation.Regenstatus\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Regenstatus\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -4532,7 +4602,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "decimals": 2,
       "format": "string",
@@ -4621,7 +4691,7 @@
           "alias": "Luftdrucktendenz",
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -4640,7 +4710,7 @@
           "measurement": "0_userdata.0.Wetterstation.Druck_Tendenz",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Druck_Tendenz\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Luftdrucktendenz\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"0_userdata.0.Wetterstation.Druck_Tendenz\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Luftdrucktendenz\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -4691,7 +4761,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "decimals": 2,
       "format": "celsius",
@@ -4748,13 +4818,13 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [],
-          "measurement": "Au�entemperatur max vor einem Jahr",
+          "measurement": "Außentemperatur max vor einem Jahr",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Temp_Aussen_365t_max\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Temperaturhoechstwert vor einem Jahr\")\r\n  ",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"0_userdata.0.Wetterstation.Info.Temp_Aussen_365t_max\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Temperaturhoechstwert vor einem Jahr\")\r\n  ",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -4801,7 +4871,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "format": "none",
       "gauge": {
@@ -4857,13 +4927,13 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [],
           "measurement": "0_userdata.0.Wetterstation.Info.Letzter_Regen",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Letzter_Regen\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"letzter Regen\")\r\n",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"0_userdata.0.Wetterstation.Info.Letzter_Regen\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"letzter Regen\")\r\n",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -4904,7 +4974,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "decimals": 1,
       "format": "none",
@@ -4961,13 +5031,13 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [],
           "measurement": "0_userdata.0.Wetterstation.Info.Letzte_Regenmenge",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Letzte_Regenmenge\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Letzte Regenmenge\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"0_userdata.0.Wetterstation.Info.Letzte_Regenmenge\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Letzte Regenmenge\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -5000,7 +5070,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "description": "",
       "fieldConfig": {
@@ -5091,10 +5161,10 @@
       "pluginVersion": "9.3.6",
       "targets": [
         {
-          "alias": "?? Heute",
+          "alias": "☂️ Heute",
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -5114,7 +5184,7 @@
           "measurement": "0_userdata.0.Wetterstation.Regen_Tag",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.Statistik.Wetter.VorTag.Regenmenge\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"?? Gestern\")\r\n  |> yield(name: \"Gestern\")\r\n\r\n  ",
+          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.Statistik.Wetter.VorTag.Regenmenge\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"☂️ Gestern\")\r\n  |> yield(name: \"Gestern\")\r\n\r\n  ",
           "refId": "B",
           "resultFormat": "time_series",
           "select": [
@@ -5134,10 +5204,10 @@
           "tags": []
         },
         {
-          "alias": "?? Heute",
+          "alias": "☂️ Heute",
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -5157,7 +5227,7 @@
           "measurement": "0_userdata.0.Wetterstation.Regen_Tag",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Regen_Tag\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"?? Heute\")\r\n  |> yield(name: \"Heute\")\r\n\r\n  ",
+          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Regen_Tag\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"☂️ Heute\")\r\n  |> yield(name: \"Heute\")\r\n\r\n  ",
           "refId": "C",
           "resultFormat": "time_series",
           "select": [
@@ -5177,10 +5247,10 @@
           "tags": []
         },
         {
-          "alias": "?? Heute",
+          "alias": "☂️ Heute",
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -5200,7 +5270,7 @@
           "measurement": "0_userdata.0.Wetterstation.Regen_Tag",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Regen_Woche\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"?? aktuelle Woche\")\r\n  |> yield(name: \"aktuelle Woche\")\r\n\r\n  ",
+          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Regen_Woche\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"☂️ aktuelle Woche\")\r\n  |> yield(name: \"aktuelle Woche\")\r\n\r\n  ",
           "refId": "D",
           "resultFormat": "time_series",
           "select": [
@@ -5220,10 +5290,10 @@
           "tags": []
         },
         {
-          "alias": "?? Heute",
+          "alias": "☂️ Heute",
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -5243,7 +5313,7 @@
           "measurement": "0_userdata.0.Wetterstation.Regen_Tag",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Regen_Monat\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"?? aktueller Monat\")\r\n  |> yield(name: \"aktueller Monat\")\r\n\r\n  ",
+          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Regen_Monat\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"☂️ aktueller Monat\")\r\n  |> yield(name: \"aktueller Monat\")\r\n\r\n  ",
           "refId": "E",
           "resultFormat": "time_series",
           "select": [
@@ -5263,10 +5333,10 @@
           "tags": []
         },
         {
-          "alias": "?? Heute",
+          "alias": "☂️ Heute",
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -5286,7 +5356,7 @@
           "measurement": "0_userdata.0.Wetterstation.Regen_Tag",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Regen_Jahr_kumuliert\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"?? aktuelles Jahr\")\r\n  |> yield(name: \"aktuelles Jahr\")\r\n\r\n  ",
+          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Regen_Jahr_kumuliert\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"☂️ aktuelles Jahr\")\r\n  |> yield(name: \"aktuelles Jahr\")\r\n\r\n  ",
           "refId": "F",
           "resultFormat": "time_series",
           "select": [
@@ -5306,10 +5376,10 @@
           "tags": []
         },
         {
-          "alias": "?? Heute",
+          "alias": "☂️ Heute",
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -5329,7 +5399,7 @@
           "measurement": "0_userdata.0.Wetterstation.Regen_Tag",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Regenmenge_VorJahr\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"?? VorJahr\")\r\n  |> yield(name: \"VorJahr\")\r\n\r\n  ",
+          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Regenmenge_VorJahr\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"☂️ VorJahr\")\r\n  |> yield(name: \"VorJahr\")\r\n\r\n  ",
           "refId": "G",
           "resultFormat": "time_series",
           "select": [
@@ -5376,7 +5446,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "format": "none",
       "gauge": {
@@ -5412,7 +5482,7 @@
       "pluginVersion": "6.7.3",
       "postfix": "",
       "postfixFontSize": "30%",
-      "prefix": "N�chster Regen in:",
+      "prefix": "Nächster Regen in:",
       "prefixFontSize": "50%",
       "rangeMaps": [
         {
@@ -5432,13 +5502,13 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [],
           "measurement": "0_userdata.0.VIS.Wetter.Regenvorschau",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"0_userdata.0.VIS.Wetter.Regenvorschau\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Regenvorschau\")\r\n",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"0_userdata.0.VIS.Wetter.Regenvorschau\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Regenvorschau\")\r\n",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -5477,7 +5547,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "000000001"
+        "uid": "${DS_HOMEAUTOMATION}"
       },
       "description": "",
       "gridPos": {
@@ -5603,7 +5673,11 @@
               }
             ]
           ],
-          "tags": []
+          "tags": [],
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_HOMEAUTOMATION}"
+          }
         }
       ],
       "transparent": true,
@@ -5620,7 +5694,7 @@
       ],
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "decimals": 2,
       "format": "celsius",
@@ -5657,7 +5731,7 @@
       "pluginVersion": "6.7.3",
       "postfix": "",
       "postfixFontSize": "30%",
-      "prefix": "� vor  einem Jahr",
+      "prefix": "Ø vor  einem Jahr",
       "prefixFontSize": "50%",
       "rangeMaps": [
         {
@@ -5677,13 +5751,13 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [],
-          "measurement": "Au�entemperatur avg vor einem Jahr",
+          "measurement": "Außentemperatur avg vor einem Jahr",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Temp_Aussen_365t_avg\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Temperaturdurchschnitt vor einem Jahr\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"0_userdata.0.Wetterstation.Info.Temp_Aussen_365t_avg\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Temperaturdurchschnitt vor einem Jahr\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -5722,7 +5796,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "CWYczFJ4z"
+        "uid": "${DS_WETTERDATEN}"
       },
       "description": "",
       "fieldConfig": {
@@ -5845,7 +5919,7 @@
           "alias": "Aussen",
           "datasource": {
             "type": "influxdb",
-            "uid": "CWYczFJ4z"
+            "uid": "${DS_WETTERDATEN}"
           },
           "groupBy": [
             {
@@ -5886,10 +5960,10 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "CWYczFJ4z"
+            "uid": "${DS_WETTERDATEN}"
           },
           "hide": false,
-          "query": "from(bucket: \"${longtermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Innentemperatur\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> set(key: \"_field\", value: \"Innen\")\r\n  |> yield(name: \"Innen\")\r\n  ",
+          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Innentemperatur\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> set(key: \"_field\", value: \"Innen\")\r\n  |> yield(name: \"Innen\")\r\n  ",
           "refId": "B"
         }
       ],
@@ -5900,7 +5974,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "fieldConfig": {
         "defaults": {
@@ -5979,7 +6053,7 @@
             "properties": [
               {
                 "id": "custom.axisLabel",
-                "value": "B�en"
+                "value": "Böen"
               },
               {
                 "id": "color",
@@ -5990,7 +6064,7 @@
               },
               {
                 "id": "displayName",
-                "value": "B�en"
+                "value": "Böen"
               }
             ]
           }
@@ -6025,7 +6099,7 @@
           "alias": "Wind",
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -6044,7 +6118,7 @@
           "measurement": "0_userdata.0.Wetterstation.Wind",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"0_userdata.0.Wetterstation.Wind\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Windgeschwindigkeit\")\r\n  ",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"0_userdata.0.Wetterstation.Wind\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Windgeschwindigkeit\")\r\n  ",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -6064,10 +6138,10 @@
           "tags": []
         },
         {
-          "alias": "B�en",
+          "alias": "Böen",
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -6086,7 +6160,7 @@
           "measurement": "0_userdata.0.Wetterstation.Wind_max",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"0_userdata.0.Wetterstation.Wind_max\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"maximale Windgeschwindigkeit\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"0_userdata.0.Wetterstation.Wind_max\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"maximale Windgeschwindigkeit\")",
           "refId": "B",
           "resultFormat": "time_series",
           "select": [
@@ -6113,7 +6187,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "description": "",
       "fieldConfig": {
@@ -6200,54 +6274,54 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
-          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Sonnenschein_VorTag\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"?? Gestern\")\r\n  |> yield(name: \"Gestern\")\r\n",
+          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Sonnenschein_VorTag\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"☀️ Gestern\")\r\n  |> yield(name: \"Gestern\")\r\n",
           "refId": "A"
         },
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "hide": false,
-          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Sonnenschein_Tag\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"?? Heute\")\r\n  |> yield(name: \"Heute\")\r\n",
+          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Sonnenschein_Tag\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"☀️ Heute\")\r\n  |> yield(name: \"Heute\")\r\n",
           "refId": "B"
         },
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "hide": false,
-          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Sonnenschein_Woche\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"?? aktuelle Woche\")\r\n  |> yield(name: \"aktuelle Woche\")\r\n",
+          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Sonnenschein_Woche\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"☀️ aktuelle Woche\")\r\n  |> yield(name: \"aktuelle Woche\")\r\n",
           "refId": "C"
         },
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "hide": false,
-          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Sonnenschein_Monat\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"?? aktueller Monat\")\r\n  |> yield(name: \"aktueller Monat\")\r\n",
+          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Sonnenschein_Monat\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"☀️ aktueller Monat\")\r\n  |> yield(name: \"aktueller Monat\")\r\n",
           "refId": "D"
         },
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "hide": false,
-          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Sonnenschein_Jahr\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"?? aktuelles Jahr\")\r\n  |> yield(name: \"aktuelles Jahr\")\r\n",
+          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Sonnenschein_Jahr\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"☀️ aktuelles Jahr\")\r\n  |> yield(name: \"aktuelles Jahr\")\r\n",
           "refId": "E"
         },
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "hide": false,
-          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Sonnenschein_VorJahr\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"?? Vorjahr\")\r\n  |> yield(name: \"Vorjahr\")\r\n",
+          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Sonnenschein_VorJahr\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"☀️ Vorjahr\")\r\n  |> yield(name: \"Vorjahr\")\r\n",
           "refId": "F"
         }
       ],
@@ -6269,7 +6343,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "fieldConfig": {
         "defaults": {
@@ -6392,7 +6466,7 @@
           "alias": "Aussen",
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -6411,7 +6485,7 @@
           "measurement": "0_userdata.0.Wetterstation.Aussenfeuchtigkeit",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Aussenfeuchtigkeit\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Aussenfeuchte\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"0_userdata.0.Wetterstation.Aussenfeuchtigkeit\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Aussenfeuchte\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -6434,7 +6508,7 @@
           "alias": "Innen",
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -6453,7 +6527,7 @@
           "measurement": "0_userdata.0.Wetterstation.Innenfeuchtigkeit",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Innenfeuchtigkeit\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Innenfeuchte\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"0_userdata.0.Wetterstation.Innenfeuchtigkeit\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Innenfeuchte\")",
           "refId": "B",
           "resultFormat": "time_series",
           "select": [
@@ -6480,7 +6554,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "fieldConfig": {
         "defaults": {
@@ -6550,7 +6624,7 @@
               },
               {
                 "id": "displayName",
-                "value": "�NN"
+                "value": "ÜNN"
               }
             ]
           },
@@ -6607,7 +6681,7 @@
           "alias": "absolut",
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -6626,7 +6700,7 @@
           "measurement": "0_userdata.0.Wetterstation.Druck_absolut",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Druck_absolut\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Luftdruck Ort\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"0_userdata.0.Wetterstation.Druck_absolut\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Luftdruck Ort\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -6649,7 +6723,7 @@
           "alias": "relativ",
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -6668,7 +6742,7 @@
           "measurement": "0_userdata.0.Wetterstation.Druck_relativ",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Druck_relativ\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Luftdruck �NN\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"0_userdata.0.Wetterstation.Druck_relativ\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Luftdruck ÜNN\")",
           "refId": "B",
           "resultFormat": "time_series",
           "select": [
@@ -6695,7 +6769,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "CWYczFJ4z"
+        "uid": "${DS_WETTERDATEN}"
       },
       "description": "",
       "fieldConfig": {
@@ -6750,7 +6824,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "javascript.0.Statistik.Temperatur.Au�en.Max_24h value"
+              "options": "javascript.0.Statistik.Temperatur.Außen.Max_24h value"
             },
             "properties": [
               {
@@ -6762,14 +6836,14 @@
               },
               {
                 "id": "displayName",
-                "value": "H�chstwert"
+                "value": "Höchstwert"
               }
             ]
           },
           {
             "matcher": {
               "id": "byName",
-              "options": "javascript.0.Statistik.Temperatur.Au�en.Min_24h value"
+              "options": "javascript.0.Statistik.Temperatur.Außen.Min_24h value"
             },
             "properties": [
               {
@@ -6817,7 +6891,7 @@
           "alias": "Minimal",
           "datasource": {
             "type": "influxdb",
-            "uid": "CWYczFJ4z"
+            "uid": "${DS_WETTERDATEN}"
           },
           "groupBy": [
             {
@@ -6834,10 +6908,10 @@
             }
           ],
           "hide": false,
-          "measurement": "javascript.0.Statistik.Temperatur.Au�en.Min_24h",
+          "measurement": "javascript.0.Statistik.Temperatur.Außen.Min_24h",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"Wetterdaten\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"javascript.0.Statistik.Temperatur.Au�en.Min_24h\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Tiefstwert 24h\")",
+          "query": "from(bucket: \"Wetterdaten\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"javascript.0.Statistik.Temperatur.Außen.Min_24h\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Tiefstwert 24h\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -6860,7 +6934,7 @@
           "alias": "Maximal",
           "datasource": {
             "type": "influxdb",
-            "uid": "CWYczFJ4z"
+            "uid": "${DS_WETTERDATEN}"
           },
           "groupBy": [
             {
@@ -6876,10 +6950,10 @@
               "type": "fill"
             }
           ],
-          "measurement": "javascript.0.Statistik.Temperatur.Au�en.Max_24h",
+          "measurement": "javascript.0.Statistik.Temperatur.Außen.Max_24h",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"Wetterdaten\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"javascript.0.Statistik.Temperatur.Au�en.Max_24h\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"H�chstwert 24h\")",
+          "query": "from(bucket: \"Wetterdaten\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"javascript.0.Statistik.Temperatur.Außen.Max_24h\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Höchstwert 24h\")",
           "refId": "B",
           "resultFormat": "time_series",
           "select": [
@@ -6907,7 +6981,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "description": "",
       "fieldConfig": {
@@ -6961,7 +7035,7 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Energie pro m�"
+                "value": "Energie pro m²"
               },
               {
                 "id": "unit",
@@ -7001,55 +7075,55 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "hide": false,
-          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Solarenergie_VorTag\" and r._field == \"value\")\r\n  |> map(fn: (r) => ({r with _value: r._value / 1000.0}))\r\n  |> set(key: \"_field\", value: \"? Gestern\")\r\n  |> yield(name: \"Gestern\")\r\n",
+          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Solarenergie_VorTag\" and r._field == \"value\")\r\n  |> map(fn: (r) => ({r with _value: r._value / 1000.0}))\r\n  |> set(key: \"_field\", value: \"⚡ Gestern\")\r\n  |> yield(name: \"Gestern\")\r\n",
           "refId": "A"
         },
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "hide": false,
-          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Solarenergie_Tag\" and r._field == \"value\")\r\n  |> map(fn: (r) => ({r with _value: r._value / 1000.0}))\r\n  |> set(key: \"_field\", value: \"? Heute\")\r\n  |> yield(name: \"Heute\")\r\n",
+          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Solarenergie_Tag\" and r._field == \"value\")\r\n  |> map(fn: (r) => ({r with _value: r._value / 1000.0}))\r\n  |> set(key: \"_field\", value: \"⚡ Heute\")\r\n  |> yield(name: \"Heute\")\r\n",
           "refId": "B"
         },
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "hide": false,
-          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Solarenergie_Woche\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"? aktuelle Woche\")\r\n  |> yield(name: \"aktuelle Woche\")\r\n",
+          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Solarenergie_Woche\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"⚡ aktuelle Woche\")\r\n  |> yield(name: \"aktuelle Woche\")\r\n",
           "refId": "C"
         },
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "hide": false,
-          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Solarenergie_Monat\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"? aktueller Monat\")\r\n  |> yield(name: \"aktueller Monat\")\r\n",
+          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Solarenergie_Monat\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"⚡ aktueller Monat\")\r\n  |> yield(name: \"aktueller Monat\")\r\n",
           "refId": "D"
         },
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "hide": false,
-          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Solarenergie_Jahr\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"? aktuelles Jahr\")\r\n  |> yield(name: \"aktuelles Jahr\")\r\n",
+          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Solarenergie_Jahr\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"⚡ aktuelles Jahr\")\r\n  |> yield(name: \"aktuelles Jahr\")\r\n",
           "refId": "E"
         },
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "hide": false,
-          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Solarenergie_VorJahr\" and r._field == \"value\")\r\n  |> map(fn: (r) => ({r with _value: r._value / 1000.0}))\r\n  |> set(key: \"_field\", value: \"? Vorjahr\")\r\n  |> yield(name: \"Vorjahr\")\r\n",
+          "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Info.Solarenergie_VorJahr\" and r._field == \"value\")\r\n  |> map(fn: (r) => ({r with _value: r._value / 1000.0}))\r\n  |> set(key: \"_field\", value: \"⚡ Vorjahr\")\r\n  |> yield(name: \"Vorjahr\")\r\n",
           "refId": "F"
         }
       ],
@@ -7071,7 +7145,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "fieldConfig": {
         "defaults": {
@@ -7213,7 +7287,7 @@
           "alias": "Regenrate",
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [],
           "measurement": "0_userdata.0.Wetterstation.Regenrate",
@@ -7238,7 +7312,7 @@
           "alias": "Regen Tag",
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -7257,7 +7331,7 @@
           "measurement": "0_userdata.0.Wetterstation.Regen_Tag",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Regen_Tag\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"t�gliche Regenmenge\")",
+          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Regen_Tag\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"tägliche Regenmenge\")",
           "refId": "B",
           "resultFormat": "time_series",
           "select": [
@@ -7285,7 +7359,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "gridPos": {
         "h": 9,
@@ -7293,6 +7367,7 @@
         "x": 0,
         "y": 32
       },
+      "hideTimeOverride": true,
       "id": 78,
       "scale": "absolute",
       "slices": "32",
@@ -7302,12 +7377,13 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Wind_max\" or r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Windrichtung\")\r\n  |> filter(fn: (r) => r._field == \"value\")\r\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_measurement\"], valueColumn: \"_value\")\r\n  |> filter(fn: (r) => exists r[\"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Windrichtung\"] and exists r[\"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Wind_max\"])\r\n  |> rename(columns: {\"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Windrichtung\": \"directionRad\", \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Wind_max\": \"speedMps\"})\r\n  |> map(fn: (r) => ({ r with  direction: r.directionRad / 3.14 * 180.0 }))\r\n  |> map(fn: (r) => ({ r with  speed: r.speedMps / 0.514 }))\r\n  |> aggregateWindow(every: v.windowPeriod, fn: first, column: \"direction\", createEmpty: false)",
+          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Wind_max\" or r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Windrichtung\")\r\n  |> filter(fn: (r) => r._field == \"value\")\r\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_measurement\"], valueColumn: \"_value\")\r\n  |> filter(fn: (r) => exists r[\"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Windrichtung\"] and exists r[\"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Wind_max\"])\r\n  |> rename(columns: {\"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Windrichtung\": \"direction\", \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Wind_max\": \"speedMps\"})\r\n//  |> map(fn: (r) => ({ r with  direction: r.directionRad / 3.14 * 180.0 }))\r\n  |> map(fn: (r) => ({ r with  speed: r.speedMps * 1.852 }))\r\n  |> aggregateWindow(every: v.windowPeriod, fn: first, column: \"direction\", createEmpty: false)",
           "refId": "A"
         }
       ],
+      "timeFrom": "8h",
       "title": "Windrose",
       "transparent": true,
       "type": "spectraphilic-windrose-panel",
@@ -7317,7 +7393,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "fieldConfig": {
         "defaults": {
@@ -7403,7 +7479,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.Wetter.Ozon.Ozonwert\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"Ozon\")\r\n  |> yield(name: \"Ozon\")\r\n",
           "refId": "A"
@@ -7411,7 +7487,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "hide": false,
           "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Wind\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"Windgeschwindigkeit\")\r\n  |> yield(name: \"Windgeschwindigkeit\")\r\n",
@@ -7420,7 +7496,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "hide": false,
           "query": " from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Druck_Tendenz\" and r._field == \"value\")\r\n  |> set(key: \"_field\", value: \"Drucktendenz\")\r\n  |> yield(name: \"Drucktendenz\")\r\n",
@@ -7446,7 +7522,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ssI1YtJ4z"
+        "uid": "${DS_TEMPDATA}"
       },
       "fieldConfig": {
         "defaults": {
@@ -7560,7 +7636,7 @@
           "alias": "Sonnenstrahlung",
           "datasource": {
             "type": "influxdb",
-            "uid": "ssI1YtJ4z"
+            "uid": "${DS_TEMPDATA}"
           },
           "groupBy": [
             {
@@ -7579,7 +7655,7 @@
           "measurement": "0_userdata.0.Wetterstation.Sonnenstrahlung",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"${shorttermBucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"${Data_Prefix}.${Data_Instanz}.${Data_Ordnername}.Sonnenstrahlung\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Sonnenstrahlung\")",
+          "query": "from(bucket: \"TempData\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"0_userdata.0.Wetterstation.Sonnenstrahlung\" and r._field == \"value\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"Sonnenstrahlung\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -7628,19 +7704,19 @@
         "options": [
           {
             "selected": true,
-            "text": "hier Name des Buckets eintragen",
-            "value": "hier Name des Buckets eintragen"
+            "text": "Wetterdaten",
+            "value": "Wetterdaten"
           }
         ],
-        "query": "hier Name des Buckets eintragen",
+        "query": "Wetterdaten",
         "skipUrlSync": false,
         "type": "custom"
       },
       {
         "current": {
           "selected": false,
-          "text": "${shorttermBucket}",
-          "value": "${shorttermBucket}"
+          "text": "TempData",
+          "value": "TempData"
         },
         "description": "Bucket mit einer Retention von bspw. \"7 Tagen\"",
         "hide": 2,
@@ -7650,11 +7726,11 @@
         "options": [
           {
             "selected": true,
-            "text": "hier Name des Buckets eintragen",
-            "value": "hier Name des Buckets eintragen"
+            "text": "TempData",
+            "value": "TempData"
           }
         ],
-        "query": "hier Name des Buckets eintragen",
+        "query": "TempData",
         "skipUrlSync": false,
         "type": "custom"
       },
@@ -7745,7 +7821,7 @@
   },
   "timezone": "",
   "title": "Wetterstation",
-  "uid": "lc4i38znk",
-  "version": 8,
+  "uid": "lcOi38znk",
+  "version": 410,
   "weekStart": ""
 }

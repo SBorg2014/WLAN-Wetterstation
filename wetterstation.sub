@@ -1229,6 +1229,8 @@ minmax24h() {
 
         MIN_TEMP_24H=$(influx_query "${FLUXSTART}" "${FLUXENDE}" "Aussentemperatur" "min")
         MAX_TEMP_24H=$(influx_query "${FLUXSTART}" "${FLUXENDE}" "Aussentemperatur" "max")
+         #Debug-Ausgabe (Test InfluxDB-Konnektivität)
+         if [ "$1" == "DEBUG" ]; then echo "Testing InfluxDB... min/max Aussentemperatur 24h: ${MIN_TEMP_24H}°C ${MAX_TEMP_24H}°C";fi
 
         SAPI "Single" "set/${DP_MIN_TEMP_24H}?value=${MIN_TEMP_24H}&ack=true"
         SAPI "Single" "set/${DP_MAX_TEMP_24H}?value=${MAX_TEMP_24H}&ack=true"

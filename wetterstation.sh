@@ -13,6 +13,7 @@
                        ~ Mindestintervall von 65 Sekunden beim Datenversand an AWEKAS.at
                        + Support Zusatzsensor Curconsa FT0300 / Pull Request #55 (LukasTr1980)
                        ~ Anzahl maximaler interner Sensoren von 30 auf 35 angehoben
+                       + Debug-Option zum Test der InfluxDB-Konnektivität
  V2.22.0 / 23.01.2023  + Support für Bresser Thermo-Hygro-7Ch-Sensor #7009999 / Issue #53
  V2.21.0 / 15.01.2023  + Support für AWEKAS
                        ~ fix fehlende Regenwerte wenn nur der WS90 ohne weitere Außeneinheit benutzt wird / Issue #51

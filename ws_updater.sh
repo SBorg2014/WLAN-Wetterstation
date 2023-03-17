@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V2.21.0
+UPDATE_VER=V3.0.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -54,7 +54,7 @@ checker() {
           sudo systemctl daemon-reload
           sudo systemctl restart wetterstation
          fi
-         if [ ! -z ${INFLUX_API} ] && [ $(which influxd) ]; then check_prog influx; fi
+         if [ ! -z ${INFLUX_API} ]; then check_prog influx; fi
          check_prog bc
          check_prog jq
          check_prog dc
@@ -67,7 +67,7 @@ checker() {
 
 check_prog() {
          if [ $1 == "influx" ]; then
-          if [ ! $(influxd version|cut -d" " -f2|grep v1.) ]; then echo -e "${RE} Offizieller Support nur für Influx V1.x!\n\n${WE}"; sleep 5; fi
+          if [ ! $(curl -skL -I "${INFLUX_WEB}://${INFLUX_API}/ping" | grep X-Influxdb-Version | cut -d" " -f2 | grep v2.[0-9].[0-9]) ]; then echo -e "${RE} Offizieller Support nur noch für Influx V2.x!\n\n${WE}"; sleep 5; fi
           return
          fi
          if [ $1 == "restapi" ]; then
@@ -102,7 +102,7 @@ FEHLER() {
 }
 
 patcher() {
-         echo -en "\n${WE} Soll die ${RE}wetterstation.conf ${WE}nun auf eine neue Version gepatcht werden? [${GR}J/N${WE}]"
+         echo -en "\n${WE} Soll die ${RE}wetterstation.conf ${WE}nun auf die neue Version ${GE}${UPDATE_VER}${WE} gepatcht werden? [${GR}J/N${WE}]"
            read -n 1 -p ": " JN
            if [ "$JN" = "J" ] || [ "$JN" = "j" ]; then
              echo -e "\n\n\n"
@@ -143,8 +143,10 @@ patcher() {
            V2.17.0) PATCH2180 ;;
            V2.18.0) PATCH2190 ;;
            V2.19.0) PATCH2200 ;;
-           V2.20.0) PATCH2210 && exit 0;;
-           V2.21.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
+           V2.20.0) PATCH2210 ;;
+           V2.21.0) PATCH2220 ;;
+           V2.22.0) PATCH3000 && exit 0;;
+           V3.0.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
                  *) FEHLER
     esac
 
@@ -482,6 +484,53 @@ PATCH2210(){
  fi
  echo -e "\n${WE} Fertig...\n"
  echo -e " ${GE}Die Datenübertragung kann nun (optional) in der wetterstaion.conf nach Eintragung der Zugangsdaten aktiviert werden.${WE}"
+}
+
+
+#Patch Version V2.21.0 auf V2.22.0
+PATCH2220(){
+ backup
+ echo -e "${WE}\n Patche wetterstation.conf auf V2.22.0 ..."
+ sed -i 's/### Settings V2.21.0/### Settings V2.22.0/' ./wetterstation.conf
+ sed -i 's/Anzahl der vorhandenen Zusatzsensoren/Anzahl der vorhandenen Zusatzsensoren Froggit, Ecowitt und Bresser/' ./wetterstation.conf
+ sed -i '/^.*ANZAHL_DP300=.*/a \  ANZAHL_7009999=0' ./wetterstation.conf
+ echo -e "\n${WE} Fertig...\n"
+ echo -e " ${GE}Eventuelle Zusatzsensoren Bresser #7009999 können nun eingetragen werden!${WE}"
+ echo -e " ${GE}Dazu noch 'wetterstation.js' im ioB ersetzen, konfigurieren und einmalig ausführen.\n${WE}"
+}
+
+
+#Patch Version V2.22.0 auf V3.0.0
+PATCH3000(){
+ echo -e "${RE}"'
+      ___        __    __                       __
+     /   | _____/ /_  / /___  ______  ____ _   / /
+    / /| |/ ___/ __ \/ __/ / / / __ \/ __ `/  / /
+   / ___ / /__/ / / / /_/ /_/ / / / / /_/ /  /_/
+  /_/  |_\___/_/ /_/\__/\__,_/_/ /_/\__, /  (_)
+                                   /____/'"${WE}"
+
+  echo -e "\n${GE} ┌──────────────────────────────────────────────────────┐"
+  echo -e " │ V3.0.0 ist ein Breaking-Release!                     │"
+  echo -e " │ Es wird zwingend bei der Nutzung der Influx-Features │"
+  echo -e " │ InfluxDB mindestens in der Version 2.x oder höher    │"
+  echo -e " │ benötigt !                                           │"
+  echo -e " └──────────────────────────────────────────────────────┘${WE}\n"
+
+   jn_abfrage "${WE}\n Möchten Sie ${BL}WLAN-Wetterstation${WE} auf Version V3.0.0 updaten?"
+   if [ -z $antwort ]; then echo -e "\n ${RE}Abbruch...${WE}\n\n"; exit 1; fi
+   unset antwort
+
+ backup
+ echo -e "${WE}\n Patche wetterstation.conf auf V3.0.0 ..."
+ sed -i 's/### Settings V2.22.0/### Settings V3.0.0/' ./wetterstation.conf
+ sed -i 's/#Name, User und Passwort der InfluxDB-Datenbank/#Bucket, Token und Organisation der InfluxDB/' ./wetterstation.conf
+ sed -i 's/INFLUX_DB=/INFLUX_BUCKET=/' ./wetterstation.conf
+ sed -i 's/INFLUX_USER=.*/INFLUX_TOKEN=/' ./wetterstation.conf
+ sed -i 's/INFLUX_PASSWORD=.*/INFLUX_ORG=/' ./wetterstation.conf
+ sed -i '/^.*#InfluxDB-Konfiguration \/ ohne InfluxDB alles leer lassen.*/a \  #Protokoll (HTTP oder HTTPS) / default: HTTP\n   INFLUX_WEB=HTTP' ./wetterstation.conf
+ echo -e "\n${WE} Fertig...\n"
+ echo -e " ${GE}InfluxDB in Version 2.x kann nun in der Konfiguration aktiviert werden.\n${WE}"
 }
 
 

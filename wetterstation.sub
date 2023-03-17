@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V3.0.0 --------------------------------------------------------
+### Subroutinen V3.1.0 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -120,7 +120,7 @@ debuging() {
    echo -e " Windgeschwindigkeit\t\t: $GR${MESSWERTE[6]}$WE km/h"
    echo -e " Windgeschwindigkeit 10min\t: $GR${MESSWERTE[27]}$WE km/h"
    echo -e " Windböengeschwindigkeit\t: $GR${MESSWERTE[7]}$WE km/h"
-   echo -e " max. Windböe\t\t\t: $GR${MESSWERTE[21]}$WE km/h"
+   echo -e " Windböe max.\t\t\t: $GR${MESSWERTE[21]}$WE km/h"
    echo -e " Windrichtung\t\t\t: $GR${MESSWERTE[8]}$WE °"
    echo -e " Windrichtung\t\t\t: $GR${WINDRICHTUNG}$WE"
    echo -e " Windrichtung 10min\t\t: $GR${MESSWERTE[26]}$WE °"
@@ -1234,6 +1234,18 @@ minmax24h() {
 
         SAPI "Single" "set/${DP_MIN_TEMP_24H}?value=${MIN_TEMP_24H}&ack=true"
         SAPI "Single" "set/${DP_MAX_TEMP_24H}?value=${MAX_TEMP_24H}&ack=true"
+}
+
+windboeemax() {
+        local FLUXSTART=$(date +%Y-%m-%d --date="-1 day")"T${ZULU}:00:00Z"
+        local FLUXENDE="now()"
+
+        local WINDBOEEMAX=$(influx_query "${FLUXSTART}" "${FLUXENDE}" "Wind_max" "max")
+
+        #kein Wert vorhanden?
+        if [ -z ${WINDBOEEMAX} ]; then WINDBOEEMAX=0; fi
+
+        SAPI "Single" "set/${DP_WINDBOEEN_MAX}?value=${WINDBOEEMAX}&ack=true"
 }
 
 minmaxheute() {

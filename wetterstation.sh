@@ -384,7 +384,7 @@ while true
    if [ $(( $DO_IT % 15 )) -eq "0" ]; then
      if [ $(date +%s) -ge "$TIMER_SET" ]; then wetterprognose
       if [ ! -z ${INFLUX_BUCKET} ]; then minmax24h; minmaxheute; fi
-      if [ ! -z ${INFLUX_BUCKET} ] && [ -z $MESSWERTE[21] ]; then windboeemax; fi
+      if [ ! -z ${INFLUX_BUCKET} ] && [ -z ${MESSWERTE[21]} ]; then windboeemax; fi
      fi
      do_Wetterwarnung
      #stündlich Lebenszeichen

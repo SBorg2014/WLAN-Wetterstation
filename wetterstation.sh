@@ -384,7 +384,6 @@ while true
    if [ $(( $DO_IT % 15 )) -eq "0" ]; then
      if [ $(date +%s) -ge "$TIMER_SET" ]; then wetterprognose
       if [ ! -z ${INFLUX_BUCKET} ]; then minmax24h; minmaxheute; fi
-      if [ ! -z ${INFLUX_BUCKET} ] && [ -z ${MESSWERTE[21]} ]; then windboeemax; fi
      fi
      do_Wetterwarnung
      #stündlich Lebenszeichen
@@ -400,6 +399,9 @@ while true
      if [ ${use_windy} == "true" ]; then windy_update; fi
      if [ ! -z ${WETTERCOM_ID} ]; then wettercom_update; fi
      do_wolkenbasis
+
+     #Windböe max. für Stationen die keinen Wert (#21) liefern
+     if [ ! -z ${INFLUX_BUCKET} ] && [ -z ${MESSWERTE[21]} ]; then windboeemax; fi
 
      #run only once
      run_5minjobs_onlyonce=true

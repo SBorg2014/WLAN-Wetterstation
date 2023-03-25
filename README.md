@@ -53,7 +53,7 @@ Zusatzsensoren (mittels Station oder Gateway DP1500/GW1000):
 - BRESSER®
   * bis zu 4 Stück<sup>(1)</sup> _BRESSER® Thermo-/Hygro-Sensor 7 Kanal_ #7009999
   
-<br><br>*<sup>(1)</sup> durch das verwendete Wunderground-Protokoll limitiert<br>
+<br>*<sup>(1)</sup> durch das verwendete Wunderground-Protokoll limitiert<br><br>
 __Die mögliche Anzahl der Zusatzsensoren ist nicht durch das Skript begrenzt, sondern wird vom Display und/oder Gateway bestimmt.__*
 <br><br>    
      

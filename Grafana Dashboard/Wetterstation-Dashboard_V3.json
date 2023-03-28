@@ -5547,7 +5547,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_HOMEAUTOMATION}"
+        "uid": "${DS_TEMPDATA}"
       },
       "description": "",
       "gridPos": {
@@ -5676,7 +5676,7 @@
           "tags": [],
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_HOMEAUTOMATION}"
+            "uid": "${DS_TEMPDATA}"
           }
         }
       ],

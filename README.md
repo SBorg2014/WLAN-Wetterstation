@@ -50,10 +50,11 @@ Zusatzsensoren (mittels Station oder Gateway DP1500/GW1000):
 - ein DP300/WS68 Solarunterstütztes Anemometer mit UV-Lichtsensor
 - ein WH31 (bzw. WH25) Sensor
 - ein WS90 "Wittboy" Sensor
-- BRESSER®
-  * bis zu 4 Stück<sup>(1)</sup> _BRESSER® Thermo-/Hygro-Sensor 7 Kanal_ #7009999
+- BRESSER® <sup>(1)</sup>
+  * bis zu 4 Stück<sup>(2)</sup> _BRESSER® Thermo-/Hygro-Sensor 7 Kanal_ #7009999
   
-<br>*<sup>(1)</sup> durch das verwendete Wunderground-Protokoll limitiert<br><br>
+<br>*<sup>(1)</sup> nicht alle Bresser-Stationen unterstützen Zusatzsensoren! siehe [hier](https://forum.iobroker.net/post/977421) <br>
+<sup>(2)</sup> durch das verwendete Wunderground-Protokoll limitiert<br><br>
 __Die mögliche Anzahl der Zusatzsensoren ist nicht durch das Skript begrenzt, sondern wird vom Display und/oder Gateway bestimmt.__*
 <br><br>    
      

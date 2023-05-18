@@ -878,10 +878,11 @@ setup() {
 
 ###Befehlszeilenparameter
 usage() {
-	echo -e "\nusage: wetterstation [[--debug] | [-s|--show] | [-d|--data] | [--metsommer]"
+	echo -e "\nusage: wetterstation [[--debug] | [-s|--show] | [-d|--data] | [--metsommer] | [--influx_test]"
         echo -e "       [--osem_reg] | [--windy_reg] | [-v|--version] | [-h|--help]]\n"
 	echo -e " --debug\teinmaliger Testdurchlauf mit Ausgabe"
         echo -e " --metsommer\tführt die Berechnung des meteorologischen Sommers durch"
+        echo -e " --influx_test\tführt einen testweisen Lesezugriff auf die InfluxDB aus"
 	echo -e " --osem_reg\tführt Registrierung bei openSenseMap durch"
         echo -e " --windy_reg\tführt Registrierung bei Windy durch"
 	echo -e " -s | --show\tzeigt bei der Debug-Ausgabe Passwort/Station-ID bzw. Passkey im Klartext an"
@@ -1210,7 +1211,7 @@ influx_query() {
 
         IFS=","
         ii=0
-        local TMP_DATA=$(curl -s --request POST "${INFLUX_WEB}://${INFLUX_API}/api/v2/query?org=${INFLUX_ORG}" --header 'Content-Type: application/vnd.flux' \
+        local TMP_DATA=$(curl -sk --request POST "${INFLUX_WEB}://${INFLUX_API}/api/v2/query?org=${INFLUX_ORG}" --header 'Content-Type: application/vnd.flux' \
         --header 'Accept: application/csv' --header "Authorization: Token ${INFLUX_TOKEN}" \
         --data 'from(bucket: "'${INFLUX_BUCKET}'") |> range(start: '$1', stop: '$2') |> filter(fn: (r) => r._measurement == "'${PRE_DP}'.'$3'" and r._field == "value") |> '$4'()')
 
@@ -1314,7 +1315,7 @@ metsommer() {
           SAPI "Single" "set/${DP_MET_SOMMER_TEMP}?value=${MET_SOMMER_TEMP_AVG}&ack=true"
         fi
 
-        local TMP_REGEN=$(curl -s --request POST "${INFLUX_WEB}://${INFLUX_API}/api/v2/query?org=${INFLUX_ORG}" --header 'Content-Type: application/vnd.flux' \
+        local TMP_REGEN=$(curl -sk --request POST "${INFLUX_WEB}://${INFLUX_API}/api/v2/query?org=${INFLUX_ORG}" --header 'Content-Type: application/vnd.flux' \
         --header 'Accept: application/csv' --header "Authorization: Token ${INFLUX_TOKEN}" \
         --data 'from(bucket: "'${INFLUX_BUCKET}'") |> range(start: '${FLUXSTART}', stop: '${FLUXENDE}') |> filter(fn: (r) => r._measurement == "'${PREDP}'.Regen_Tag" and r._field == "value") |> aggregateWindow(every: 1d, fn: max) |> sum()')
 

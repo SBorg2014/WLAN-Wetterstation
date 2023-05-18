@@ -10,6 +10,8 @@
  benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq', 'bc' und 'dc' unter Linux
 
  V3.1.0 / 16.03.2023   + Windböe max für Stationen die den Wert nicht liefern
+                       + Option "k" für selbstsignierte Zertifikate bei der Influx-Abfrage hinzugefügt
+                       + Paramter "--influx_test" zum test der Influx-Konnektivität
  V3.0.0 / 08.02.2023   ~ Breaking Release / Support für (und nur noch!) InfluxDB V2.x / Issue #41
                        ~ Mindestintervall von 65 Sekunden beim Datenversand an AWEKAS.at
                        + Support Zusatzsensor Curconsa FT0300 / Pull Request #55 (LukasTr1980)
@@ -184,6 +186,9 @@ Versionsinfo
                                 ;;
         --metsommer )           metsom_override=true
                                 metsommer
+                                exit
+                                ;;
+        --influx_test)          minmax24h DEBUG
                                 exit
                                 ;;
         -s | --show )           show_pwid=true

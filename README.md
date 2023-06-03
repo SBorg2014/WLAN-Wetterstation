@@ -112,6 +112,7 @@ Daten in Awekas.at (Stationsseite, kostenlos):<br>
     + Windböe max für Stationen die den Wert nicht liefern
     + Option "k" für selbstsignierte Zertifikate bei der Influx-Abfrage hinzugefügt
     + Parameter "--influx_test" zum test der Influx-Konnektivität
+    + Fix "MetSommer" (Skript bleibt bei den Mitternachtjobs hängen)
 ```
 
 **V3.0.0 - 08.02.2023   Breaking Release**  

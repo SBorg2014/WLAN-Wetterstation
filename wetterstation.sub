@@ -1303,8 +1303,8 @@ metsommer() {
      if [ ! -z ${INFLUX_BUCKET} ]; then
       if [ $(date +%m) -ge "6" ] && [ $(date +%m) -le "8" ] || [ ! -z ${metsom_override} ]; then
         if [ $(date +%m) -le "5" ]; then echo -e "\n ${RE}Eine Berechnung der meteorologischen Sommerwerte kann für das aktuelle Jahr $(date +%Y) erst ab dem 01. Juni durchgeführt werden!${NO}\n";exit 1; fi
-        local FLUXSTART=$(date +Y%-06-01)"T00:00:00Z"
-        local FLUXENDE=$(date +Y%-08-31)"T23:59:59Z"
+        local FLUXSTART=$(date +%Y-06-01)"T00:00:00Z"
+        local FLUXENDE=$(date +%Y-08-31)"T23:59:59Z"
 
         MET_SOMMER_TEMP_AVG=$(influx_query "${FLUXSTART}" "${FLUXENDE}" "Aussentemperatur" "mean")
 

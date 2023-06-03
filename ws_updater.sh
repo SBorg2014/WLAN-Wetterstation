@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V3.0.0
+UPDATE_VER=V3.1.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -146,8 +146,9 @@ patcher() {
            V2.20.0) PATCH2210 ;;
            V2.21.0) PATCH2220 ;;
            V2.22.0) PATCH3000 && exit 0;;
-           V3.0.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
-                 *) FEHLER
+           V3.0.0) echo -e "$GE Kein Patch nötig...\n" && exit 0;;
+           V3.1.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
+                *) FEHLER
     esac
 
    done

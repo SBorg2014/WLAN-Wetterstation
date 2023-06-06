@@ -107,6 +107,11 @@ Daten in Awekas.at (Stationsseite, kostenlos):<br>
 
 ## Versionen ##
 
+**V3.1.1 - 05.06.2023   Bugfix Release**  
+``` 
+    + Fix "MetSommer" (Skript bleibt bei den Mitternachtjobs hängen)
+```
+
 **V3.1.0 - 16.03.2023   Bugfix Release**  
 ``` 
     + Windböe max für Stationen die den Wert nicht liefern

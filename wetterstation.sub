@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V3.1.0 --------------------------------------------------------
+### Subroutinen V3.1.1 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -1317,9 +1317,9 @@ metsommer() {
 
         local TMP_REGEN=$(curl -sk --request POST "${INFLUX_WEB}://${INFLUX_API}/api/v2/query?org=${INFLUX_ORG}" --header 'Content-Type: application/vnd.flux' \
         --header 'Accept: application/csv' --header "Authorization: Token ${INFLUX_TOKEN}" \
-        --data 'from(bucket: "'${INFLUX_BUCKET}'") |> range(start: '${FLUXSTART}', stop: '${FLUXENDE}') |> filter(fn: (r) => r._measurement == "'${PREDP}'.Regen_Tag" and r._field == "value") |> aggregateWindow(every: 1d, fn: max) |> sum()')
+        --data 'from(bucket: "'${INFLUX_BUCKET}'") |> range(start: '${FLUXSTART}', stop: '${FLUXENDE}') |> filter(fn: (r) => r._measurement == "'${PRE_DP}'.Regen_Tag" and r._field == "value") |> aggregateWindow(every: 1d, fn: max) |> sum()')
 
-        IFS=","
+        local IFS=","
         local TDATA=(${TMP_REGEN[*]})
         MET_REGEN=$(echo ${TDATA[14]} | tr -cd [:digit:]\.)
 

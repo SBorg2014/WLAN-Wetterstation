@@ -2,16 +2,19 @@
 : <<'Versionsinfo'
 
 
- V3.1.0 - 16.03.2023 (c) 2019-2023 SBorg
+ V3.1.1 - 05.06.2023 (c) 2019-2023 SBorg
 
  wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
  die Daten an den ioBroker (alternativ auch an AWEKAS, OpenSenseMap, Windy und wetter.com)
 
  benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq', 'bc' und 'dc' unter Linux
 
+
+ V3.1.1 / 04.06.2023   + Fix "MetSommer" (Skript bleibt bei den Mitternachtjobs hängen)
  V3.1.0 / 16.03.2023   + Windböe max für Stationen die den Wert nicht liefern
                        + Option "k" für selbstsignierte Zertifikate bei der Influx-Abfrage hinzugefügt
-                       + Paramter "--influx_test" zum test der Influx-Konnektivität
+                       + Parameter "--influx_test" zum test der Influx-Konnektivität
+                       + Fix "MetSommer" (Skript bleibt bei den Mitternachtjobs hängen)
  V3.0.0 / 08.02.2023   ~ Breaking Release / Support für (und nur noch!) InfluxDB V2.x / Issue #41
                        ~ Mindestintervall von 65 Sekunden beim Datenversand an AWEKAS.at
                        + Support Zusatzsensor Curconsa FT0300 / Pull Request #55 (LukasTr1980)
@@ -143,9 +146,9 @@ Versionsinfo
 ### Ende Infoblock
 
  #Versionierung
-  SH_VER="V3.1.0"
+  SH_VER="V3.1.1"
   CONF_V="V3.0.0"
-  SUBVER="V3.1.0"
+  SUBVER="V3.1.1"
 
 
  #Installationsverzeichnis feststellen
@@ -213,6 +216,7 @@ Versionsinfo
  #Setup + Initial ausführen
   setup
   minmaxheute
+
 
 #Endlosschleife
 while true

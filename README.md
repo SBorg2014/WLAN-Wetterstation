@@ -107,6 +107,19 @@ Daten in Awekas.at (Stationsseite, kostenlos):<br>
 
 ## Versionen ##
 
+**V3.1.1 - 05.06.2023   Bugfix Release**  
+``` 
+    + Fix "MetSommer" (Skript bleibt bei den Mitternachtjobs hängen)
+```
+
+**V3.1.0 - 16.03.2023   Bugfix Release**  
+``` 
+    + Windböe max für Stationen die den Wert nicht liefern
+    + Option "k" für selbstsignierte Zertifikate bei der Influx-Abfrage hinzugefügt
+    + Parameter "--influx_test" zum test der Influx-Konnektivität
+    + Fix "MetSommer" (Skript bleibt bei den Mitternachtjobs hängen)
+```
+
 **V3.0.0 - 08.02.2023   Breaking Release**  
 ``` 
     ~ Breaking Release / Support für (und nur noch!) InfluxDB V2.x / Issue #41

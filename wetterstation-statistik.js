@@ -6,7 +6,9 @@
             Auch keine Aliase unter Influx nutzen!
 
    (c)2020-2023 by SBorg
+   v2.0.3 - 02.07.2023  ~Bugfix Fehlermeldung am Monatsersten
    v2.0.2 - 02.03.2023  ~Bugfix fehlender Vorjahresmonat (Fix Issue #58)
+                        ~Bugfix fehlender Vorjahresmonat (Fix Issue für #58 / #62 @Boronsbruder)
    V2.0.1 - 22.02.2023  ~Bugfix Influx-Abfrage "Wind" (@Latzi)
                         ~Bugfix fester Datenpunkt auf "javascript.0..." bei Trockenperiode
    V2.0.0 - 15.02.2023  ~Umstellung auf Influx V2 
@@ -84,7 +86,7 @@ const DP_Check ='aktueller_Monat.Regentage';
 if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 //Start des Scripts
-    const ScriptVersion = "V2.0.2";
+    const ScriptVersion = "V2.0.3";
     const dayOfYear = date => Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
     let Tiefstwert, Hoechstwert, Temp_Durchschnitt, Max_Windboee, Max_Regenmenge, Regenmenge_Monat, warme_Tage, Sommertage;
     let heisse_Tage, Frost_Tage, kalte_Tage, Eistage, sehr_kalte_Tage, Wuestentage, Tropennaechte, Trockenperiode_akt;
@@ -416,8 +418,25 @@ function VorJahr() {
     if (existsState(PRE_DP+monatsdatenpunkt)) { //der einfache Weg: wir haben schon Daten vom Vorjahr...
 
         let VorJahr = getState(PRE_DP+monatsdatenpunkt).val;
-        VorJahr = JSON.parse(VorJahr.substring(1, VorJahr.length-1));
-        setState(PRE_DP+'.Vorjahres_Monat.Tiefstwert', VorJahr.Tiefstwert, true);
+        VorJahr = JSON.parse(VorJahr);
+
+        
+        // Daten vom Vorjahr durchiterieren und Datenpunkte befüllen
+            //console.log (VorJahr);
+            VorJahr.forEach(obj => {
+                Object.keys(obj).forEach(key => {
+                    //console.log ('.Vorjahres_' + key + '--> ' + obj[key]);
+
+                    // fix für Datenpunktname
+                    let setkey = key;                                       
+                    if (key == 'Temp_Durchschnitt') setkey = "Temperatur_Durchschnitt";
+
+                    setState(PRE_DP+'.Vorjahres_Monat.' +setkey, obj[key], true);
+
+                });
+            });
+
+/*        setState(PRE_DP+'.Vorjahres_Monat.Tiefstwert', VorJahr.Tiefstwert, true);
         setState(PRE_DP+'.Vorjahres_Monat.Hoechstwert', VorJahr.Hoechstwert, true);
         setState(PRE_DP+'.Vorjahres_Monat.Temperatur_Durchschnitt', VorJahr.Temp_Durchschnitt, true); 
         setState(PRE_DP+'.Vorjahres_Monat.Max_Windboee', VorJahr.Max_Windboee, true); 
@@ -433,7 +452,7 @@ function VorJahr() {
         setState(PRE_DP+'.Vorjahres_Monat.Wuestentage', VorJahr.Wuestentage, true);
         setState(PRE_DP+'.Vorjahres_Monat.Tropennaechte', VorJahr.Tropennaechte, true);
         setState(PRE_DP+'.Vorjahres_Monat.Regentage', VorJahr.Regentage, true);
-
+*/
     } else {
         //leider noch keine Daten vom Vorjahr; wir haben was zu tun...
         
@@ -802,3 +821,4 @@ async function createDP(DP_Check) {
     createState(PRE_DP+'.Control.ScriptVersion_UpdateCheck',      '',    { name: "Skript-Updatecheck ein-/ausschalten",         type: "boolean",role: "state"});
     await Sleep(5000);
 }
+

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V3.0.0
+UPDATE_VER=V3.2.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -145,9 +145,12 @@ patcher() {
            V2.19.0) PATCH2200 ;;
            V2.20.0) PATCH2210 ;;
            V2.21.0) PATCH2220 ;;
-           V2.22.0) PATCH3000 && exit 0;;
-           V3.0.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
-                 *) FEHLER
+           V2.22.0) PATCH3000 ;;
+           V3.0.0) PATCH3010 ;;
+           V3.1.0) PATCH3011 ;;
+           V3.1.1) PATCH3020 && exit 0;;
+           V3.2.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
+                *) FEHLER
     esac
 
    done
@@ -534,6 +537,24 @@ PATCH3000(){
 }
 
 
+#Patch Version V3.0.0 auf V3.1.0
+PATCH3010(){
+ backup
+ echo -e "${WE}\n Patche wetterstation.conf auf V3.1.0 ..."
+ sed -i 's/### Settings V3.0.0/### Settings V3.1.0/' ./wetterstation.conf
+ echo -e "\n${WE} Fertig...\n"
+}
+
+
+#Patch Version V3.1.0 auf V3.1.1
+PATCH3011(){
+ backup
+ echo -e "${WE}\n Patche wetterstation.conf auf V3.1.1 ..."
+ sed -i 's/### Settings V3.1.0/### Settings V3.1.1/' ./wetterstation.conf
+ echo -e "\n${WE} Fertig...\n"
+}
+
+
 patch_260() {
 cat <<EoD >patch
 --- wetterstation.conf_250	2021-05-13 13:45:06.297750501 +0200
@@ -624,6 +645,26 @@ cat <<EofP >patch.dat
    WEB=HTTP
 EofP
 }
+
+
+#Patch Version V3.1.1 auf V3.2.0
+PATCH3020(){
+ backup
+ echo -e "${WE}\n Patche wetterstation.conf auf V3.2.0 ..."
+ sed -i 's/### Settings V3.1.1/### Settings V3.2.0/' ./wetterstation.conf
+ sed -i '/^.*Ende Usereinstellungen.*/i \\n\n #############################################################################################\n ###    WOW - Einstellungen (nur nötig falls WOW benutzt werden soll)                      ###\n #############################################################################################' ./wetterstation.conf
+ sed -i '/^.*Ende Usereinstellungen.*/i \\n  #WOW aktivieren [true/false] / default: false\n   use_wow=false\n\
+  #WOW Site ID und Authentication Key\n   WOW_SITEID=\n   WOW_AUTHKEY=\n\
+ #############################################################################################\
+ ###    WOW - Ende der Einstellungen    ######################################################\
+ #############################################################################################\n' ./wetterstation.conf
+ if [ ${RESTAPI} == "true" ]; then
+  make_objects ".Info.WOW" "Datenübertragung WOW erfolgreich" "boolean"
+ fi
+ echo -e "\n${WE} Fertig...\n"
+ echo -e " ${GE}Die Datenübertragung kann nun (optional) in der wetterstaion.conf nach Eintragung der Zugangsdaten und Aktivierung erfolgen.${WE}"
+}
+
 
 jn_abfrage() {
          echo -en "\n$1 ${WE}[${GR}J/N${WE}]"

@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V3.1.1 --------------------------------------------------------
+### Subroutinen V3.2.0 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -45,6 +45,7 @@
   DP_WCOM_TRANSMIT=${PRE_DP}.Info.Wetter_com
   DP_WUCOM_TRANSMIT=${PRE_DP}.Info.Wunderground_com
   DP_AWEKAS_TRANSMIT=${PRE_DP}.Info.Awekas_at
+  DP_WOW_TRANSMIT=${PRE_DP}.Info.WOW
   DP_SCRIPTVERSION=${PRE_DP}.Info.Shellscriptversion
   DP_SONNENSCHEIN_VORTAG=${PRE_DP}.Info.Sonnenschein_VorTag
   DP_SONNENSCHEIN_TAG=${PRE_DP}.Info.Sonnenschein_Tag
@@ -186,6 +187,7 @@ debuging() {
    if [ ${use_windy} == "true" ]; then windy_update; fi
    if [ ${openSenseMap} == "true" ]; then opensensemap; fi
    if [ ${use_awekas} == "true" ]; then awekas_update; fi
+   if [ ${use_wow} == "true" ]; then wow_update; fi
 
    #Influx-Version prüfen
    if [ ! -z ${INFLUX_API} ]; then
@@ -1821,7 +1823,9 @@ do_windchill(){
 
    if [ -z ${MESSWERTE[2]} ] && [ ! -z ${MESSWERTE[1]} ] && [ ! -z ${MESSWERTE[5]} ]; then
      TAUPUNKT=$(echo "scale=4;(e(l(${MESSWERTE[5]}/100)*(1/8.02)) * (109.8 + ${MESSWERTE[1]}) - 109.8)/1" | bc -l)
+     DEWPTF=$(echo "scale=4;${TAUPUNKT} * 1.8 + 32" | bc -l)
      MESSWERTE[2]=$(round $TAUPUNKT 2)
+     DEWPTF=$(round $DEWPTF 2)
    fi
 }
 
@@ -1999,6 +2003,27 @@ awekas_update(){
            SAPI "Single" "set/${DP_AWEKAS_TRANSMIT}?value=true&ack=true"
          else
            SAPI "Single" "set/${DP_AWEKAS_TRANSMIT}?value=false&ack=true"
+        fi
+}
+
+wow_update(){
+      local WOW_URL="http://wow.metoffice.gov.uk/automaticreading?siteid=${WOW_SITEID}&siteAuthenticationKey=${WOW_AUTHKEY}"
+      WOW_URL+="&dateutc=${DATEUTC}&tempf=${TEMPF}&dewptf=${DEWPTF}&softwaretype=${MESSWERTE[19]}&humidity=${MESSWERTE[5]}"
+
+        if [ $debug == "true" ]; then
+           echo -e "${BL}Datenübertragung an WOW:"
+           echo -e "${RE}(vor einer Veröffentlichung unbedingt die SiteID und den Auth-Key unkenntlich machen.)${NO}"
+           wget -O- "${WOW_URL}"
+           return 0 #Ausgang
+         else
+           local MESSAGE=$(curl -s "${WOW_URL}")
+        fi
+
+        #alles Ok?
+        if echo ${MESSAGE}|grep -qi 'Bad Request'; then
+           SAPI "Single" "set/${DP_WOW_TRANSMIT}?value=false&ack=true"
+         else
+           SAPI "Single" "set/${DP_WOW_TRANSMIT}?value=true&ack=true"
         fi
 }
 

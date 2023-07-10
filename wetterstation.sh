@@ -2,14 +2,15 @@
 : <<'Versionsinfo'
 
 
- V3.1.1 - 05.06.2023 (c) 2019-2023 SBorg
+ V3.2.0 - 28.06.2023 (c) 2019-2023 SBorg
 
  wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
- die Daten an den ioBroker (alternativ auch an AWEKAS, OpenSenseMap, Windy und wetter.com)
+ die Daten an den ioBroker (alternativ auch an AWEKAS, OpenSenseMap, Windy, wetter.com und WeatherObservationsWebsite)
 
  benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq', 'bc' und 'dc' unter Linux
 
 
+ V3.2.0 / 28.06.2023   + Support für WeatherObservationsWebsite (WOW)
  V3.1.1 / 04.06.2023   + Fix "MetSommer" (Skript bleibt bei den Mitternachtjobs hängen)
  V3.1.0 / 16.03.2023   + Windböe max für Stationen die den Wert nicht liefern
                        + Option "k" für selbstsignierte Zertifikate bei der Influx-Abfrage hinzugefügt
@@ -146,9 +147,9 @@ Versionsinfo
 ### Ende Infoblock
 
  #Versionierung
-  SH_VER="V3.1.1"
-  CONF_V="V3.0.0"
-  SUBVER="V3.1.1"
+  SH_VER="V3.2.0"
+  CONF_V="V3.2.0"
+  SUBVER="V3.2.0"
 
 
  #Installationsverzeichnis feststellen
@@ -238,7 +239,7 @@ while true
      if [[ ${MESSWERTERAWIN[$i]} == tempf=* ]]
         then MESSWERTE[1]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); TEMPF=${MESSWERTE[1]}; convertFtoC 1; do_trend_aussentemp; fi
      if [[ ${MESSWERTERAWIN[$i]} == dewptf=* ]]
-        then MESSWERTE[2]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); convertFtoC 2; fi
+        then MESSWERTE[2]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); DEWPTF=${MESSWERTE[2]}; convertFtoC 2; fi
      if [[ ${MESSWERTERAWIN[$i]} == windchillf=* ]]
         then MESSWERTE[3]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); convertFtoC 3; fi
      if [[ ${MESSWERTERAWIN[$i]} == humidityin=* ]] || [[ ${MESSWERTERAWIN[$i]} == indoorhumidity=* ]]
@@ -399,6 +400,19 @@ while true
      if [ "$(date +%H)" -ne "${ALIVE}" ]; then ALIVE=$(date +%H); MELDUNG "Skript l%C3%A4uft..."; fi
    fi
 
+
+  #6-Minutenjobs: WOW
+   if [ $(( $DO_IT % 6 )) -eq "0" ] && [ -z ${run_6minjobs_onlyonce} ]; then
+
+     #WOW
+     if [ ${use_wow} == "true" ]; then wow_update; fi
+
+     #run only once
+     run_6minjobs_onlyonce=true
+
+    else
+     unset run_6minjobs_onlyonce
+   fi
 
 
   #5-Minutenjobs: Windy; wetter.com; Wolkenbasis

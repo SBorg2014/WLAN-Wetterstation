@@ -1,4 +1,4 @@
-//Wetterstation Datenpunkte anlegen V3.0.0
+//Wetterstation Datenpunkte anlegen V3.2.0
 let DP = "0_userdata.0.Wetterstation.";
 let WH31 = 0;    // Anzahl der WH31/WH25 Sensoren  (max. 1 Stück)
 let WS90 = 0;    // Anzahl der WS90 Sensoren       (max. 1 Stück)
@@ -64,6 +64,7 @@ async function dpAnlegen(){
  await createStateAsync(DP + "Info.Shellscriptversion", false, { name: "Versionsnummer des Scriptes", type: "string", role: "state" }); 
  await createStateAsync(DP + "Info.Windy", false, { name: "Datenübertragung Windy erfolgreich", type: "boolean", role: "state" });
  await createStateAsync(DP + "Info.Wetter_com", false, { name: "Datenübertragung Wetter.com erfolgreich", type: "boolean", role: "state" });
+ await createStateAsync(DP + "Info.WOW", false, { name: "Datenübertragung WOW erfolgreich", type: "boolean", role: "state" });
  await createStateAsync(DP + "Info.Wunderground_com", false, { name: "Datenübertragung Wunderground.com erfolgreich", type: "boolean", role: "state" });
  await createStateAsync(DP + "Info.Awekas_at", false, { name: "Datenübertragung AWEKAS.at erfolgreich", type: "boolean", role: "state" });
  await createStateAsync(DP + "Info.Sonnenschein_VorTag", 0, { name: "Sonnenscheindauer Gestern", type: "number", role: "state", unit: "Sek." });

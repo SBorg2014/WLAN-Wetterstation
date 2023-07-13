@@ -2009,6 +2009,7 @@ awekas_update(){
 wow_update(){
       local WOW_URL="http://wow.metoffice.gov.uk/automaticreading?siteid=${WOW_SITEID}&siteAuthenticationKey=${WOW_AUTHKEY}"
       WOW_URL+="&dateutc=${DATEUTC}&tempf=${TEMPF}&dewptf=${DEWPTF}&softwaretype=${MESSWERTE[19]}&humidity=${MESSWERTE[5]}"
+      WOW_URL+="&winddir=${MESSWERTE[8]}"
 
         if [ $debug == "true" ]; then
            echo -e "${BL}Datenübertragung an WOW:"

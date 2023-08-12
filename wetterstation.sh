@@ -2,7 +2,7 @@
 : <<'Versionsinfo'
 
 
- V3.2.0 - 28.06.2023 (c) 2019-2023 SBorg
+ V3.2.0 - 12.08.2023 (c) 2019-2023 SBorg
 
  wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
  die Daten an den ioBroker (alternativ auch an AWEKAS, OpenSenseMap, Windy, wetter.com und WeatherObservationsWebsite)
@@ -10,7 +10,8 @@
  benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq', 'bc' und 'dc' unter Linux
 
 
- V3.2.0 / 28.06.2023   + Support für WeatherObservationsWebsite (WOW)
+ V3.2.0 / 12.08.2023   + Support für WeatherObservationsWebsite (WOW)
+                       + Fix Zeitstempel für neuere Gateway-Firmwarereleases die ein URL-Encoding enthalten
  V3.1.1 / 04.06.2023   + Fix "MetSommer" (Skript bleibt bei den Mitternachtjobs hängen)
  V3.1.0 / 16.03.2023   + Windböe max für Stationen die den Wert nicht liefern
                        + Option "k" für selbstsignierte Zertifikate bei der Influx-Abfrage hinzugefügt

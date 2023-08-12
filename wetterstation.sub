@@ -368,6 +368,7 @@ convertLuftdruck() {
 
 convertInchtoMM() {
         #Regenrate und Menge speichern
+         if [ $1 -eq 11 ]; then REGENRATE_SAVE=${MESSWERTE[$1]}; fi
          if [ $1 -eq 12 ]; then REGENTAG_SAVE=${MESSWERTE[$1]}; fi
 
      MESSWERTE[$1]=$(echo "scale=3;${MESSWERTE[$1]}*254/10" | bc -l)
@@ -422,7 +423,7 @@ convertTime() {
         #Zeitstempel RAW speichern
         DATEUTC=${MESSWERTE[$1]} #zB. für AWEKAS
 
-        MESSWERTE[$1]=$(echo ${MESSWERTE[$1]}|sed -e 's/+/ /' -e 's/%20/ /')
+        MESSWERTE[$1]=$(echo ${MESSWERTE[$1]}|sed -e 's/+/ /' -e 's/%20/ /' -e 's/%3A/:/g')
         if [[ ${MESSWERTE[$1]} == "now" ]]; then
                 MESSWERTE[$1]=$(date --date="${MESSWERTE[$1]}" +'%d.%m.%Y %H:%M:%S')
         else
@@ -2009,7 +2010,8 @@ awekas_update(){
 wow_update(){
       local WOW_URL="http://wow.metoffice.gov.uk/automaticreading?siteid=${WOW_SITEID}&siteAuthenticationKey=${WOW_AUTHKEY}"
       WOW_URL+="&dateutc=${DATEUTC}&tempf=${TEMPF}&dewptf=${DEWPTF}&softwaretype=${MESSWERTE[19]}&humidity=${MESSWERTE[5]}"
-      WOW_URL+="&winddir=${MESSWERTE[8]}&baromin=${BAROMRELIN}&windspeedmph=${WINDSPEEDMPH}"
+      WOW_URL+="&winddir=${MESSWERTE[8]}&baromin=${BAROMRELIN}&windspeedmph=${WINDSPEEDMPH}&dailyrainin=${REGENTAG_SAVE}"
+      WOW_URL+="&rainin=${REGENRATE_SAVE}"
 
         if [ $debug == "true" ]; then
            echo -e "${BL}Datenübertragung an WOW:"

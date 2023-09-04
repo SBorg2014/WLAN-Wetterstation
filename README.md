@@ -20,6 +20,9 @@
 - ChiliTec Funk Wetterstation 12in1
 - Curconsa FT0300 <sup>(*)</sup> (inkl. Zusatzsensor)
 - DNT Weatherscreen PRO
+- Ecowitt
+  * Gateway GW1000
+  * Gateway GW2000A
 - ELV WS980WiFi
 - Eurochron EFWS 2900 (baugleich zu Sainlogic 10in1 Wifi, Ambient Weather WS-2902, Chilitec CTW-902 Wifi)
 - Froggit

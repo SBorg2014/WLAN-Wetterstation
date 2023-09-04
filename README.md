@@ -10,7 +10,7 @@
 [![Commits since last release](https://img.shields.io/github/commits-since/SBorg2014/WLAN-Wetterstation/latest.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/releases/latest)
 [![License](https://img.shields.io/github/license/SBorg2014/WLAN-Wetterstation.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/LICENSE)
 
- schafft eine Verbindung von einer WLAN-Wetterstation zum ioBroker und kann optional die Wetterdaten für [AWEKAS.at](https://www.awekas.at), [openSenseMap](https://opensensemap.org), [Windy](https://www.windy.com) und [wetter.com](https://www.wetter.com) zur Verfügung stellen (__Projekt läuft nur unter Linux__)<br>
+ schafft eine Verbindung von einer WLAN-Wetterstation zum ioBroker und kann optional die Wetterdaten für [AWEKAS.at](https://www.awekas.at), [openSenseMap](https://opensensemap.org), [Windy](https://www.windy.com), [WeatherObservationsWebsite (WOW)](https://wow.metoffice.gov.uk/) und [wetter.com](https://www.wetter.com) zur Verfügung stellen (__Projekt läuft nur unter Linux__)<br>
  
  Die Wetterstation muss dazu in der Lage sein ihre Daten im "Wunderground/Ecowitt"-Format zu senden.<br><br>
  Bisher getestete Stationen:
@@ -20,10 +20,13 @@
 - ChiliTec Funk Wetterstation 12in1
 - Curconsa FT0300 <sup>(*)</sup> (inkl. Zusatzsensor)
 - DNT Weatherscreen PRO
+- Ecowitt
+  * Gateway GW1000
+  * Gateway GW2000A
 - ELV WS980WiFi
 - Eurochron EFWS 2900 (baugleich zu Sainlogic 10in1 Wifi, Ambient Weather WS-2902, Chilitec CTW-902 Wifi)
 - Froggit
-  * Gateway/USB-Dongle DP1500
+  * Gateway/USB-Dongle DP1500/DP2000
   * HP1000SE Pro
   * WH3000 SE
   * WH4000 SE
@@ -89,6 +92,9 @@ Daten in Awekas.at (Stationsseite, kostenlos):<br>
 <br>und kostenpflichtiges "Stationsweb":
 ![Bild Stationsweb AWEKAS](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/Bilder/Awekas_Stationsweb.png)
 <br><br>
+Auszug von WeatherObservationsWebsite (WOW):
+![Bild WOW](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/Bilder/WOW.png)
+<br><br>
 
 
 ## Weiterführende Informationen ##
@@ -107,6 +113,11 @@ Daten in Awekas.at (Stationsseite, kostenlos):<br>
 
 ## Versionen ##
 
+**V3.2.0 - 12.08.2023**  
+``` 
+    + Support für WeatherObservationsWebsite (WOW)
+```
+   
 **V3.1.1 - 05.06.2023   Bugfix Release**  
 ``` 
     + Fix "MetSommer" (Skript bleibt bei den Mitternachtjobs hängen)

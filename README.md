@@ -92,6 +92,9 @@ Daten in Awekas.at (Stationsseite, kostenlos):<br>
 <br>und kostenpflichtiges "Stationsweb":
 ![Bild Stationsweb AWEKAS](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/Bilder/Awekas_Stationsweb.png)
 <br><br>
+Auszug von WeatherObservationsWebsite (WOW):
+![Bild WOW](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/Bilder/WOW.png)
+<br><br>
 
 
 ## Weiterführende Informationen ##

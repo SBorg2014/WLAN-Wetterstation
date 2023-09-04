@@ -10,7 +10,7 @@
 [![Commits since last release](https://img.shields.io/github/commits-since/SBorg2014/WLAN-Wetterstation/latest.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/releases/latest)
 [![License](https://img.shields.io/github/license/SBorg2014/WLAN-Wetterstation.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/LICENSE)
 
- schafft eine Verbindung von einer WLAN-Wetterstation zum ioBroker und kann optional die Wetterdaten für [AWEKAS.at](https://www.awekas.at), [openSenseMap](https://opensensemap.org), [Windy](https://www.windy.com) und [wetter.com](https://www.wetter.com) zur Verfügung stellen (__Projekt läuft nur unter Linux__)<br>
+ schafft eine Verbindung von einer WLAN-Wetterstation zum ioBroker und kann optional die Wetterdaten für [AWEKAS.at](https://www.awekas.at), [openSenseMap](https://opensensemap.org), [Windy](https://www.windy.com), [WeatherObservationsWebsite (WOW)](https://wow.metoffice.gov.uk/) und [wetter.com](https://www.wetter.com) zur Verfügung stellen (__Projekt läuft nur unter Linux__)<br>
  
  Die Wetterstation muss dazu in der Lage sein ihre Daten im "Wunderground/Ecowitt"-Format zu senden.<br><br>
  Bisher getestete Stationen:
@@ -107,6 +107,11 @@ Daten in Awekas.at (Stationsseite, kostenlos):<br>
 
 ## Versionen ##
 
+**V3.2.0 - 12.08.2023**  
+``` 
+    + Support für WeatherObservationsWebsite (WOW)
+```
+   
 **V3.1.1 - 05.06.2023   Bugfix Release**  
 ``` 
     + Fix "MetSommer" (Skript bleibt bei den Mitternachtjobs hängen)

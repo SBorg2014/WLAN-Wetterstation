@@ -1988,7 +1988,7 @@ awekas_update(){
         local AWEKAS_URL="https://ws.awekas.at/weatherstation/updateweatherstation.php?ID=${AWEKAS_USER}&PASSWORD=${AWEKAS_PW}&dateutc=${DATEUTC}"
         AWEKAS_URL+="&tempf=${TEMPF}&humidity=${MESSWERTE[5]}&winddir=${MESSWERTE[8]}&uv=${MESSWERTE[17]}&windspeedmph=${WINDSPEEDMPH}"
         AWEKAS_URL+="&absbaromin=${BAROMABSIN}&baromin=${BAROMRELIN}&solarradiation=${MESSWERTE[16]}&windgustmph=${WINDGUSTMPH}&dailyrainin=${REGENTAG_SAVE}"
-        AWEKAS_URL+="&indoortempf=${INDOOR_TEMP}&indoorhumidity=${MESSWERTE[4]}"
+        AWEKAS_URL+="&indoortempf=${INDOOR_TEMP}&indoorhumidity=${MESSWERTE[4]}&softwaretype=IOWS"
 
         if [ $debug == "true" ]; then
            echo -e "${BL}Datenübertragung an awekas.at:"

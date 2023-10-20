@@ -119,7 +119,7 @@ Auszug von WeatherObservationsWebsite (WOW):
 **V3.2.0 - 12.08.2023**  
 ``` 
     + Support für WeatherObservationsWebsite (WOW)
-    + Fix Zeitstempel für neuere Gateway-Firmwarereleases die ein URL-Encoding enthalten7
+    + Fix Zeitstempel für neuere Gateway-Firmwarereleases die ein URL-Encoding enthalten
 ```
    
 **V3.1.1 - 05.06.2023   Bugfix Release**  

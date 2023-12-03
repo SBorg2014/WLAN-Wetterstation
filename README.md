@@ -23,6 +23,7 @@
 - Ecowitt
   * Gateway GW1000
   * Gateway GW2000A
+  * WS2910
 - ELV WS980WiFi
 - Eurochron EFWS 2900 (baugleich zu Sainlogic 10in1 Wifi, Ambient Weather WS-2902, Chilitec CTW-902 Wifi)
 - Froggit

@@ -23,6 +23,7 @@
 - Ecowitt
   * Gateway GW1000
   * Gateway GW2000A
+  * WS2910
 - ELV WS980WiFi
 - Eurochron EFWS 2900 (baugleich zu Sainlogic 10in1 Wifi, Ambient Weather WS-2902, Chilitec CTW-902 Wifi)
 - Froggit
@@ -119,6 +120,7 @@ Auszug von WeatherObservationsWebsite (WOW):
 **V3.2.0 - 12.08.2023**  
 ``` 
     + Support für WeatherObservationsWebsite (WOW)
+    + Fix Zeitstempel für neuere Gateway-Firmwarereleases die ein URL-Encoding enthalten
 ```
    
 **V3.1.1 - 05.06.2023   Bugfix Release**  
@@ -440,7 +442,7 @@ Auszug von WeatherObservationsWebsite (WOW):
 ## :scroll: License ## 
  MIT License
 
-Copyright (c)2019-2023 by SBorg
+Copyright (c)2019-2024 by SBorg
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

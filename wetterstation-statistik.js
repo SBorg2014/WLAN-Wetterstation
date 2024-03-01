@@ -5,7 +5,8 @@
    Wichtig: funktioniert nur mit der Default-Datenstruktur des WLAN-Wetterstation-Skriptes!
             Auch keine Aliase unter Influx nutzen!
 
-   (c)2020-2023 by SBorg
+   (c)2020-2024 by SBorg
+   v2.0.4 - 18.02.2024  ~Bugfix "Trockenperiode" wird uU. auf 365 Tage gesetzt (Fix Issue #69 @ch33f)
    v2.0.3 - 02.07.2023  ~Bugfix Fehlermeldung am Monatsersten
    v2.0.2 - 02.03.2023  ~Bugfix fehlender Vorjahresmonat (Fix Issue #58)
                         ~Bugfix fehlender Vorjahresmonat (Fix Issue für #58 / #62 @Boronsbruder)
@@ -86,7 +87,7 @@ const DP_Check ='aktueller_Monat.Regentage';
 if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 //Start des Scripts
-    const ScriptVersion = "V2.0.3";
+    const ScriptVersion = "V2.0.4";
     const dayOfYear = date => Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
     let Tiefstwert, Hoechstwert, Temp_Durchschnitt, Max_Windboee, Max_Regenmenge, Regenmenge_Monat, warme_Tage, Sommertage;
     let heisse_Tage, Frost_Tage, kalte_Tage, Eistage, sehr_kalte_Tage, Wuestentage, Tropennaechte, Trockenperiode_akt;
@@ -284,23 +285,43 @@ function main() {
        if (getState(PRE_DP+'.Jahreswerte.Regenmengetag').val < Max_Regenmenge) {setState(PRE_DP+'.Jahreswerte.Regenmengetag', Max_Regenmenge, true);}
        //Windböe
        if (getState(PRE_DP+'.Jahreswerte.Windboee_max').val <= Max_Windboee) {setState(PRE_DP+'.Jahreswerte.Windboee_max', Max_Windboee, true);} 
-    if (getState(WET_DP + '.Info.Letzter_Regen').val.match(/:/g)) { //LAST_RAIN=DATUM (01.08.2022 12:40)
-        Trockenperiode_akt=dayOfYear(new Date()) - dayOfYear(new Date(getState(WET_DP + '.Info.Letzter_Regen').lc));
-        if (Trockenperiode_akt<=0) { Trockenperiode_akt+=365; } // Jahrewechsel
-        let Trockenperiode_alt = getState(PRE_DP + '.Jahreswerte.Trockenperiode').val;
-        if (Trockenperiode_akt >= Trockenperiode_alt) { setState(PRE_DP + '.Jahreswerte.Trockenperiode', Trockenperiode_akt, true); }
-    }    
-    if (getState(WET_DP + '.Info.Letzter_Regen').val.match(/^\d{10}$/)) { //LAST_RAIN=UNIX (0123456789)
-        Trockenperiode_akt = parseInt((Date.now() - getState(WET_DP + '.Info.Letzter_Regen').lc) / 1000 / 86400);
-        let Trockenperiode_alt = getState(PRE_DP + '.Jahreswerte.Trockenperiode').val;
-        if (Trockenperiode_akt >= Trockenperiode_alt) { setState(PRE_DP + '.Jahreswerte.Trockenperiode', Trockenperiode_akt, true); }
-    }
-    if (getState(WET_DP + '.Info.Letzter_Regen').val.match(/Tag/g)) { //LAST_RAIN=DIFF; nur setzen bei [Tag]en, nicht bei Stunden
-        Trockenperiode_akt = parseInt(getState(WET_DP+'.Info.Letzter_Regen').val.replace(/[^0-9\.]/g, ''), 10);
-        let Trockenperiode_alt = getState(PRE_DP + '.Jahreswerte.Trockenperiode').val;
-        if (Trockenperiode_akt >= Trockenperiode_alt) { setState(PRE_DP + '.Jahreswerte.Trockenperiode', Trockenperiode_akt, true); }
-    }
+       // Trockenperiode
+        // Aktuelles Datum erhalten
+         let currentDate = new Date();
+         let letzterRegenStr = getState(WET_DP + '.Info.Letzter_Regen').val;
+         let letzterRegenDatum = null;
 
+        // Überprüfen, ob das Format dem Muster "TT.MM.JJJJ SS:MM" entspricht
+         if (letzterRegenStr.match(/\d{2}\.\d{2}.\d{4} \d{2}:\d{2}/)) {
+          letzterRegenDatum = new Date(letzterRegenStr.replace(/(\d{2})\.(\d{2})\.(\d{4}) (\d{2}):(\d{2})/, '$3-$2-$1T$4:$5'));
+          BerechnungTrockenperiode();
+         }
+
+        // Überprüfen, ob der Wert genau aus 10 Ziffern besteht (Unix-Zeitstempelformat)
+         else if (letzterRegenStr.match(/^\d{10}$/)) {
+          letzterRegenDatum = new Date(parseInt(letzterRegenStr) * 1000);
+          BerechnungTrockenperiode();
+         }
+
+        // Überprüfen, ob der Wert das Wort "Tag" enthält
+         else if (letzterRegenStr.match(/Tag/g)) {
+          Trockenperiode_akt = parseInt(letzterRegenStr.replace(/[^0-9\.]/g, ''), 10);
+          BerechnungTrockenperiode();
+         }
+
+   function BerechnungTrockenperiode() {
+    if (letzterRegenDatum !== null) {
+      let Trockenperiode_akt = dayOfYear(currentDate) - dayOfYear(letzterRegenDatum);
+            if (Trockenperiode_akt < 0) {
+                let daysInLastYear = dayOfYear(new Date(currentDate.getFullYear() - 1, 11, 31));
+                Trockenperiode_akt += daysInLastYear;
+            }
+            let Trockenperiode_alt = getState(PRE_DP + '.Jahreswerte.Trockenperiode').val;
+            if (Trockenperiode_akt >= Trockenperiode_alt) {
+                setState(PRE_DP + '.Jahreswerte.Trockenperiode', Trockenperiode_akt, true);
+            }
+    }
+   }
     //Rekordwerte 
     Rekordwerte();
 

@@ -49,7 +49,7 @@ Zusatzsensoren (mittels Station oder Gateway DP1500/DP2000/GW1000/GW2000A):
 - bis zu 8 Stück DP50/WH31A Temperatur-/Luftfeuchtigkeit-Sensoren<sup>(4)</sup>
 - ein DP60/WH57 Blitzsensor
 - bis zu 4 Stück DP70/WH55 Wasserleckage-Sensoren
-- bis zu 8 Stück DP100/WH51 Bodenfeuchte-Sensoren<sup>(4)</sup>
+- bis zu 8 Stück DP100/WH51[L] Bodenfeuchte-Sensoren<sup>(4)</sup>
 - bis zu 4 Stück DP200/WH43 PM2.5 Feinstaub-Sensoren
 - ein DP250/WH45 5-In-1 CO2 / PM2.5 / PM10 / Temperatur / Luftfeuchte Innenraumsensor
 - ein DP300/WS68 Solarunterstütztes Anemometer mit UV-Lichtsensor

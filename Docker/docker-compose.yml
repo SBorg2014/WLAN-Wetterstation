@@ -3,7 +3,7 @@ services:
     wetterstation:
         network_mode: host
         restart: always
-        image: ubuntu:xenial-20210611
+        image: ubuntu:jammy-20240227
         container_name: wetterstation
         hostname: wetterstation
         volumes:

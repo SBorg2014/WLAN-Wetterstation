@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V3.2.0 --------------------------------------------------------
+### Subroutinen V3.3.0 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -240,8 +240,6 @@ iob_send() {
          if [[ "${MESSWERTE[$i]}" =~ ^temp[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP50.${MESSWERTE[$i]:4:1}.Temperatur=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" =~ ^humidity[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP50.${MESSWERTE[$i]:8:1}.Feuchtigkeit=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" =~ ^batt[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP50.${MESSWERTE[$i]:4:1}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
-         if [[ "${MESSWERTE[$i]}" =~ ^soilbatt[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:8:1}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
-         if [[ "${MESSWERTE[$i]}" =~ ^soilmoisture[1-8] ]] && [ "$ANZAHL_DP100" -gt "0" ]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:12:1}.Bodenfeuchtigkeit=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" = "lightning" ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP60.1.Entfernung=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" =~ ^lightning_num ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP60.1.Anzahl=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" =~ ^lightning_time ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP60.1.Zeitpunkt=${MESSWERTE[$(($i+1))]}"; fi
@@ -265,6 +263,11 @@ iob_send() {
          if [[ "${MESSWERTE[$i]}" =~ ^wh25batt ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WH31.1.Batterie=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" =~ ^leafwetness_ch[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP10.${MESSWERTE[$i]:14:1}.Blattfeuchte=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" =~ ^leaf_batt[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP10.${MESSWERTE[$i]:9:1}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
+
+        #DP100
+         if [[ "${MESSWERTE[$i]}" =~ ^soilbatt[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:8:1}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soilmoisture[1-8] ]] && [ "$ANZAHL_DP100" -gt "0" ]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:12:1}.Bodenfeuchtigkeit=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soilad[1-8] ]] && [ "$ANZAHL_DP100" -gt "0" ]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:6:1}.Raw=${MESSWERTE[$(($i+1))]}"; fi
 
         #WS90
          if [[ "${MESSWERTE[$i]}" =~ ^rrain_piezo ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WS90.1.aktuelle_Regenrate=${MESSWERTE[$(($i+1))]}"; fi
@@ -797,6 +800,7 @@ setup() {
   TIMER_START=0                    #Reset Sonnenpuls
   TEMPFIX_ERR=0                    #Zähler Temperaturfix
   ALIVE=$(date +%H)                #Lebenszeichen
+  block_6minjobs=0                 #Initial 6-Minutenjobs
   WETTER_TREND="noch --- Minuten"  #Anzeige bis Daten komplett
   SKIP_AWEKAS_TIMER=65             #nur alle x Sekunden ein Datenpaket an AWEKAS senden (dynamisch)
   if [ $(date +%Z) == "CEST" ]; then ZULU=22; else ZULU=23;fi #Zuluzeitkorrektur für InfluxDB
@@ -820,7 +824,7 @@ setup() {
  #Anzahl der DP Berechnen
   case $WS_PROTOKOLL in
    1) MAXDEVICES=22;;
-   *) MAXDEVICES=$(( 36 + $ANZAHL_DP35 * 4 + $ANZAHL_DP40 * 2 + $ANZAHL_DP50 * 6 + $ANZAHL_DP100 * 4 + $ANZAHL_DP60 * 8 + $ANZAHL_DP200 * 6 + $ANZAHL_DP70 * 4 + $ANZAHL_DP250 * 18 + $ANZAHL_DP300 *2 ))
+   *) MAXDEVICES=$(( 36 + $ANZAHL_DP35 * 4 + $ANZAHL_DP40 * 2 + $ANZAHL_DP50 * 6 + $ANZAHL_DP100 * 6 + $ANZAHL_DP60 * 8 + $ANZAHL_DP200 * 6 + $ANZAHL_DP70 * 4 + $ANZAHL_DP250 * 18 + $ANZAHL_DP300 *2 ))
       MAXDEVICES+=$(( $ANZAHL_WH31 * 2 + $ANZAHL_DP10 * 4 + $ANZAHL_WS90 * 20 ))
       MAXDEVICES+=$(( $ANZAHL_7009999 * 2 ))
   esac
@@ -867,6 +871,9 @@ setup() {
    SAPI "Single" "getPlainValue/${DP_SOLAR_SAVE}"
    SOLAR_TMP=$(echo ${retval}|sed -e 's/\"//g')
    SOL_ARY=($SOLAR_TMP)
+   #test ob Array befüllt
+   local SOL_ARY_LEN=${#SOL_ARY[@]}
+   if (( $SOL_ARY_LEN < 4 )); then SOL_ARY=(0 0 0 0); fi
 	SOLARENERGIE_TAG=${SOL_ARY[0]:-0}
 	SOLAR_WOCHE=${SOL_ARY[1]:-0}
 	SOLAR_MONAT=${SOL_ARY[2]:-0}
@@ -896,7 +903,7 @@ usage() {
 
 version() {
         clear
-	echo -e "\n$BL WLAN-Wetterstation ${SH_VER} - (c)2019-2023 by SBorg"
+	echo -e "\n$BL WLAN-Wetterstation ${SH_VER} - (c)2019-2024 by SBorg"
 	echo -e " Config-Version: ${CONF_V}"
 	echo -e " Sub-Version   : ${SUBVER}\n"
 
@@ -1509,6 +1516,12 @@ DP50_100() {
          let "j++"
          MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
       fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^soilad[1-8]= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
 }
 
 
@@ -1859,7 +1872,7 @@ windy_update(){
           else
             local retval=$(curl -s https://stations.windy.com/pws/update/${windy_APIKey}?${windy_DATA})
           fi
-         if echo ${retval}|grep -q 'SUCCESS'; then
+         if echo ${retval}|grep -iq '"success":true'; then
              SAPI "Single" "set/${DP_WINDY_TRANSMIT}?value=true&ack=true"
            else
              SAPI "Single" "set/${DP_WINDY_TRANSMIT}?value=false&ack=true"

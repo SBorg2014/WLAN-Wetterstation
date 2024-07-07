@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V3.2.0
+UPDATE_VER=V3.3.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -148,8 +148,9 @@ patcher() {
            V2.22.0) PATCH3000 ;;
            V3.0.0) PATCH3010 ;;
            V3.1.0) PATCH3011 ;;
-           V3.1.1) PATCH3020 && exit 0;;
-           V3.2.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
+           V3.1.1) PATCH3020 ;;
+           V3.2.0) PATCH3030 && exit 0;;
+           V3.3.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
                 *) FEHLER
     esac
 
@@ -665,6 +666,14 @@ PATCH3020(){
  echo -e " ${GE}Die Datenübertragung kann nun (optional) in der wetterstaion.conf nach Eintragung der Zugangsdaten und Aktivierung erfolgen.${WE}"
 }
 
+
+#Patch Version V3.2.0 auf V3.3.0
+PATCH3030() {
+ backup
+ echo -e "${WE}\n Patche wetterstation.conf auf V3.3.0 ..."
+ sed -i 's/### Settings V3.2.0/### Settings V3.3.0/' ./wetterstation.conf
+ echo -e "${WE} Fertig...\n"
+}
 
 jn_abfrage() {
          echo -en "\n$1 ${WE}[${GR}J/N${WE}]"

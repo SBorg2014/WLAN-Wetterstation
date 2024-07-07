@@ -2,7 +2,7 @@
 : <<'Versionsinfo'
 
 
- V3.2.0 - 12.08.2023 (c) 2019-2023 SBorg
+ V3.3.0 - 06.07.2024 (c) 2019-2024 SBorg
 
  wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
  die Daten an den ioBroker (alternativ auch an AWEKAS, OpenSenseMap, Windy, wetter.com und WeatherObservationsWebsite)
@@ -10,6 +10,10 @@
  benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq', 'bc' und 'dc' unter Linux
 
 
+ V3.3.0 / 06.07.2024   + Fix Simple API-Fehlermeldung bei leerer Solarenergie
+                       + Fix DP "Windy Datenübertragung" verbleibt auf "false" trotz erfolgreicher Datenübertragung
+                         (Änderung an der API von windy)
+                       + Raw-Werte bei DP100/WH51[L] hinzugefügt
  V3.2.0 / 12.08.2023   + Support für WeatherObservationsWebsite (WOW)
                        + Fix Zeitstempel für neuere Gateway-Firmwarereleases die ein URL-Encoding enthalten
  V3.1.1 / 04.06.2023   + Fix "MetSommer" (Skript bleibt bei den Mitternachtjobs hängen)
@@ -148,9 +152,9 @@ Versionsinfo
 ### Ende Infoblock
 
  #Versionierung
-  SH_VER="V3.2.0"
-  CONF_V="V3.2.0"
-  SUBVER="V3.2.0"
+  SH_VER="V3.3.0"
+  CONF_V="V3.3.0"
+  SUBVER="V3.3.0"
 
 
  #Installationsverzeichnis feststellen
@@ -402,25 +406,28 @@ while true
    fi
 
 
-  #6-Minutenjobs: WOW
-   if [ $(( $DO_IT % 6 )) -eq "0" ] && [ -z ${run_6minjobs_onlyonce} ]; then
 
+  #6-Minutenjobs: WOW, Windy
+   if [ $(( $DO_IT % 6 )) -eq "0" ] && [ ${block_6minjobs} -le "0" ]; then
+
+     #Windy
+      if [ ${use_windy} == "true" ]; then windy_update; fi
      #WOW
-     if [ ${use_wow} == "true" ]; then wow_update; fi
+      if [ ${use_wow} == "true" ]; then wow_update; fi
 
-     #run only once
-     run_6minjobs_onlyonce=true
+     #run_onlyonce
+      block_6minjobs=3;
 
     else
-     unset run_6minjobs_onlyonce
+     let block_6minjobs--
    fi
 
 
-  #5-Minutenjobs: Windy; wetter.com; Wolkenbasis
-   if [ $(( $DO_IT % 5 )) -eq "0" ] && [ -z ${run_5minjobs_onlyonce} ]; then
 
-     #Windy / wetter.com / Wolkenbasis
-     if [ ${use_windy} == "true" ]; then windy_update; fi
+  #5-Minutenjobs: wetter.com; Wolkenbasis
+   if [[ $(( $DO_IT % 5 )) -eq "0" && -z ${run_5minjobs_onlyonce} ]]; then
+
+     #wetter.com / Wolkenbasis
      if [ ! -z ${WETTERCOM_ID} ]; then wettercom_update; fi
      do_wolkenbasis
 
@@ -428,10 +435,10 @@ while true
      if [ ! -z ${INFLUX_BUCKET} ] && [ -z ${MESSWERTE[21]} ]; then windboeemax; fi
 
      #run only once
-     run_5minjobs_onlyonce=true
+      run_5minjobs_onlyonce=true
 
     else
-     unset run_5minjobs_onlyonce
+     if [ ${run_5minjobs_onlyonce} ]; then unset run_5minjobs_onlyonce; fi
    fi
 
 

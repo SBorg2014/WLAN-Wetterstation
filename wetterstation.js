@@ -1,19 +1,19 @@
-//Wetterstation Datenpunkte anlegen V3.2.0
+//Wetterstation Datenpunkte anlegen V3.3.0
 let DP = "0_userdata.0.Wetterstation.";
-let WH31 = 0;    // Anzahl der WH31/WH25 Sensoren  (max. 1 Stück)
-let WS90 = 0;    // Anzahl der WS90 Sensoren       (max. 1 Stück)
-let DP10 = 0;    // Anzahl der DP10/WN35 Sensoren  (max. 8 Stück)
-let DP35 = 0;    // Anzahl der DP35/WN34 Sensoren  (max. 8 Stück)
-let DP40 = 0;    // Anzahl der DP40/WH32 Sensoren  (max. 1 Stück)
-let DP50 = 0;    // Anzahl der DP50/WH31 Sensoren  (max. 8 Stück)
-let DP60 = 0;    // Anzahl der DP60/WH57 Sensoren  (max. 1 Stück)
-let DP70 = 0;    // Anzahl der DP70/WH55 Sensoren  (max. 4 Stück)
-let DP100 = 0;   // Anzahl der DP100/WH51 Sensoren (max. 8 Stück)
-let DP200 = 0;   // Anzahl der DP200/WH43 Sensoren (max. 4 Stück)
-let DP250 = 0;   // Anzahl der DP250/WH45 Sensoren (max. 1 Stück)
-let DP300 = 0;   // Anzahl der DP300/WS68 Sensoren (max. 1 Stück)
+let WH31 = 0;    // Anzahl der WH31/WH25 Sensoren     (max. 1 Stück)
+let WS90 = 0;    // Anzahl der WS90 Sensoren          (max. 1 Stück)
+let DP10 = 0;    // Anzahl der DP10/WN35 Sensoren     (max. 8 Stück)
+let DP35 = 0;    // Anzahl der DP35/WN34 Sensoren     (max. 8 Stück)
+let DP40 = 0;    // Anzahl der DP40/WH32 Sensoren     (max. 1 Stück)
+let DP50 = 0;    // Anzahl der DP50/WH31 Sensoren     (max. 8 Stück)
+let DP60 = 0;    // Anzahl der DP60/WH57 Sensoren     (max. 1 Stück)
+let DP70 = 0;    // Anzahl der DP70/WH55 Sensoren     (max. 4 Stück)
+let DP100 = 0;   // Anzahl der DP100/WH51[L] Sensoren (max. 8 Stück)
+let DP200 = 0;   // Anzahl der DP200/WH43 Sensoren    (max. 4 Stück)
+let DP250 = 0;   // Anzahl der DP250/WH45 Sensoren    (max. 1 Stück)
+let DP300 = 0;   // Anzahl der DP300/WS68 Sensoren    (max. 1 Stück)
 let BR7009999 = 0; // Anzahl der Thermo-Hygro-7Ch-Sensoren (max. 4 Stück)
-let FT0300 = 0;  // Anzahl der FT0300 Sensoren     (max. 1 Stück)
+let FT0300 = 0;  // Anzahl der FT0300 Sensoren        (max. 1 Stück)
 //Ende der User-Einstellungen -------------------
 
 //Prüfe Objektpfad
@@ -105,6 +105,7 @@ async function dpAnlegen(){
  await createStateAsync(DP + "Regen_Stunde", 0, { name: "Regenmenge Stunde", type: "number", role: "value", unit: "mm" });
  await createStateAsync(DP + "Regen_Total", 0, { name: "Regenmenge Insgesammt", type: "number", role: "value", unit: "mm" });
 
+    if (DP100 > 0 && DP100 <= 8)         { await DP100_anlegen(); console.log("Datenpunkte für DP100 angelegt..."); }
     if (WS90 > 0 && WS90 <= 1)           { await WS90_anlegen(); console.log("Datenpunkte für WS90 angelegt..."); }
     if (BR7009999 > 0 && BR7009999 <= 4) { await BR7009999_anlegen(); console.log("Datenpunkte für Bresser #7009999 angelegt..."); }
     if (FT0300 > 0 && FT0300 <= 1)       { await FT0300_anlegen(); console.log("Datenpunkte für Zusatzsensor FT0300 angelegt..."); }
@@ -352,11 +353,12 @@ if (DP70 > 0 && DP70 <= 4) {
     }
 }
 
-if (DP100 > 0 && DP100 <= 8) {
-    if (!existsState(DP + "DP100")) { createState(DP + "DP100", '', { name: "Mehrkanal Bodenfeuchtesensoren" }); }
+//DP100 / WH51[L] - Sensoren
+async function DP100_anlegen() {
+    if (!existsState(DP + "DP100")) { await createStateAsync(DP + "DP100", '', { name: "Mehrkanal Bodenfeuchtesensoren" }); }
     for (var i = 1; i <= DP100; i++) {
         if (!existsState(DP + "DP100." + i + ".Bodenfeuchtigkeit")) {
-            createState(DP + "DP100." + i + ".Bodenfeuchtigkeit", "", {
+            await createStateAsync(DP + "DP100." + i + ".Bodenfeuchtigkeit", "", {
                 "name": "DP100 Kanal " + i + " Bodenfeuchtigkeit",
                 "type": "number",
                 "role": "state",
@@ -364,8 +366,16 @@ if (DP100 > 0 && DP100 <= 8) {
             });
         }
         if (!existsState(DP + "DP100." + i + ".Batterie")) {
-            createState(DP + "DP100." + i + ".Batterie", "", {
+            await createStateAsync(DP + "DP100." + i + ".Batterie", "", {
                 "name": "DP100 Kanal " + i + " Batterie",
+                "type": "number",
+                "role": "state",
+                "unit": "V"
+            });
+        }
+        if (!existsState(DP + "DP100." + i + ".Raw")) {
+            await createStateAsync(DP + "DP100." + i + ".Raw", "", {
+                "name": "DP100 Kanal " + i + " Raw-Wert",
                 "type": "number",
                 "role": "state"
             });

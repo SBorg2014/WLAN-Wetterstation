@@ -117,6 +117,14 @@ Auszug von WeatherObservationsWebsite (WOW):
 
 ## Versionen ##
 
+**V3.3.0 - 06.07.2024**  
+``` 
+    + Fix Simple API-Fehlermeldung bei leerer Solarenergie
+    + Fix DP "Windy Datenübertragung" verbleibt auf "false" trotz erfolgreicher Datenübertragung
+      (Änderung an der API von windy)
+    + Raw-Werte bei DP100/WH51[L] hinzugefügt
+```
+   
 **V3.2.0 - 12.08.2023**  
 ``` 
     + Support für WeatherObservationsWebsite (WOW)

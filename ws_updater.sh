@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V3.3.0
+UPDATE_VER=V3.4.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -149,8 +149,9 @@ patcher() {
            V3.0.0) PATCH3010 ;;
            V3.1.0) PATCH3011 ;;
            V3.1.1) PATCH3020 ;;
-           V3.2.0) PATCH3030 && exit 0;;
-           V3.3.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
+           V3.2.0) PATCH3030 ;;
+           V3.3.0) PATCH3040 && service_restart && exit 0;;
+           V3.4.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
                 *) FEHLER
     esac
 
@@ -193,11 +194,11 @@ main() {
 
           rm tmp.zip
           source ./ws_updater.sh --patch
+}
 
+service_restart() {
           jn_abfrage "\n ${WE}Update ausgeführt. Soll der Service nun neu gestartet werden?"
           if [ ! -z $antwort ]; then echo -e "\n"; sudo systemctl restart wetterstation.service; fi
-
-exit
 }
 
 ########################################################################################
@@ -668,12 +669,22 @@ PATCH3020(){
 
 
 #Patch Version V3.2.0 auf V3.3.0
-PATCH3030() {
+PATCH3030(){
  backup
  echo -e "${WE}\n Patche wetterstation.conf auf V3.3.0 ..."
  sed -i 's/### Settings V3.2.0/### Settings V3.3.0/' ./wetterstation.conf
- echo -e "${WE} Fertig...\n"
+ echo -e "\n${WE} Fertig...\n"
 }
+
+
+#Patch Version V3.3.0 auf V3.4.0
+PATCH3040(){
+ backup
+ echo -e "${WE}\n Patche wetterstation.conf auf V3.4.0 ..."
+ sed -i 's/### Settings V3.3.0/### Settings V3.4.0/' ./wetterstation.conf
+ echo -e "\n${WE} Fertig...\n"
+}
+
 
 jn_abfrage() {
          echo -en "\n$1 ${WE}[${GR}J/N${WE}]"

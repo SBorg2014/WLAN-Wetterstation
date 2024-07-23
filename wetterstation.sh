@@ -2,7 +2,7 @@
 : <<'Versionsinfo'
 
 
- V3.3.0 - 06.07.2024 (c) 2019-2024 SBorg
+ V3.4.0 - 20.07.2024 (c) 2019-2024 SBorg
 
  wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
  die Daten an den ioBroker (alternativ auch an AWEKAS, OpenSenseMap, Windy, wetter.com und WeatherObservationsWebsite)
@@ -10,6 +10,8 @@
  benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq', 'bc' und 'dc' unter Linux
 
 
+ V3.4.0 / 20.07.2024   ~ Fix "Kommunikationsfehler" bei Gateways mit Firmware ab V3.1.1 / Issue #71
+                       ~ Fix am ws_updater, Restart des Service wird nach Update nicht ausgeführt
  V3.3.0 / 06.07.2024   + Fix Simple API-Fehlermeldung bei leerer Solarenergie
                        + Fix DP "Windy Datenübertragung" verbleibt auf "false" trotz erfolgreicher Datenübertragung
                          (Änderung an der API von windy)
@@ -152,9 +154,9 @@ Versionsinfo
 ### Ende Infoblock
 
  #Versionierung
-  SH_VER="V3.3.0"
-  CONF_V="V3.3.0"
-  SUBVER="V3.3.0"
+  SH_VER="V3.4.0"
+  CONF_V="V3.4.0"
+  SUBVER="V3.4.0"
 
 
  #Installationsverzeichnis feststellen

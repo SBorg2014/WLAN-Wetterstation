@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V3.3.0 --------------------------------------------------------
+### Subroutinen V3.4.0 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -319,7 +319,7 @@ get_DATA() {
 
    2) DATA=$(timeout ${WARTE} nc -nlvw 1 -p ${WS_PORT} 2>/dev/null|tail -1)
       STRLEN=$(echo -n $DATA | wc -m)
-      if [ "$STRLEN" -gt "150" ] && [[ "$DATA" =~ "PASSKEY=" ]] && [[ "$DATA" =~ "tempf=" ]]; then return 0; else return 1; fi
+      if [ "$STRLEN" -gt "150" ] && [[ "$DATA" =~ "PASSKEY=" ]] && [[ "$DATA" =~ "tempf=" ]] || [[ "$DATA" =~ "tempinf=" ]]; then return 0; else return 1; fi
       ;;
 
    *) echo -e "\n${RE}Die Angabe: WS_PROTOKOLL=$WS_PROTOKOLL ist ungültig. Bitte die Eingabe in der wetterstation.conf korrigieren!$WE\n"

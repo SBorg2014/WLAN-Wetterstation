@@ -117,6 +117,12 @@ Auszug von WeatherObservationsWebsite (WOW):
 
 ## Versionen ##
 
+**V3.4.0 - 20.07.2024**  
+``` 
+    ~ Fix "Kommunikationsfehler" bei Gateways mit Firmware ab V3.1.1 / Issue #71
+    ~ Fix am ws_updater, Restart des Service wird nach Update nicht ausgeführt
+```
+   
 **V3.3.0 - 06.07.2024**  
 ``` 
     + Fix Simple API-Fehlermeldung bei leerer Solarenergie

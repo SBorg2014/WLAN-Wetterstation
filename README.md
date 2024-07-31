@@ -1,6 +1,7 @@
 # :partly_sunny: WLAN-Wetterstation
 <br/><br/>
 [![Current Release](https://img.shields.io/github/v/release/SBorg2014/WLAN-Wetterstation.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/releases/latest)
+[![Scc Count Badge](https://sloc.xyz/github/SBorg2014/WLAN-Wetterstation/?category=code)](https://github/SBorg2014/WLAN-Wetterstation/)
 [![Downloads](https://img.shields.io/github/downloads/SBorg2014/WLAN-Wetterstation/latest/total.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/releases/latest)
 [![GitHub download](https://img.shields.io/github/downloads/SBorg2014/WLAN-Wetterstation/total.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/releases/latest)
 [![Contributors](https://img.shields.io/github/contributors/SBorg2014/WLAN-Wetterstation.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/graphs/contributors)

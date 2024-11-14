@@ -6,6 +6,7 @@
             Auch keine Aliase unter Influx nutzen!
 
    (c)2020-2024 by SBorg
+   v2.0.5 - 14.11.2024  ~Umstellung von axios auf httpGet (fixed "Fehler: AxiosError: Request failed with status code 429")
    v2.0.4 - 18.02.2024  ~Bugfix "Trockenperiode" wird uU. auf 365 Tage gesetzt (Fix Issue #69 @ch33f)
    v2.0.3 - 02.07.2023  ~Bugfix Fehlermeldung am Monatsersten
    v2.0.2 - 02.03.2023  ~Bugfix fehlender Vorjahresmonat (Fix Issue #58)
@@ -62,8 +63,8 @@
 
 // *** User-Einstellungen **********************************************************************************************************************************
     const WET_DP='0_userdata.0.Wetterstation';          // wo liegen die Datenpunkte mit den Daten der Wetterstation  [default: 0_userdata.0.Wetterstation]                          
-    const INFLUXDB_INSTANZ='0';                         // unter welcher Instanz läuft die InfluxDB [default: 0]
-    const INFLUXDB_BUCKET='Wetter';                     // Name des zu benutzenden Buckets
+    const INFLUXDB_INSTANZ='3';                         // unter welcher Instanz läuft die InfluxDB [default: 0]
+    const INFLUXDB_BUCKET='Homeautomation';             // Name des zu benutzenden Buckets
     const PRE_DP='0_userdata.0.Statistik.Wetter';       // wo sollen die Statistikwerte abgelegt werden. Nur unter "0_userdata" oder "javascript" möglich!
     let REKORDWERTE_AUSGABEFORMAT="[WERT] im [MONAT] [JAHR]";   /* Wie soll die Ausgabe der Rekordwerte formatiert werden (Template-Vorlage)?
                                                                     [WERT]      = Messwert (zB. '22.42' bei Temperatur, '12' bei Tagen)
@@ -87,7 +88,7 @@ const DP_Check ='aktueller_Monat.Regentage';
 if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 //Start des Scripts
-    const ScriptVersion = "V2.0.4";
+    const ScriptVersion = "V2.0.5";
     const dayOfYear = date => Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
     let Tiefstwert, Hoechstwert, Temp_Durchschnitt, Max_Windboee, Max_Regenmenge, Regenmenge_Monat, warme_Tage, Sommertage;
     let heisse_Tage, Frost_Tage, kalte_Tage, Eistage, sehr_kalte_Tage, Wuestentage, Tropennaechte, Trockenperiode_akt;
@@ -625,26 +626,26 @@ function Statusmeldung(Text) {
 
 // Test auf neue Skriptversion
 function check_update() {
-    const axios = require('axios');
+    const link="https://github.com/SBorg2014/WLAN-Wetterstation/commits/master/wetterstation-statistik.js";
 
-    axios.get('https://github.com/SBorg2014/WLAN-Wetterstation/commits/master/wetterstation-statistik.js').then(response => {
-     
-     // /<a aria-label="V.*[\r\n]+.*<\/a>/
-
-     let regex = /">V.*<\/a>/ 
-     , version = response.data.match(regex);
-
-     if (version[0].match(ScriptVersion)) { 
-         setState(PRE_DP+'.Control.ScriptVersion_Update','---',true); 
-     } else {
-         setState(PRE_DP+'.Control.ScriptVersion_Update','https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/wetterstation-statistik.js',true);
-         console.log('neue Script-Version verfügbar...');
-     }
-
-    })
-        .catch((error) => {
-        console.log(`Fehler: ${error}`);
-    })
+    try {
+        httpGet(link, { responseType: 'text' }, (error, response) => { 
+            if (!error && response.statusCode == 200) {
+               let regex = /">V.*<\/a>/
+               , version = response.data.match(regex);
+               if (version[0].match(ScriptVersion)) { 
+                 setState(PRE_DP+'.Control.ScriptVersion_Update','---',true); 
+               } else {
+                 setState(PRE_DP+'.Control.ScriptVersion_Update','https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/wetterstation-statistik.js',true);
+                 console.log('neue Script-Version verfügbar...');
+               }
+            } else { 
+                log(error, 'error'); 
+            } 
+        });
+    } catch (fehler) {
+        log("Fehler (try): " + fehler, "error");
+    }
 } // end function
 
 // Jahresstatistik-Backup

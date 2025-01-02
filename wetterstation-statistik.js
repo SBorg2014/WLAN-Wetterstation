@@ -5,7 +5,8 @@
    Wichtig: funktioniert nur mit der Default-Datenstruktur des WLAN-Wetterstation-Skriptes!
             Auch keine Aliase unter Influx nutzen!
 
-   (c)2020-2024 by SBorg
+   (c)2020-2025 by SBorg
+   v2.0.6 - 02.01.2025  ~Bugfix "Null" zum Jahreswechsel
    v2.0.5 - 14.11.2024  ~Umstellung von axios auf httpGet (fixed "Fehler: AxiosError: Request failed with status code 429")
    v2.0.4 - 18.02.2024  ~Bugfix "Trockenperiode" wird uU. auf 365 Tage gesetzt (Fix Issue #69 @ch33f)
    v2.0.3 - 02.07.2023  ~Bugfix Fehlermeldung am Monatsersten
@@ -63,8 +64,8 @@
 
 // *** User-Einstellungen **********************************************************************************************************************************
     const WET_DP='0_userdata.0.Wetterstation';          // wo liegen die Datenpunkte mit den Daten der Wetterstation  [default: 0_userdata.0.Wetterstation]                          
-    const INFLUXDB_INSTANZ='3';                         // unter welcher Instanz läuft die InfluxDB [default: 0]
-    const INFLUXDB_BUCKET='Homeautomation';             // Name des zu benutzenden Buckets
+    const INFLUXDB_INSTANZ='0';                         // unter welcher Instanz läuft die InfluxDB [default: 0]
+    const INFLUXDB_BUCKET='Wetter';                     // Name des zu benutzenden Buckets
     const PRE_DP='0_userdata.0.Statistik.Wetter';       // wo sollen die Statistikwerte abgelegt werden. Nur unter "0_userdata" oder "javascript" möglich!
     let REKORDWERTE_AUSGABEFORMAT="[WERT] im [MONAT] [JAHR]";   /* Wie soll die Ausgabe der Rekordwerte formatiert werden (Template-Vorlage)?
                                                                     [WERT]      = Messwert (zB. '22.42' bei Temperatur, '12' bei Tagen)
@@ -88,7 +89,7 @@ const DP_Check ='aktueller_Monat.Regentage';
 if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 //Start des Scripts
-    const ScriptVersion = "V2.0.5";
+    const ScriptVersion = "V2.0.6";
     const dayOfYear = date => Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
     let Tiefstwert, Hoechstwert, Temp_Durchschnitt, Max_Windboee, Max_Regenmenge, Regenmenge_Monat, warme_Tage, Sommertage;
     let heisse_Tage, Frost_Tage, kalte_Tage, Eistage, sehr_kalte_Tage, Wuestentage, Tropennaechte, Trockenperiode_akt;
@@ -132,7 +133,7 @@ function main() {
             }
 
         //Rekordwerte (Temperatur-Durchschnitt) einmalig resetten [InstallationsJahr +1]
-        let Inst_Jahr = (new Date(getState(PRE_DP).ts)).getFullYear();
+        let Inst_Jahr = (new Date(getObject(PRE_DP).ts)).getFullYear();
         if (zeitstempel.getFullYear() == Inst_Jahr+1) {
             setState(PRE_DP+'.Rekordwerte.value.Temp_Durchschnitt_Max', -99.99, true);
             setState(PRE_DP+'.Rekordwerte.value.Temp_Durchschnitt_Min',  99.99, true);

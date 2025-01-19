@@ -11,6 +11,7 @@
 [![Commits since last release](https://img.shields.io/github/commits-since/SBorg2014/WLAN-Wetterstation/latest.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/releases/latest)
 [![Visitors](https://api.visitorbadge.io/api/visitors?path=SBorg2014%2FWLAN-Wetterstation&label=Visitors%20since%2024.11.2024&labelColor=%235a5a5a&countColor=%234cc71e&style=flat&labelStyle=none)](https://visitorbadge.io/status?path=SBorg2014%2FWLAN-Wetterstation)
 [![License](https://img.shields.io/github/license/SBorg2014/WLAN-Wetterstation.svg)](https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/LICENSE)
+[<img src="https://api.gitsponsors.com/api/badge/img?id=230517461" height="20">](https://api.gitsponsors.com/api/badge/link?p=E4fe5NJSbRsUJvEmBUW7KTRZMvejphK07f7hGHRGNm6EDSHEpb7x8898lN7IiN5i8JLpHVdSHZ6D4fwrPo4pGw==)
 
  schafft eine Verbindung von einer WLAN-Wetterstation zum ioBroker und kann optional die Wetterdaten für [AWEKAS.at](https://www.awekas.at), [openSenseMap](https://opensensemap.org), [Windy](https://www.windy.com), [WeatherObservationsWebsite (WOW)](https://wow.metoffice.gov.uk/) und [wetter.com](https://www.wetter.com) zur Verfügung stellen (__Projekt läuft nur unter Linux__)<br>
  

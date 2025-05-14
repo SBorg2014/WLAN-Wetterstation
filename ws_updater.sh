@@ -692,6 +692,9 @@ PATCH3050(){
  backup
  echo -e "${WE}\n Patche wetterstation.conf auf V3.5.0 ..."
  sed -i 's/### Settings V3.4.0/### Settings V3.5.0/' ./wetterstation.conf
+ if [ ${RESTAPI} == "true" ]; then 
+  make_objects ".Sättigungsdefizit" "(Wasserdampf-)Drucksättigungsdefizit VPD" "number" "kPa"
+ fi
  echo -e "\n${WE} Fertig...\n"
 }
 

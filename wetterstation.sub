@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V3.4.0 --------------------------------------------------------
+### Subroutinen V3.5.0 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -29,6 +29,7 @@
   DP_SONNE=${PRE_DP}.Sonnenstrahlung
   DP_UV_INDEX=${PRE_DP}.UV_Index
   DP_UV_BELASTUNG=${PRE_DP}.UV_Belastung
+  DP_VPD=${PRE_DP}.Sättigungsdefizit
   DP_ZEITSTEMPEL=${PRE_DP}.Zeitstempel
   DP_WETTER_TREND=${PRE_DP}.Wetter_Trend
   DP_WETTER_AKTUELL=${PRE_DP}.Wetter_aktuell
@@ -136,6 +137,7 @@ debuging() {
    echo -e " Regen Monat\t\t\t: $GR${MESSWERTE[14]}$WE mm"
    echo -e " Regen Jahr\t\t\t: $GR${MESSWERTE[15]}$WE mm"
    echo -e " Regen Gesamt\t\t\t: $GR${MESSWERTE[24]}$WE mm"
+   echo -e " Sättigungsdefizit\t\t: $GR${MESSWERTE[30]}$WE kPa"
    echo -e " Sonnenstrahlung\t\t: $GR${MESSWERTE[16]}$WE W/m²"
    echo -e " UV-Index\t\t\t: $GR${MESSWERTE[17]}$WE"
    echo -e " Zeitstempel\t\t\t: $GR${MESSWERTE[18]}$WE" | sed -e 's/%20/ /g'
@@ -224,7 +226,7 @@ iob_send() {
     IOBPAR=(${DP_TEMP_INNEN} ${DP_TEMP_AUSSEN} ${DP_TAUPUNKT} ${DP_WCHILL} ${DP_FEUCHTE_INNEN} ${DP_FEUCHTE_AUSSEN} ${DP_WIND} ${DP_WIND_MAX} \
     ${DP_WIND_DIR} ${DP_DRUCK_ABS} ${DP_DRUCK_REL} ${DP_REGENRATE} ${DP_REGEN_TAG} ${DP_REGEN_WOCHE} ${DP_REGEN_MONAT} ${DP_REGEN_JAHR} \
     ${DP_SONNE} ${DP_UV_INDEX} ${DP_DP50_1_TEMP} ${DP_ZEITSTEMPEL} ${DP_FW_VERSION} ${DP_STATION_BATTERIE} ${DP_WINDBOEEN_MAX} ${DP_REGEN_EVENT} \
-    ${DP_REGEN_STUNDE} ${DP_REGEN_TOTAL} ${DP_GATEWAY_NAME} ${DP_WIND_DIR_10MIN} ${DP_WIND_10MIN} ${DP_TEMP_FT0300_1} ${DP_FEUCHTE_FT0300_1})
+    ${DP_REGEN_STUNDE} ${DP_REGEN_TOTAL} ${DP_GATEWAY_NAME} ${DP_WIND_DIR_10MIN} ${DP_WIND_10MIN} ${DP_TEMP_FT0300_1} ${DP_FEUCHTE_FT0300_1} ${DP_VPD})
 
     IOBOUT=""
     #Standard DP für ioBroker
@@ -265,9 +267,12 @@ iob_send() {
          if [[ "${MESSWERTE[$i]}" =~ ^leaf_batt[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP10.${MESSWERTE[$i]:9:1}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
 
         #DP100
-         if [[ "${MESSWERTE[$i]}" =~ ^soilbatt[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:8:1}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
-         if [[ "${MESSWERTE[$i]}" =~ ^soilmoisture[1-8] ]] && [ "$ANZAHL_DP100" -gt "0" ]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:12:1}.Bodenfeuchtigkeit=${MESSWERTE[$(($i+1))]}"; fi
-         if [[ "${MESSWERTE[$i]}" =~ ^soilad[1-8] ]] && [ "$ANZAHL_DP100" -gt "0" ]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:6:1}.Raw=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soilbatt[1-9] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:8:1}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soilbatt1[0-6] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:8:2}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soilmoisture[1-9] ]] && [ "$ANZAHL_DP100" -gt "0" ]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:12:1}.Bodenfeuchtigkeit=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soilmoisture1[0-6] ]] && [ "$ANZAHL_DP100" -gt "0" ]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:12:2}.Bodenfeuchtigkeit=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soilad[1-9] ]] && [ "$ANZAHL_DP100" -gt "0" ]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:6:1}.Raw=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soilad1[0-6] ]] && [ "$ANZAHL_DP100" -gt "0" ]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:6:2}.Raw=${MESSWERTE[$(($i+1))]}"; fi
 
         #WS90
          if [[ "${MESSWERTE[$i]}" =~ ^rrain_piezo ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WS90.1.aktuelle_Regenrate=${MESSWERTE[$(($i+1))]}"; fi
@@ -903,7 +908,7 @@ usage() {
 
 version() {
         clear
-	echo -e "\n$BL WLAN-Wetterstation ${SH_VER} - (c)2019-2024 by SBorg"
+	echo -e "\n$BL WLAN-Wetterstation ${SH_VER} - (c)2019-2025 by SBorg"
 	echo -e " Config-Version: ${CONF_V}"
 	echo -e " Sub-Version   : ${SUBVER}\n"
 
@@ -1485,38 +1490,56 @@ DP40() {
 
 DP50_100() {
       #DP50/100-Sensoren
-      if [[ ${MESSWERTERAWIN[$i]} =~ ^temp[1-8]f= ]]
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^temp[1-9]f= ]]
          then let "j++"
          MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
          let "j++"
          MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
          convertFtoC $j
       fi
-      if [[ ${MESSWERTERAWIN[$i]} =~ ^humidity[1-8]= ]]
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^humidity[1-9]= ]]
          then let "j++"
          MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
          let "j++"
          MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
       fi
-      if [[ ${MESSWERTERAWIN[$i]} =~ ^batt[1-8]= ]]
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^batt[1-9]= ]]
          then let "j++"
          MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
          let "j++"
          MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
       fi
-      if [[ ${MESSWERTERAWIN[$i]} =~ ^soilbatt[1-8]= ]]
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^soilbatt[1-9]= ]]
          then let "j++"
          MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
          let "j++"
          MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
       fi
-      if [[ ${MESSWERTERAWIN[$i]} =~ ^soilmoisture[1-8]= ]]
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^soilbatt1[0-6]= ]]
          then let "j++"
          MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
          let "j++"
          MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
       fi
-      if [[ ${MESSWERTERAWIN[$i]} =~ ^soilad[1-8]= ]]
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^soilmoisture[1-9]= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^soilmoisture1[0-6]= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^soilad[1-9]= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^soilad1[0-6]= ]]
          then let "j++"
          MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
          let "j++"
@@ -2009,7 +2032,7 @@ awekas_update(){
            wget -O- "${AWEKAS_URL}"
            return 0 #Ausgang
          else
-           local MESSAGE=$(wget -qO- "${AWEKAS_URL}")
+           local MESSAGE=$(wget -qO- --tries=1 --timeout=15 "${AWEKAS_URL}")
         fi
 
         #alles Ok?

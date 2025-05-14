@@ -2,7 +2,7 @@
 : <<'Versionsinfo'
 
 
- V3.4.0 - 20.07.2024 (c) 2019-2024 SBorg
+ V3.5.0 - 10.05.2025 (c) 2019-2025 SBorg
 
  wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
  die Daten an den ioBroker (alternativ auch an AWEKAS, OpenSenseMap, Windy, wetter.com und WeatherObservationsWebsite)
@@ -10,6 +10,10 @@
  benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq', 'bc' und 'dc' unter Linux
 
 
+ V3.5.0 / 10.05.2025   ~ Fix DP50/DP100 werden auch als FT0300-Sensoren erkannt
+                       ~ Fix bei AWEKAS.at - Skript bleibt bei fehlender Internet-Verbindung hängen
+                       + (Wasserdampf-)Drucksättigungsdefizit VPD / Issue #79
+                       ~ Unterstützung für bis zu 16x DP100 / Issue #80
  V3.4.0 / 20.07.2024   ~ Fix "Kommunikationsfehler" bei Gateways mit Firmware ab V3.1.1 / Issue #71
                        ~ Fix am ws_updater, Restart des Service wird nach Update nicht ausgeführt
  V3.3.0 / 06.07.2024   + Fix Simple API-Fehlermeldung bei leerer Solarenergie
@@ -154,9 +158,9 @@ Versionsinfo
 ### Ende Infoblock
 
  #Versionierung
-  SH_VER="V3.4.0"
-  CONF_V="V3.4.0"
-  SUBVER="V3.4.0"
+  SH_VER="V3.5.0"
+  CONF_V="V3.5.0"
+  SUBVER="V3.5.0"
 
 
  #Installationsverzeichnis feststellen
@@ -297,6 +301,8 @@ while true
         then MESSWERTE[26]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); winddir 26; fi
      if [[ ${MESSWERTERAWIN[$i]} == windspdmph_avg10m=* ]]
         then MESSWERTE[27]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); convertMPHtoKMH 27; fi
+     if [[ ${MESSWERTERAWIN[$i]} == vpd=* ]]
+        then MESSWERTE[30]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); fi
 
 
      ### zusätzliche DPxxx-Sensoren ############################################################
@@ -324,10 +330,12 @@ while true
      ### zusätzliche WHxxx-Sensoren ################################################### ENDE ###
 
      ### zusätzliche Sainlogic oder Curconsa Sensoren, Station FT0300 ###########################
-     if [[ ${MESSWERTERAWIN[$i]} == temp1f=* ]]
+     if [ "${ANZAHL_DP50}" -eq "0" ] || [ "${ANZAHL_DP100}" -eq "0" ]; then
+      if [[ ${MESSWERTERAWIN[$i]} == temp1f=* ]]
         then MESSWERTE[28]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); convertFtoC 28; fi
-     if [[ ${MESSWERTERAWIN[$i]} == humidity1=* ]]
+      if [[ ${MESSWERTERAWIN[$i]} == humidity1=* ]]
         then MESSWERTE[29]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2); fi
+     fi
      ### zusätzliche Sainlogic oder Curconsa Sensoren, Station FT0300 ################## ENDE ###
 
    done

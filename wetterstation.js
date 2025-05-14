@@ -1,4 +1,4 @@
-//Wetterstation Datenpunkte anlegen V3.4.1
+//Wetterstation Datenpunkte anlegen V3.5.0
 let DP = "0_userdata.0.Wetterstation.";
 let WH31 = 0;    // Anzahl der WH31/WH25 Sensoren     (max. 1 Stück)
 let WS90 = 0;    // Anzahl der WS90 Sensoren          (max. 1 Stück)
@@ -8,7 +8,7 @@ let DP40 = 0;    // Anzahl der DP40/WH32 Sensoren     (max. 1 Stück)
 let DP50 = 0;    // Anzahl der DP50/WH31 Sensoren     (max. 8 Stück)
 let DP60 = 0;    // Anzahl der DP60/WH57 Sensoren     (max. 1 Stück)
 let DP70 = 0;    // Anzahl der DP70/WH55 Sensoren     (max. 4 Stück)
-let DP100 = 0;   // Anzahl der DP100/WH51[L] Sensoren (max. 8 Stück)
+let DP100 = 0;   // Anzahl der DP100/WH51[L] Sensoren (max. 16 Stück)
 let DP200 = 0;   // Anzahl der DP200/WH43 Sensoren    (max. 4 Stück)
 let DP250 = 0;   // Anzahl der DP250/WH45 Sensoren    (max. 1 Stück)
 let DP300 = 0;   // Anzahl der DP300/WS68 Sensoren    (max. 1 Stück)
@@ -48,6 +48,7 @@ async function dpAnlegen(){
  await createStateAsync(DP + "Regen_Monat", 0, { name: "Regenmenge Monat", type: "number", role: "state", unit: "mm" });
  await createStateAsync(DP + "Regen_Jahr", 0, { name: "Regenmenge Jahr aus Station", type: "number", role: "state", unit: "mm" });
  await createStateAsync(DP + "Regen_Jahr_kumuliert", 0, { name: "Regenmenge Jahr berechnet", type: "number", role: "state", unit: "mm" });
+ await createStateAsync(DP + "Sättigungsdefizit", 0, { name: "(Wasserdampf-)Drucksättigungsdefizit VPD", type: "number", role: "state", unit: "kPa" });
  await createStateAsync(DP + "Sonnenstrahlung", 0, { name: "Sonnenstrahlung", type: "number", role: "state", unit: "W/m²" });
  await createStateAsync(DP + "UV_Index", 0, { name: "UV Index", type: "number", role: "state" });
  await createStateAsync(DP + "UV_Belastung", " ", { name: "UV-Belastung", type: "string", role: "state" });
@@ -105,7 +106,7 @@ async function dpAnlegen(){
  await createStateAsync(DP + "Regen_Stunde", 0, { name: "Regenmenge Stunde", type: "number", role: "value", unit: "mm" });
  await createStateAsync(DP + "Regen_Total", 0, { name: "Regenmenge Insgesammt", type: "number", role: "value", unit: "mm" });
 
-    if (DP100 > 0 && DP100 <= 8)         { await DP100_anlegen(); console.log("Datenpunkte für DP100 angelegt..."); }
+    if (DP100 > 0 && DP100 <= 16)        { await DP100_anlegen(); console.log("Datenpunkte für DP100 angelegt..."); }
     if (WS90 > 0 && WS90 <= 1)           { await WS90_anlegen(); console.log("Datenpunkte für WS90 angelegt..."); }
     if (BR7009999 > 0 && BR7009999 <= 4) { await BR7009999_anlegen(); console.log("Datenpunkte für Bresser #7009999 angelegt..."); }
     if (FT0300 > 0 && FT0300 <= 1)       { await FT0300_anlegen(); console.log("Datenpunkte für Zusatzsensor FT0300 angelegt..."); }
@@ -116,7 +117,7 @@ if (WH31 > 0 && WH31 <= 1) {
     if (!existsState(DP + "WH31")) { createState(DP + "WH31", '', { name: "Temp-Luftfeuchte Sensor Innen" }); }
     for (var i = 1; i <= WH31; i++) {
         if (!existsState(DP + "WH31." + i + ".Batterie")) {
-            createState(DP + "WH31." + i + ".Batterie", {
+            createState(DP + "WH31." + i + ".Batterie", "", {
                 "name": "WH31 Kanal " + i + " Batteriestatus [0=OK, 1=Alarm]",
                 "type": "number",
                 "role": "state"
@@ -217,7 +218,7 @@ if (DP10 > 0 && DP10 <= 8) {
     if (!existsState(DP + "DP10")) { createState(DP + "DP10", '', { name: "Blattfeuchte Sensor" }); }
     for (var i = 1; i <= DP10; i++) {
         if (!existsState(DP + "DP10." + i + ".Blattfeuchte")) {
-            createState(DP + "DP10." + i + ".Blattfeuchte", {
+            createState(DP + "DP10." + i + ".Blattfeuchte", "", {
                 "name": "DP10 Kanal " + i + " Blattfeuchte",
                 "type": "number",
                 "role": "state",
@@ -225,7 +226,7 @@ if (DP10 > 0 && DP10 <= 8) {
             });
         }
         if (!existsState(DP + "DP10." + i + ".Batterie")) {
-            createState(DP + "DP10." + i + ".Batterie", {
+            createState(DP + "DP10." + i + ".Batterie", "", {
                 "name": "DP10 Kanal " + i + " Batterie",
                 "type": "number",
                 "role": "state",
@@ -239,7 +240,7 @@ if (DP35 > 0 && DP35 <= 8) {
     if (!existsState(DP + "DP35")) { createState(DP + "DP35", '', { name: "Wassertemperatur Sensor Außen" }); }
     for (var i = 1; i <= DP35; i++) {
         if (!existsState(DP + "DP35." + i + ".Temperatur")) {
-            createState(DP + "DP35." + i + ".Temperatur", {
+            createState(DP + "DP35." + i + ".Temperatur", "", {
                 "name": "DP35 Kanal " + i + " Temperatur",
                 "type": "number",
                 "role": "state",
@@ -247,7 +248,7 @@ if (DP35 > 0 && DP35 <= 8) {
             });
         }
         if (!existsState(DP + "DP35." + i + ".Batterie")) {
-            createState(DP + "DP35." + i + ".Batterie", {
+            createState(DP + "DP35." + i + ".Batterie", "", {
                 "name": "DP35 Kanal " + i + " Batterie",
                 "type": "number",
                 "role": "state"
@@ -260,7 +261,7 @@ if (DP40 > 0 && DP40 <= 1) {
     if (!existsState(DP + "DP40")) { createState(DP + "DP40", '', { name: "Temp-Luftfeuchte Sensor Außen" }); }
     for (var i = 1; i <= DP40; i++) {
         if (!existsState(DP + "DP40." + i + ".Batterie")) {
-            createState(DP + "DP40." + i + ".Batterie", {
+            createState(DP + "DP40." + i + ".Batterie", "", {
                 "name": "DP40 Kanal " + i + " Batteriestatus [0=OK, 1=Alarm]",
                 "type": "number",
                 "role": "state"
@@ -273,7 +274,7 @@ if (DP50 > 0 && DP50 <= 8) {
     if (!existsState(DP + "DP50")) { createState(DP + "DP50", '', { name: "Mehrkanal Thermo-Hygrometersensoren" }); }
     for (var i = 1; i <= DP50; i++) {
         if (!existsState(DP + "DP50." + i + ".Temperatur")) {
-            createState(DP + "DP50." + i + ".Temperatur", {
+            createState(DP + "DP50." + i + ".Temperatur", "", {
                 "name": "DP50 Kanal " + i + " Temperatur",
                 "type": "number",
                 "role": "state",
@@ -281,7 +282,7 @@ if (DP50 > 0 && DP50 <= 8) {
             });
         }
         if (!existsState(DP + "DP50." + i + ".Feuchtigkeit")) {
-            createState(DP + "DP50." + i + ".Feuchtigkeit", {
+            createState(DP + "DP50." + i + ".Feuchtigkeit", "", {
                 "name": "DP50 Kanal " + i + " Feuchtigkeit",
                 "type": "number",
                 "role": "state",
@@ -289,7 +290,7 @@ if (DP50 > 0 && DP50 <= 8) {
             });
         }
         if (!existsState(DP + "DP50." + i + ".Batterie")) {
-            createState(DP + "DP50." + i + ".Batterie", {
+            createState(DP + "DP50." + i + ".Batterie", "", {
                 "name": "DP50 Kanal " + i + " Batterie",
                 "type": "number",
                 "role": "state"
@@ -302,7 +303,7 @@ if (DP60 > 0 && DP60 <= 1) {
     if (!existsState(DP + "DP60")) { createState(DP + "DP60", '', { name: "Blitzdetektor" }); }
     for (let i = 1; i <= DP60; i++) {
         if (!existsState(DP + "DP60." + i + ".Entfernung")) {
-            createState(DP + "DP60." + i + ".Entfernung", {
+            createState(DP + "DP60." + i + ".Entfernung", "", {
                 "name": "DP60 Kanal " + i + " Entfernung",
                 "type": "number",
                 "role": "state",
@@ -310,21 +311,21 @@ if (DP60 > 0 && DP60 <= 1) {
             });
         }
         if (!existsState(DP + "DP60." + i + ".Zeitpunkt")) {
-            createState(DP + "DP60." + i + ".Zeitpunkt", {
+            createState(DP + "DP60." + i + ".Zeitpunkt", "", {
                 "name": "DP60 Kanal " + i + " Zeitpunkt (Unix-Timestamp)",
                 "type": "number",
                 "role": "state"
             });
         }
         if (!existsState(DP + "DP60." + i + ".Anzahl")) {
-            createState(DP + "DP60." + i + ".Anzahl", {
+            createState(DP + "DP60." + i + ".Anzahl", "", {
                 "name": "DP60 Kanal " + i + " Anzahl innerhalb von 24 Stunden",
                 "type": "number",
                 "role": "state"
             });
         }
         if (!existsState(DP + "DP60." + i + ".Batterie")) {
-            createState(DP + "DP60." + i + ".Batterie", {
+            createState(DP + "DP60." + i + ".Batterie", "", {
                 "name": "DP60 Kanal " + i + " Batterie (5 = max)",
                 "type": "number",
                 "role": "state"
@@ -344,7 +345,7 @@ if (DP70 > 0 && DP70 <= 4) {
             });
         }
         if (!existsState(DP + "DP70." + i + ".Batterie")) {
-            createState(DP + "DP70." + i + ".Batterie", {
+            createState(DP + "DP70." + i + ".Batterie", "", {
                 "name": "DP70 Kanal " + i + " Batterie",
                 "type": "number",
                 "role": "state"
@@ -358,7 +359,7 @@ async function DP100_anlegen() {
     if (!existsState(DP + "DP100")) { await createStateAsync(DP + "DP100", '', { name: "Mehrkanal Bodenfeuchtesensoren" }); }
     for (var i = 1; i <= DP100; i++) {
         if (!existsState(DP + "DP100." + i + ".Bodenfeuchtigkeit")) {
-            await createStateAsync(DP + "DP100." + i + ".Bodenfeuchtigkeit", {
+            await createStateAsync(DP + "DP100." + i + ".Bodenfeuchtigkeit", "", {
                 "name": "DP100 Kanal " + i + " Bodenfeuchtigkeit",
                 "type": "number",
                 "role": "state",
@@ -366,7 +367,7 @@ async function DP100_anlegen() {
             });
         }
         if (!existsState(DP + "DP100." + i + ".Batterie")) {
-            await createStateAsync(DP + "DP100." + i + ".Batterie", {
+            await createStateAsync(DP + "DP100." + i + ".Batterie", "", {
                 "name": "DP100 Kanal " + i + " Batterie",
                 "type": "number",
                 "role": "state",
@@ -374,7 +375,7 @@ async function DP100_anlegen() {
             });
         }
         if (!existsState(DP + "DP100." + i + ".Raw")) {
-            await createStateAsync(DP + "DP100." + i + ".Raw", {
+            await createStateAsync(DP + "DP100." + i + ".Raw", "", {
                 "name": "DP100 Kanal " + i + " Raw-Wert",
                 "type": "number",
                 "role": "state"
@@ -387,7 +388,7 @@ if (DP200 > 0 && DP200 <= 4) {
     if (!existsState(DP + "DP200")) { createState(DP + "DP200", '', { name: "Feinstaub Emissionssensoren" }); }
     for (var i = 1; i <= DP200; i++) {
         if (!existsState(DP + "DP200." + i + ".PM25")) {
-            createState(DP + "DP200." + i + ".PM25", {
+            createState(DP + "DP200." + i + ".PM25", "", {
                 "name": "DP200 Kanal " + i + " 2.5µm Partikel",
                 "type": "number",
                 "role": "state",
@@ -395,7 +396,7 @@ if (DP200 > 0 && DP200 <= 4) {
             });
         }
         if (!existsState(DP + "DP200." + i + ".PM25_24h")) {
-            createState(DP + "DP200." + i + ".PM25_24h", {
+            createState(DP + "DP200." + i + ".PM25_24h", "", {
                 "name": "DP200 Kanal " + i + " Durchschnitt per 24h",
                 "type": "number",
                 "role": "state",
@@ -403,7 +404,7 @@ if (DP200 > 0 && DP200 <= 4) {
             });
         }
         if (!existsState(DP + "DP200." + i + ".Batterie")) {
-            createState(DP + "DP200." + i + ".Batterie", {
+            createState(DP + "DP200." + i + ".Batterie", "", {
                 "name": "DP200 Kanal " + i + " Batterie (5 = max)",
                 "type": "number",
                 "role": "state"
@@ -416,7 +417,7 @@ if (DP250 > 0 && DP250 <= 1) {
     if (!existsState(DP + "DP250")) { createState(DP + "DP250", '', { name: "5-In-1 CO2 / PM2.5 / PM10 / Temperatur / Luftfeuchte Innenraumsensor" }); }
     for (let i = 1; i <= DP250; i++) {
         if (!existsState(DP + "DP250." + i + ".Temperatur")) {
-            createState(DP + "DP250." + i + ".Temperatur", {
+            createState(DP + "DP250." + i + ".Temperatur", "", {
                 "name": "DP250 Kanal " + i + " Temperatur",
                 "type": "number",
                 "role": "value",
@@ -424,7 +425,7 @@ if (DP250 > 0 && DP250 <= 1) {
             });
         }
         if (!existsState(DP + "DP250." + i + ".Luftfeuchtigkeit")) {
-            createState(DP + "DP250." + i + ".Luftfeuchtigkeit", {
+            createState(DP + "DP250." + i + ".Luftfeuchtigkeit", "", {
                 "name": "DP250 Kanal " + i + " Luftfeuchtigkeit",
                 "type": "number",
                 "role": "value",
@@ -432,7 +433,7 @@ if (DP250 > 0 && DP250 <= 1) {
             });
         }
         if (!existsState(DP + "DP250." + i + ".PM25")) {
-            createState(DP + "DP250." + i + ".PM25", {
+            createState(DP + "DP250." + i + ".PM25", "", {
                 "name": "DP250 Kanal " + i + " 2.5µm Partikel",
                 "type": "number",
                 "role": "value",
@@ -440,7 +441,7 @@ if (DP250 > 0 && DP250 <= 1) {
             });
         }
         if (!existsState(DP + "DP250." + i + ".PM25_24h")) {
-            createState(DP + "DP250." + i + ".PM25_24h", {
+            createState(DP + "DP250." + i + ".PM25_24h", "", {
                 "name": "DP250 Kanal " + i + " Durchschnitt per 24h",
                 "type": "number",
                 "role": "value",
@@ -448,7 +449,7 @@ if (DP250 > 0 && DP250 <= 1) {
             });
         }
         if (!existsState(DP + "DP250." + i + ".PM10")) {
-            createState(DP + "DP250." + i + ".PM10", {
+            createState(DP + "DP250." + i + ".PM10", "", {
                 "name": "DP250 Kanal " + i + " 10µm Partikel",
                 "type": "number",
                 "role": "value",
@@ -456,7 +457,7 @@ if (DP250 > 0 && DP250 <= 1) {
             });
         }
         if (!existsState(DP + "DP250." + i + ".PM10_24h")) {
-            createState(DP + "DP250." + i + ".PM10_24h", {
+            createState(DP + "DP250." + i + ".PM10_24h", "", {
                 "name": "DP250 Kanal " + i + " Durchschnitt per 24h",
                 "type": "number",
                 "role": "value",
@@ -464,7 +465,7 @@ if (DP250 > 0 && DP250 <= 1) {
             });
         }
         if (!existsState(DP + "DP250." + i + ".CO2")) {
-            createState(DP + "DP250." + i + ".CO2", {
+            createState(DP + "DP250." + i + ".CO2", "", {
                 "name": "DP250 Kanal " + i + " CO2-Konzentration",
                 "type": "number",
                 "role": "value",
@@ -472,7 +473,7 @@ if (DP250 > 0 && DP250 <= 1) {
             });
         }
         if (!existsState(DP + "DP250." + i + ".CO2_24h")) {
-            createState(DP + "DP250." + i + ".CO2_24h", {
+            createState(DP + "DP250." + i + ".CO2_24h", "", {
                 "name": "DP250 Kanal " + i + " Durchschnitt per 24h",
                 "type": "number",
                 "role": "value",
@@ -480,7 +481,7 @@ if (DP250 > 0 && DP250 <= 1) {
             });
         }
         if (!existsState(DP + "DP250." + i + ".Batterie")) {
-            createState(DP + "DP250." + i + ".Batterie", {
+            createState(DP + "DP250." + i + ".Batterie", "", {
                 "name": "DP250 Kanal " + i + " Batterie (6 = max)",
                 "type": "number",
                 "role": "value"
@@ -493,7 +494,7 @@ if (DP300 > 0 && DP300 <= 1) {
     if (!existsState(DP + "DP300")) { createState(DP + "DP300", '', { name: "Solar unterstütztes Anemometer mit UV-Lichtsensor" }); }
     for (let i = 1; i <= DP300; i++) {
         if (!existsState(DP + "DP300." + i + ".Batterie")) {
-            createState(DP + "DP300." + i + ".Batterie", {
+            createState(DP + "DP300." + i + ".Batterie", "", {
                 "name": "DP300 Kanal " + i + " Batterie",
                 "type": "number",
                 "role": "value",

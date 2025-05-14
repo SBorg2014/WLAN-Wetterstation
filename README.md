@@ -52,7 +52,7 @@ Zusatzsensoren (mittels Station oder Gateway DP1500/DP2000/GW1000/GW2000A):
 - bis zu 8 Stück DP50/WH31A Temperatur-/Luftfeuchtigkeit-Sensoren<sup>(4)</sup>
 - ein DP60/WH57 Blitzsensor
 - bis zu 4 Stück DP70/WH55 Wasserleckage-Sensoren
-- bis zu 8 Stück DP100/WH51[L] Bodenfeuchte-Sensoren<sup>(4)</sup>
+- bis zu 16 Stück DP100/WH51[L] Bodenfeuchte-Sensoren<sup>(4)</sup>
 - bis zu 4 Stück DP200/WH43 PM2.5 Feinstaub-Sensoren
 - ein DP250/WH45 5-In-1 CO2 / PM2.5 / PM10 / Temperatur / Luftfeuchte Innenraumsensor
 - ein DP300/WS68 Solarunterstütztes Anemometer mit UV-Lichtsensor
@@ -64,7 +64,7 @@ Zusatzsensoren (mittels Station oder Gateway DP1500/DP2000/GW1000/GW2000A):
 <br>*<sup>(1)</sup> nicht alle Bresser-Stationen unterstützen Zusatzsensoren! siehe [hier](https://forum.iobroker.net/post/977421) <br>
 <sup>(2)</sup> durch das verwendete Wunderground-Protokoll limitiert  
 <sup>(3)</sup> sind als DP50 einzutragen  
-<sup>(4)</sup> es sind in Summe nur max. 8 Sensoren der Typen DP30/50/100 bzw. deren WHxx-Derivate möglich.<br><br>
+<sup>(4)</sup> es sind in Summe nur max. 16 Sensoren der Typen DP30/50/100 bzw. deren WHxx-Derivate möglich.<br><br>
 __Die mögliche Anzahl der Zusatzsensoren ist nicht durch das Skript begrenzt, sondern wird vom Display und/oder Gateway bestimmt.__*
 <br><br>    
      
@@ -120,6 +120,14 @@ Auszug von WeatherObservationsWebsite (WOW):
 
 ## Versionen ##
 
+**V3.5.0 - 10.05.2025**  
+``` 
+    ~ Fix DP50/DP100 werden auch als FT0300-Sensoren erkannt
+    ~ Fix bei AWEKAS.at - Skript bleibt bei fehlender Internet-Verbindung hängen
+    + (Wasserdampf-)Drucksättigungsdefizit VPD / Issue #79
+    ~ Unterstützung für bis zu 16x DP100 / Issue #80
+```
+      
 **V3.4.0 - 20.07.2024**  
 ``` 
     ~ Fix "Kommunikationsfehler" bei Gateways mit Firmware ab V3.1.1 / Issue #71

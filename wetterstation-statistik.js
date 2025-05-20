@@ -6,6 +6,7 @@
             Auch keine Aliase unter Influx nutzen!
 
    (c)2020-2025 by SBorg
+   V2.0.7 - 20.05.2025  ~Bugfix Fehler im RegEx der Update-Prüfung behoben
    v2.0.6 - 02.01.2025  ~Bugfix "Null" zum Jahreswechsel
    v2.0.5 - 14.11.2024  ~Umstellung von axios auf httpGet (fixed "Fehler: AxiosError: Request failed with status code 429")
    v2.0.4 - 18.02.2024  ~Bugfix "Trockenperiode" wird uU. auf 365 Tage gesetzt (Fix Issue #69 @ch33f)
@@ -89,7 +90,7 @@ const DP_Check ='aktueller_Monat.Regentage';
 if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 //Start des Scripts
-    const ScriptVersion = "V2.0.6";
+    const ScriptVersion = "V2.0.7";
     const dayOfYear = date => Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
     let Tiefstwert, Hoechstwert, Temp_Durchschnitt, Max_Windboee, Max_Regenmenge, Regenmenge_Monat, warme_Tage, Sommertage;
     let heisse_Tage, Frost_Tage, kalte_Tage, Eistage, sehr_kalte_Tage, Wuestentage, Tropennaechte, Trockenperiode_akt;
@@ -412,7 +413,7 @@ function speichern_Monat() {
         "Max_Regenmenge": Max_Regenmenge, "Regenmenge_Monat": Regenmenge_Monat, "warme_Tage": warme_Tage,
         "Sommertage": Sommertage, "heisse_Tage": heisse_Tage, "Frost_Tage": Frost_Tage, "kalte_Tage": kalte_Tage, "Eistage": Eistage, 
         "sehr_kalte_Tage": sehr_kalte_Tage, "Wuestentage": Wuestentage, "Tropennaechte": Tropennaechte, "Regentage": Regentage})
-    createState(PRE_DP+monatsdatenpunkt,'',{ name: "Monatsstatistik für "+monatsname[datum.getMonth()]+' '+datum.getFullYear(), type: "string", role: "json" }, () => { setState(PRE_DP+monatsdatenpunkt, JSON.stringify(jsonSummary), true); }); 
+    createState(PRE_DP+monatsdatenpunkt,'',{ name: "Monatsstatistik für "+monatsname[datum.getMonth()]+' '+datum.getFullYear(), type: "string", role: "state" }, () => { setState(PRE_DP+monatsdatenpunkt, JSON.stringify(jsonSummary), true); }); 
 
     /* Monatswerte resetten. DPs unabhängig ihres Wertes initial schreiben; wir nehmen die aktuelle Außentemperatur, da sie 
     zum Start des Messzyklus Min, Max und Durchschnitt darstellt; Rest einfach nullen */
@@ -632,10 +633,12 @@ function check_update() {
     try {
         httpGet(link, { responseType: 'text' }, (error, response) => { 
             if (!error && response.statusCode == 200) {
-               let regex = /">V.*<\/a>/
-               , version = response.data.match(regex);
+
+                const version_regex = new RegExp("title=.\"V\\d\.\\d\.\\d") ;
+                const version = version_regex.exec(response.data);
+                   
                if (version[0].match(ScriptVersion)) { 
-                 setState(PRE_DP+'.Control.ScriptVersion_Update','---',true); 
+                 setState(PRE_DP+".Control.ScriptVersion_Update", "---", true); 
                } else {
                  setState(PRE_DP+'.Control.ScriptVersion_Update','https://github.com/SBorg2014/WLAN-Wetterstation/blob/master/wetterstation-statistik.js',true);
                  console.log('neue Script-Version verfügbar...');
@@ -844,4 +847,3 @@ async function createDP(DP_Check) {
     createState(PRE_DP+'.Control.ScriptVersion_UpdateCheck',      '',    { name: "Skript-Updatecheck ein-/ausschalten",         type: "boolean",role: "state"});
     await Sleep(5000);
 }
-

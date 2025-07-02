@@ -28,6 +28,8 @@
   * Gateway GW2000A
   * Gateway GW3000A
   * WS2910
+  * WS3800(A)
+  * WS3900
 - ELV WS980WiFi
 - Eurochron EFWS 2900 (baugleich zu Sainlogic 10in1 Wifi, Ambient Weather WS-2902, Chilitec CTW-902 Wifi)
 - Froggit

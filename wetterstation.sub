@@ -267,12 +267,12 @@ iob_send() {
          if [[ "${MESSWERTE[$i]}" =~ ^leaf_batt[1-8] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP10.${MESSWERTE[$i]:9:1}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
 
         #DP100
-         if [[ "${MESSWERTE[$i]}" =~ ^soilbatt[1-9] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:8:1}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
-         if [[ "${MESSWERTE[$i]}" =~ ^soilbatt1[0-6] ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:8:2}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
-         if [[ "${MESSWERTE[$i]}" =~ ^soilmoisture[1-9] ]] && [ "$ANZAHL_DP100" -gt "0" ]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:12:1}.Bodenfeuchtigkeit=${MESSWERTE[$(($i+1))]}"; fi
-         if [[ "${MESSWERTE[$i]}" =~ ^soilmoisture1[0-6] ]] && [ "$ANZAHL_DP100" -gt "0" ]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:12:2}.Bodenfeuchtigkeit=${MESSWERTE[$(($i+1))]}"; fi
-         if [[ "${MESSWERTE[$i]}" =~ ^soilad[1-9] ]] && [ "$ANZAHL_DP100" -gt "0" ]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:6:1}.Raw=${MESSWERTE[$(($i+1))]}"; fi
-         if [[ "${MESSWERTE[$i]}" =~ ^soilad1[0-6] ]] && [ "$ANZAHL_DP100" -gt "0" ]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:6:2}.Raw=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soilbatt[1-9]{1}$ ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:8:1}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soilbatt1[0-6]{1}$ ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.1${MESSWERTE[$i]:9:1}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soilmoisture[1-9]{1}$ ]] && [ "$ANZAHL_DP100" -gt "0" ]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:12:1}.Bodenfeuchtigkeit=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soilmoisture1[0-6]{1]$ ]] && [ "$ANZAHL_DP100" -gt "0" ]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.1${MESSWERTE[$i]:13:1}.Bodenfeuchtigkeit=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soilad[1-9]{1}$ ]] && [ "$ANZAHL_DP100" -gt "0" ]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:6:1}.Raw=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soilad1[0-6]{1]$ ]] && [ "$ANZAHL_DP100" -gt "0" ]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.1${MESSWERTE[$i]:7:1}.Raw=${MESSWERTE[$(($i+1))]}"; fi
 
         #WS90
          if [[ "${MESSWERTE[$i]}" =~ ^rrain_piezo ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WS90.1.aktuelle_Regenrate=${MESSWERTE[$(($i+1))]}"; fi

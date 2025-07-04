@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V3.5.0
+UPDATE_VER=V3.5.1
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -151,8 +151,9 @@ patcher() {
            V3.1.1) PATCH3020 ;;
            V3.2.0) PATCH3030 ;;
            V3.3.0) PATCH3040 ;;
-           V3.4.0) PATCH3050 && service_restart && exit 0;;
-           V3.5.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
+           V3.4.0) PATCH3050 ;;
+           V3.5.0) PATCH3051 && service_restart && exit 0;;
+           V3.5.1) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
                 *) FEHLER
     esac
 
@@ -692,9 +693,18 @@ PATCH3050(){
  backup
  echo -e "${WE}\n Patche wetterstation.conf auf V3.5.0 ..."
  sed -i 's/### Settings V3.4.0/### Settings V3.5.0/' ./wetterstation.conf
- if [ ${RESTAPI} == "true" ]; then 
+ if [ ${RESTAPI} == "true" ]; then
   make_objects ".Sättigungsdefizit" "(Wasserdampf-)Drucksättigungsdefizit VPD" "number" "kPa"
  fi
+ echo -e "\n${WE} Fertig...\n"
+}
+
+
+#Patch Version V3.5.0 auf V3.5.1
+PATCH3051(){
+ backup
+ echo -e "${WE}\n Patche wetterstation.conf auf V3.5.1 ..."
+ sed -i 's/### Settings V3.5.0/### Settings V3.5.1/' ./wetterstation.conf
  echo -e "\n${WE} Fertig...\n"
 }
 

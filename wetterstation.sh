@@ -2,7 +2,7 @@
 : <<'Versionsinfo'
 
 
- V3.5.0 - 10.05.2025 (c) 2019-2025 SBorg
+ V3.5.1 - 04.07.2025 (c) 2019-2025 SBorg
 
  wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
  die Daten an den ioBroker (alternativ auch an AWEKAS, OpenSenseMap, Windy, wetter.com und WeatherObservationsWebsite)
@@ -10,6 +10,7 @@
  benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq', 'bc' und 'dc' unter Linux
 
 
+ V3.5.1 / 04.07.2025   ~ Fix falsche Messwerte bei DP100 Sensor Nr.1 wenn mehr als 10 Sensoren vorhanden sind
  V3.5.0 / 10.05.2025   ~ Fix DP50/DP100 werden auch als FT0300-Sensoren erkannt
                        ~ Fix bei AWEKAS.at - Skript bleibt bei fehlender Internet-Verbindung hängen
                        + (Wasserdampf-)Drucksättigungsdefizit VPD / Issue #79
@@ -158,9 +159,9 @@ Versionsinfo
 ### Ende Infoblock
 
  #Versionierung
-  SH_VER="V3.5.0"
-  CONF_V="V3.5.0"
-  SUBVER="V3.5.0"
+  SH_VER="V3.5.1"
+  CONF_V="V3.5.1"
+  SUBVER="V3.5.1"
 
 
  #Installationsverzeichnis feststellen

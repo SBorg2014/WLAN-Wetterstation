@@ -123,6 +123,11 @@ Auszug von WeatherObservationsWebsite (WOW):
 
 ## Versionen ##
 
+**V3.5.1 - 04.07.2025   Bugfix Release**  
+``` 
+    ~ Fix falsche Messwerte bei DP100 Sensor Nr.1 wenn mehr als 10 Sensoren vorhanden sind
+```  
+  
 **V3.5.0 - 10.05.2025**  
 ``` 
     ~ Fix DP50/DP100 werden auch als FT0300-Sensoren erkannt

@@ -86,7 +86,7 @@
   DP_AVG_TEMP_365D=${PRE_DP}.Info.Temp_Aussen_365t_avg
   DP_MET_SOMMER_TEMP=${PRE_DP}.Info.Temp_Met_Sommer_avg
   DP_MET_SOMMER_REGEN=${PRE_DP}.Info.Regenmenge_Met_Sommer
-  ### zusätzliche Sainlogic oder Curconsa Sensoren, Station FT0300 ###########################
+  ### zusätzliche Sainlogic oder Curconsa Sensoren, Station FT0300 #############
   DP_TEMP_FT0300_1=${PRE_DP}.FT0300_Temperatur_1
   DP_FEUCHTE_FT0300_1=${PRE_DP}.FT0300_Feuchte_1
 ###  Ende Usereinstellungen

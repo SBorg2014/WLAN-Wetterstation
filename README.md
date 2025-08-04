@@ -123,6 +123,11 @@ Auszug von WeatherObservationsWebsite (WOW):
 
 ## Versionen ##
 
+**V3.5.2 - 02.08.2025   Bugfix Release**  
+``` 
+    ~ Fix fehlende Messwerte bei DP100 Sensor Nr.10-16 / Issue #81
+```  
+  
 **V3.5.1 - 04.07.2025   Bugfix Release**  
 ``` 
     ~ Fix falsche Messwerte bei DP100 Sensor Nr.1 wenn mehr als 10 Sensoren vorhanden sind

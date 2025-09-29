@@ -47,7 +47,7 @@
  <sup>(*)</sup> über DNS-Server wie bspw. PiHole oder dnsmasq
 <br><br>
 
-Zusatzsensoren (mittels Station oder Gateway DP1500/DP2000/GW1000/GW2000A):
+Zusatzsensoren (mittels Station oder Gateway DP1500/DP2000/GW1000/GW2000A/GW3000A):
 - bis zu 8 Stück DP10/WN35 Blattfeuchte-Sensoren
 - bis zu 8 Stück DP30/WH31 Temperatur-Sensoren<sup>(3)(4)</sup>
 - bis zu 8 Stück DP35/WN34 Wassertemperatur-Sensoren

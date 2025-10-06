@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V3.5.2
+UPDATE_VER=V3.6.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -153,8 +153,9 @@ patcher() {
            V3.3.0) PATCH3040 ;;
            V3.4.0) PATCH3050 ;;
            V3.5.0) PATCH3051 ;;
-           V3.5.1) PATCH3052 && service_restart && exit 0;;
-           V3.5.2) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
+           V3.5.1) PATCH3052 ;;
+           V3.5.2) PATCH3060 && service_restart && exit 0;;
+           V3.6.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
                 *) FEHLER
     esac
 
@@ -715,6 +716,20 @@ PATCH3052(){
  backup
  echo -e "${WE}\n Patche wetterstation.conf auf V3.5.2 ..."
  sed -i 's/### Settings V3.5.1/### Settings V3.5.2/' ./wetterstation.conf
+ echo -e "\n${WE} Fertig...\n"
+}
+
+
+#Patch Version V3.5.2 auf V3.6.0
+PATCH3060(){
+ backup
+ echo -e "${WE}\n Patche wetterstation.conf auf V3.6.0 ..."
+ sed -i 's/### Settings V3.5.2/### Settings V3.6.0/' ./wetterstation.conf
+ sed -i '/^.*ANZAHL_WH31=.*/a \  ANZAHL_WS80=0' ./wetterstation.conf
+ sed -i '/^.*ANZAHL_WH31=.*/a \  ANZAHL_WH40H=0' ./wetterstation.conf
+ if [ ${RESTAPI} == "true" ]; then
+  make_objects ".Regenereignis" "es regnet gerade" "number"
+ fi
  echo -e "\n${WE} Fertig...\n"
 }
 

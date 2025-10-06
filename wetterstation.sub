@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V3.5.2 --------------------------------------------------------
+### Subroutinen V3.6.0 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -19,6 +19,7 @@
   DP_WIND_DIR_10MIN=${PRE_DP}.Windrichtung_10min
   DP_DRUCK_ABS=${PRE_DP}.Druck_absolut
   DP_DRUCK_REL=${PRE_DP}.Druck_relativ
+  DP_REGENEREIGNIS=${PRE_DP}.Regenereignis
   DP_REGENRATE=${PRE_DP}.Regenrate
   DP_REGENSTATUS=${PRE_DP}.Regenstatus
   DP_REGEN_TAG=${PRE_DP}.Regen_Tag
@@ -129,6 +130,7 @@ debuging() {
    echo -e " Luftdruck absolut\t\t: $GR${MESSWERTE[9]}$WE hPa"
    echo -e " Luftdruck relativ\t\t: $GR${MESSWERTE[10]}$WE hPa"
    echo -e " Regenrate\t\t\t: $GR${MESSWERTE[11]}$WE mm/h"
+   echo -e " Regenereignis\t\t\t: $GR${MESSWERTE[31]}$WE"
    echo -e " Regenstatus\t\t\t: $GR${REGENSTATUS}$WE"
    echo -e " Regen seit Regenbeginn\t\t: $GR${MESSWERTE[22]}$WE mm"
    echo -e " Regen Stunde\t\t\t: $GR${MESSWERTE[23]}$WE mm"
@@ -176,7 +178,7 @@ debuging() {
     esac
    echo -e "\n${WE}Zusatzsensoren:"
    echo -e " ${WE}DP10/35/40/50/60/70/100/200/250/300: $GE${ANZAHL_DP10} $WE| $GE${ANZAHL_DP35} $WE| $GE${ANZAHL_DP40} $WE| $GE${ANZAHL_DP50} $WE| $GE${ANZAHL_DP60} $WE| $GE${ANZAHL_DP70} $WE| $GE${ANZAHL_DP100} $WE| $GE${ANZAHL_DP200} $WE| $GE${ANZAHL_DP250} $WE| $GE${ANZAHL_DP300} $WE"
-   echo -e " ${WE}WH31: $GE${ANZAHL_WH31}${WE} || WS90: ${GE}${ANZAHL_WS90}${WE}"
+   echo -e " ${WE}WH31: $GE${ANZAHL_WH31}${WE} || ${WE}WH40H: $GE${ANZAHL_WH40H}${WE} || ${WE}WS80: $GE${ANZAHL_WS80}${WE} || WS90: ${GE}${ANZAHL_WS90}${WE}"
    echo -e " ${WE}Bresser: 7009999 [$GE${ANZAHL_7009999}${WE}]"
    echo -e "\nScript-Version: ${GE}${SH_VER}${WE}\tConfig-Version: $GE${CONF_V}$WE\tSub-Version: $GE${SUBVER}$WE"
 
@@ -226,7 +228,8 @@ iob_send() {
     IOBPAR=(${DP_TEMP_INNEN} ${DP_TEMP_AUSSEN} ${DP_TAUPUNKT} ${DP_WCHILL} ${DP_FEUCHTE_INNEN} ${DP_FEUCHTE_AUSSEN} ${DP_WIND} ${DP_WIND_MAX} \
     ${DP_WIND_DIR} ${DP_DRUCK_ABS} ${DP_DRUCK_REL} ${DP_REGENRATE} ${DP_REGEN_TAG} ${DP_REGEN_WOCHE} ${DP_REGEN_MONAT} ${DP_REGEN_JAHR} \
     ${DP_SONNE} ${DP_UV_INDEX} ${DP_DP50_1_TEMP} ${DP_ZEITSTEMPEL} ${DP_FW_VERSION} ${DP_STATION_BATTERIE} ${DP_WINDBOEEN_MAX} ${DP_REGEN_EVENT} \
-    ${DP_REGEN_STUNDE} ${DP_REGEN_TOTAL} ${DP_GATEWAY_NAME} ${DP_WIND_DIR_10MIN} ${DP_WIND_10MIN} ${DP_TEMP_FT0300_1} ${DP_FEUCHTE_FT0300_1} ${DP_VPD})
+    ${DP_REGEN_STUNDE} ${DP_REGEN_TOTAL} ${DP_GATEWAY_NAME} ${DP_WIND_DIR_10MIN} ${DP_WIND_10MIN} ${DP_TEMP_FT0300_1} ${DP_FEUCHTE_FT0300_1} \
+    ${DP_VPD} ${DP_REGENEREIGNIS})
 
     IOBOUT=""
     #Standard DP für ioBroker
@@ -274,7 +277,11 @@ iob_send() {
          if [[ "${MESSWERTE[$i]}" =~ ^soilad[1-9]{1}$ ]] && [ "$ANZAHL_DP100" -gt "0" ]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.${MESSWERTE[$i]:6:1}.Raw=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" =~ ^soilad1[0-6]{1}$ ]] && [ "$ANZAHL_DP100" -gt "0" ]; then IOBOUT="${IOBOUT}&${PRE_DP}.DP100.1${MESSWERTE[$i]:7:1}.Raw=${MESSWERTE[$(($i+1))]}"; fi
 
-        #WS90
+        #WH40H
+         if [[ "${MESSWERTE[$i]}" =~ ^wh40batt ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WH40H.1.Batterie=${MESSWERTE[$(($i+1))]}"; fi
+
+        #WS80 / WS90
+         if [[ "${MESSWERTE[$i]}" =~ ^wh80batt ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WS80.1.Batterie=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" =~ ^rrain_piezo ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WS90.1.aktuelle_Regenrate=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" =~ ^erain_piezo ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WS90.1.aktuelle_Regenmenge=${MESSWERTE[$(($i+1))]}"; fi
          if [[ "${MESSWERTE[$i]}" =~ ^hrain_piezo ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WS90.1.stuendliche_Regenmenge=${MESSWERTE[$(($i+1))]}"; fi
@@ -830,7 +837,7 @@ setup() {
   case $WS_PROTOKOLL in
    1) MAXDEVICES=22;;
    *) MAXDEVICES=$(( 36 + $ANZAHL_DP35 * 4 + $ANZAHL_DP40 * 2 + $ANZAHL_DP50 * 6 + $ANZAHL_DP100 * 6 + $ANZAHL_DP60 * 8 + $ANZAHL_DP200 * 6 + $ANZAHL_DP70 * 4 + $ANZAHL_DP250 * 18 + $ANZAHL_DP300 *2 ))
-      MAXDEVICES+=$(( $ANZAHL_WH31 * 2 + $ANZAHL_DP10 * 4 + $ANZAHL_WS90 * 20 ))
+      MAXDEVICES+=$(( $ANZAHL_WH31 * 2 + $ANZAHL_DP10 * 4 + $ANZAHL_WS90 * 20 + $ANZAHL_WH40H * 1 + $ANZAHL_WS80 * 1 ))
       MAXDEVICES+=$(( $ANZAHL_7009999 * 2 ))
   esac
 
@@ -1372,6 +1379,29 @@ WH31() {
          MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
       fi
 }
+
+
+WH40H() {
+      #WH40H-Sensoren
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^wh40batt= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+}
+
+
+WS80() {
+      #WS80-Sensoren
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^wh80batt= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+}
+
 
 WS90() {
       #WS90-Sensor

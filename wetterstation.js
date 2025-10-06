@@ -1,6 +1,8 @@
-//Wetterstation Datenpunkte anlegen V3.5.2
+//Wetterstation Datenpunkte anlegen V3.6.0
 let DP = "0_userdata.0.Wetterstation.";
 let WH31 = 0;    // Anzahl der WH31/WH25 Sensoren     (max. 1 Stück)
+let WH40H= 0;    // Anzahl der WH40H Sensoren         (max. 1 Stück)
+let WS80 = 0;    // Anzahl der WS80 Sensoren          (max. 1 Stück)
 let WS90 = 0;    // Anzahl der WS90 Sensoren          (max. 1 Stück)
 let DP10 = 0;    // Anzahl der DP10/WN35 Sensoren     (max. 8 Stück)
 let DP35 = 0;    // Anzahl der DP35/WN34 Sensoren     (max. 8 Stück)
@@ -41,6 +43,7 @@ async function dpAnlegen(){
  await createStateAsync(DP + "Druck_Tendenz", "", { name: "Luftdrucktendenz", type: "mixed", role: "state" });
  await createStateAsync(DP + "Wetter_Trend", " ", { name: "Wettertrend", type: "string", role: "state" });
  await createStateAsync(DP + "Wetter_aktuell", " ", { name: "aktuelles Wetter", type: "string", role: "state" });
+ await createStateAsync(DP + "Regenereignis", 0, { name: "es regnet gerade", type: "number", role: "state" });
  await createStateAsync(DP + "Regenrate", 0, { name: "Regenrate", type: "number", role: "state", unit: "mm/h" });
  await createStateAsync(DP + "Regenstatus", "--", { name: "aktueller Regenstatus", type: "string", role: "state" });
  await createStateAsync(DP + "Regen_Tag", 0, { name: "Regenmenge Heute", type: "number", role: "state", unit: "mm" });
@@ -107,6 +110,8 @@ async function dpAnlegen(){
  await createStateAsync(DP + "Regen_Total", 0, { name: "Regenmenge Insgesammt", type: "number", role: "value", unit: "mm" });
 
     if (DP100 > 0 && DP100 <= 16)        { await DP100_anlegen(); console.log("Datenpunkte für DP100 angelegt..."); }
+    if (WH40H > 0 && WH40H <= 1)         { await WH40H_anlegen(); console.log("Datenpunkte für WH40H angelegt..."); }
+    if (WS80 > 0 && WS80 <= 1)           { await WS80_anlegen(); console.log("Datenpunkte für WS80 angelegt..."); }
     if (WS90 > 0 && WS90 <= 1)           { await WS90_anlegen(); console.log("Datenpunkte für WS90 angelegt..."); }
     if (BR7009999 > 0 && BR7009999 <= 4) { await BR7009999_anlegen(); console.log("Datenpunkte für Bresser #7009999 angelegt..."); }
     if (FT0300 > 0 && FT0300 <= 1)       { await FT0300_anlegen(); console.log("Datenpunkte für Zusatzsensor FT0300 angelegt..."); }
@@ -121,6 +126,40 @@ if (WH31 > 0 && WH31 <= 1) {
                 "name": "WH31 Kanal " + i + " Batteriestatus [0=OK, 1=Alarm]",
                 "type": "number",
                 "role": "state"
+            });
+        }
+    }
+}
+
+
+//WH40H - Sensoren
+async function WH40H_anlegen() {
+    if (!existsState(DP + "WH40H")) { await createStateAsync(DP + 'WH40H', '', { name: 'WH40H' }); }
+    for (var i = 1; i <= WH40H; i++) {
+        if (!existsState(DP + 'WH40H.' + i)) { await createStateAsync(DP + 'WH40H.' + i, '', { name: i + '. Kanal' }); }
+        if (!existsState(DP + 'WH40H.' + i + '.Batterie')) {
+            await createStateAsync(DP + 'WH40H.' + i + '.Batterie', {
+                name: 'WH40H Kanal ' + i + ' Batterie',
+                type: 'number',
+                role: 'state',
+                unit: 'Volt'
+            });
+        }
+    }
+}
+
+
+//WS80 - Sensoren
+async function WS80_anlegen() {
+    if (!existsState(DP + "WS80")) { await createStateAsync(DP + 'WS80', '', { name: 'WS80' }); }
+    for (var i = 1; i <= WS80; i++) {
+        if (!existsState(DP + 'WS80.' + i)) { await createStateAsync(DP + 'WS80.' + i, '', { name: i + '. Kanal' }); }
+        if (!existsState(DP + 'WS80.' + i + '.Batterie')) {
+            await createStateAsync(DP + 'WS80.' + i + '.Batterie', {
+                name: 'WS80 Kanal ' + i + ' Batterie',
+                type: 'number',
+                role: 'state',
+                unit: 'Volt'
             });
         }
     }

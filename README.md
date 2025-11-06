@@ -60,6 +60,8 @@ Zusatzsensoren (mittels Station oder Gateway DP1500/DP2000/GW1000/GW2000A/GW3000
 - ein DP250/WH45 5-In-1 CO2 / PM2.5 / PM10 / Temperatur / Luftfeuchte Innenraumsensor
 - ein DP300/WS68 Solarunterstütztes Anemometer mit UV-Lichtsensor
 - ein WH25 Sensor
+- ein WH40H Sensor
+- ein WS80 Sensor
 - ein WS90 "Wittboy" Sensor
 - BRESSER® <sup>(1)</sup>
   * bis zu 4 Stück<sup>(2)</sup> _BRESSER® Thermo-/Hygro-Sensor 7 Kanal_ #7009999
@@ -123,6 +125,12 @@ Auszug von WeatherObservationsWebsite (WOW):
 
 ## Versionen ##
 
+**V3.6.0 - 05.10.2025**  
+``` 
+    + Regenereignis für Piezo-Sensoren / Issue #82
+    + Unterstützung für WS80 und WH40H Sensoren
+```  
+  
 **V3.5.2 - 02.08.2025   Bugfix Release**  
 ``` 
     ~ Fix fehlende Messwerte bei DP100 Sensor Nr.10-16 / Issue #81

@@ -125,6 +125,14 @@ Auszug von WeatherObservationsWebsite (WOW):
 
 ## Versionen ##
 
+ **V3.6.2 - 28.03.2026**  
+``` 
+    ~ Fix führende "0" bei Regen-Messwerten hinzugefügt
+    ~ Fix führende "0" bei Wind-Messwerten hinzugefügt
+    ~ Fix 'has to be type "number" but received type "string"' im ioB wenn der DP als Zahl
+      definiert ist (Simple-API ab 3.x) / Issue #88
+```
+ 
 **V3.6.1 - 08.03.2026**  
 ``` 
     ~ Fix führende "0" bei Messwerten hinzugefügt

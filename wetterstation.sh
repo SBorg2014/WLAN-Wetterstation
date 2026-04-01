@@ -2,15 +2,20 @@
 : <<'Versionsinfo'
 
 
- V3.6.1 - 08.03.2026 (c) 2019-2026 SBorg
+ V3.6.2 - 28.03.2026 (c) 2019-2026 SBorg
 
  wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
  die Daten an den ioBroker (alternativ auch an AWEKAS, OpenSenseMap, Windy, wetter.com und WeatherObservationsWebsite)
 
  benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq', 'bc' und 'dc' unter Linux
 
- V3.6.1 / 08.03.2026   ~ Fix führende "0" bei Messwerten hinzugefügt
-                       ~ Fix Windrichtung-Text ist identisch mit 10-Minuten Text falls die Station den Wert liefert / Issue #86
+ V3.6.2 / 28.03.2026   ~ Fix führende "0" bei Regen-Messwerten hinzugefügt
+                       ~ Fix führende "0" bei Wind-Messwerten hinzugefügt
+                       ~ Fix 'has to be type "number" but received type "string"' im ioB wenn der DP als Zahl
+                         definiert ist (Simple-API ab 3.x) / Issue #88
+ V3.6.1 / 08.03.2026   ~ Fix führende "0" bei Temperatur-Messwerten hinzugefügt
+                       ~ Fix Windrichtung-Text ist identisch mit 10-Minuten Text falls die Station den Wert
+                         liefert / Issue #86
  V3.6.0 / 05.10.2025   + Regenereignis für Piezo-Sensoren / Issue #82
                        + Unterstützung für WS80 und WH40H Sensoren
  V3.5.2 / 02.08.2025   ~ Fix fehlende Messwerte bei DP100 Sensor Nr.10-16 / Issue #81
@@ -163,9 +168,9 @@ Versionsinfo
 ### Ende Infoblock
 
  #Versionierung
-  SH_VER="V3.6.1"
-  CONF_V="V3.6.1"
-  SUBVER="V3.6.1"
+  SH_VER="V3.6.2"
+  CONF_V="V3.6.2"
+  SUBVER="V3.6.2"
 
 
  #Installationsverzeichnis feststellen

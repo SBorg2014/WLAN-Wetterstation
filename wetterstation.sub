@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V3.6.1 --------------------------------------------------------
+### Subroutinen V3.6.2 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -212,12 +212,15 @@ function SAPI()
   SEP="?"
   [[ $2 == *"?"* ]] && SEP="&"
 
+
   if [ "$1" == "Single" ]; then
-   retval=$(curl ${SAPI_CURL_OPTS} -s "${WEB}://${IPP}/${2}${SEP}user=${AUTH_USER}&pass=${AUTH_PASS}" 2>/dev/null)
+   local DATA=$(echo "${2}" | sed -E 's/([0-9]+\.[0-9]*[1-9])0+\b/\1/g; s/([0-9]+)\.0+\b/\1/g')
+   retval=$(curl ${SAPI_CURL_OPTS} -s "${WEB}://${IPP}/${DATA}${SEP}user=${AUTH_USER}&pass=${AUTH_PASS}" 2>/dev/null)
   fi
 
   if [ "$1" == "Bulk" ]; then
-   curl ${SAPI_CURL_OPTS} --data "${3}" "${WEB}://${IPP}/${2}${SEP}user=${AUTH_USER}&pass=${AUTH_PASS}" >/dev/null 2>&1
+   local IOB_DATA=$(echo "${3}" | sed -E 's/([0-9]+\.[0-9]*[1-9])0+\b/\1/g; s/([0-9]+)\.0+\b/\1/g')
+   curl ${SAPI_CURL_OPTS} --data "${IOB_DATA}" "${WEB}://${IPP}/${2}${SEP}user=${AUTH_USER}&pass=${AUTH_PASS}" >/dev/null 2>&1
   fi
 }
 
@@ -303,10 +306,9 @@ iob_send() {
     done
     IOBOUT="${IOBOUT:1}"
 
-   #Leerzeichen entfernen + Zeitstempel/Regenstatus/UV-Belastung wg. Leerzeichen erst hier anhängen
-    IOB_DATA=$(echo $IOBOUT|tr -d " ")
+   #Leerzeichen und anhängende Nullen entfernen + Zeitstempel/Regenstatus/UV-Belastung wg. Leerzeichen erst hier anhängen
+    IOB_DATA=$(echo "$IOBOUT" | tr -d " " | sed -E 's/([0-9]+\.[0-9]*[1-9])0+\b/\1/g; s/([0-9]+)\.0+\b/\1/g')
     IOB_DATA=${IOB_DATA}\&${DP_REGENSTATUS}=${REGENSTATUS}\&${DP_UV_BELASTUNG}=${UV_BELASTUNG}\&${DP_WIND_DIR_TXT}=${WINDRICHTUNG}\&${DP_HITZEINDEX}=${HITZEINDEX}
-
    #Daten an den ioB schicken
     if [ $debug == "true" ]; then
 	curl ${SAPI_CURL_OPTS} --data "$IOB_DATA" "${WEB}://${IPP}/setBulk?ack=true&user=${AUTH_USER}&pass=${AUTH_PASS}&prettyPrint"
@@ -371,7 +373,8 @@ convertMPHtoKMH() {
          if [ $1 -eq 6 ]; then WINDSPEEDMPH=${MESSWERTE[$1]}; fi
          if [ $1 -eq 7 ]; then WINDGUSTMPH=${MESSWERTE[$1]}; fi
 
-	MESSWERTE[$1]=$(echo "scale=2;(${MESSWERTE[$1]}*16094/10000)" | bc -l)
+        local MESSWERT=$(awk "BEGIN {print (${MESSWERTE[$1]} * 16094) / 10000}")
+        MESSWERTE[$1]=$(awk "BEGIN {print sprintf(\"%.2f\", $MESSWERT)}")
 }
 
 convertLuftdruck() {
@@ -387,7 +390,9 @@ convertInchtoMM() {
          if [ $1 -eq 11 ]; then REGENRATE_SAVE=${MESSWERTE[$1]}; fi
          if [ $1 -eq 12 ]; then REGENTAG_SAVE=${MESSWERTE[$1]}; fi
 
-     MESSWERTE[$1]=$(echo "scale=3;${MESSWERTE[$1]}*254/10" | bc -l)
+        local MESSWERT=$(awk "BEGIN {print (${MESSWERTE[$1]} * 254) / 10}")
+        MESSWERTE[$1]=$(awk "BEGIN {print sprintf(\"%.3f\", $MESSWERT)}")
+
       #Protokoll #9 liefert keine Regenrate(11); also alle Regenberechnungen überspringen
       if [ "$WS_PROTOKOLL" -ne "9" ]; then
 
@@ -752,7 +757,7 @@ timestr() {
 
 
 round() {
-    bc -l <<END_BC
+result=$(bc -l <<END_BC
         define round(number,r_scale)
         {
             auto o_scale
@@ -766,6 +771,8 @@ round() {
         }
         round ($1,$2)
 END_BC
+)
+    LC_NUMERIC=C printf "%.*f\n" "$2" "$result"
 }
 
 reset_zaehler() {

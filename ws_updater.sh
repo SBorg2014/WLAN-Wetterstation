@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V3.6.1
+UPDATE_VER=V3.6.2
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -155,8 +155,9 @@ patcher() {
            V3.5.0) PATCH3051 ;;
            V3.5.1) PATCH3052 ;;
            V3.5.2) PATCH3060 ;;
-           V3.6.0) PATCH3061 && service_restart && exit 0;;
-           V3.6.1) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
+           V3.6.0) PATCH3061 ;;
+           V3.6.1) PATCH3062 && service_restart && exit 0;;
+           V3.6.2) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
                 *) FEHLER
     esac
 
@@ -740,6 +741,15 @@ PATCH3061(){
  backup
  echo -e "${WE}\n Patche wetterstation.conf auf V3.6.1 ..."
  sed -i 's/### Settings V3.6.0/### Settings V3.6.1/' ./wetterstation.conf
+ echo -e "\n${WE} Fertig...\n"
+}
+
+
+#Patch Version V3.6.1 auf V3.6.2
+PATCH3062(){
+ backup
+ echo -e "${WE}\n Patche wetterstation.conf auf V3.6.2 ..."
+ sed -i 's/### Settings V3.6.1/### Settings V3.6.2/' ./wetterstation.conf
  echo -e "\n${WE} Fertig...\n"
 }
 

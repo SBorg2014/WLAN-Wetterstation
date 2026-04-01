@@ -125,6 +125,12 @@ Auszug von WeatherObservationsWebsite (WOW):
 
 ## Versionen ##
 
+**V3.6.1 - 08.03.2026**  
+``` 
+    ~ Fix führende "0" bei Messwerten hinzugefügt
+    ~ Fix Windrichtung-Text ist identisch mit 10-Minuten Text falls die Station den Wert liefert / Issue #86
+```
+ 
 **V3.6.0 - 05.10.2025**  
 ``` 
     + Regenereignis für Piezo-Sensoren / Issue #82

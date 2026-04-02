@@ -97,6 +97,8 @@
 ###  Subroutinen - KEINE ÄNDERUNGEN NÖTIG !                                 ###
 ###-------------------------------------------------------------------------###
 
+###Bei Float Punkt als Trenner erzwingen
+export LC_NUMERIC=C
 
 ###  Farbdefinition
       GR='\e[1;32m'

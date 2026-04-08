@@ -2,13 +2,15 @@
 : <<'Versionsinfo'
 
 
- V3.6.2 - 28.03.2026 (c) 2019-2026 SBorg
+ V3.6.3 - 04.04.2026 (c) 2019-2026 SBorg
 
  wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
  die Daten an den ioBroker (alternativ auch an AWEKAS, OpenSenseMap, Windy, wetter.com und WeatherObservationsWebsite)
 
  benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq', 'bc' und 'dc' unter Linux
 
+ V3.6.3 / 04.04.2026   ~ Fix 'has to be type "number" but received type "string"' im ioB bei Solar-DPs wenn als Zahl
+                         definiert ist (Simple-API ab 3.x) / Issue #90
  V3.6.2 / 28.03.2026   ~ Fix führende "0" bei Regen-Messwerten hinzugefügt
                        ~ Fix führende "0" bei Wind-Messwerten hinzugefügt
                        ~ Fix 'has to be type "number" but received type "string"' im ioB wenn der DP als Zahl
@@ -168,9 +170,9 @@ Versionsinfo
 ### Ende Infoblock
 
  #Versionierung
-  SH_VER="V3.6.2"
-  CONF_V="V3.6.2"
-  SUBVER="V3.6.2"
+  SH_VER="V3.6.3"
+  CONF_V="V3.6.3"
+  SUBVER="V3.6.3"
 
 
  #Installationsverzeichnis feststellen

@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V3.6.2 --------------------------------------------------------
+### Subroutinen V3.6.3 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -97,7 +97,7 @@
 ###  Subroutinen - KEINE ÄNDERUNGEN NÖTIG !                                 ###
 ###-------------------------------------------------------------------------###
 
-###Bei Float Punkt als Trenner erzwingen
+### Bei Floatwerten den "." anstelle eines "," als Dezimaltrenner erzwingen
 export LC_NUMERIC=C
 
 ###  Farbdefinition
@@ -216,13 +216,11 @@ function SAPI()
 
 
   if [ "$1" == "Single" ]; then
-   local DATA=$(echo "${2}" | sed -E 's/([0-9]+\.[0-9]*[1-9])0+\b/\1/g; s/([0-9]+)\.0+\b/\1/g')
-   retval=$(curl ${SAPI_CURL_OPTS} -s "${WEB}://${IPP}/${DATA}${SEP}user=${AUTH_USER}&pass=${AUTH_PASS}" 2>/dev/null)
+   retval=$(curl ${SAPI_CURL_OPTS} -s "${WEB}://${IPP}/${2}${SEP}user=${AUTH_USER}&pass=${AUTH_PASS}" 2>/dev/null)
   fi
 
   if [ "$1" == "Bulk" ]; then
-   local IOB_DATA=$(echo "${3}" | sed -E 's/([0-9]+\.[0-9]*[1-9])0+\b/\1/g; s/([0-9]+)\.0+\b/\1/g')
-   curl ${SAPI_CURL_OPTS} --data "${IOB_DATA}" "${WEB}://${IPP}/${2}${SEP}user=${AUTH_USER}&pass=${AUTH_PASS}" >/dev/null 2>&1
+   curl ${SAPI_CURL_OPTS} --data "${3}" "${WEB}://${IPP}/${2}${SEP}user=${AUTH_USER}&pass=${AUTH_PASS}" >/dev/null 2>&1
   fi
 }
 
@@ -468,7 +466,7 @@ rain() {
 
 	  if [ ${TS_DIFF} -ge "0" ]; then
            SAPI "Single" "getPlainValue/${DP_REGEN_JAHR_KUM}"
-	   REGENMENGE=$(echo "scale=2;${retval}+${MESSWERTE[12]}" | bc -l)
+	   REGENMENGE=$(echo "scale=2;${retval}+${MESSWERTE[12]}" | bc -l | normalize)
 	   SAPI "Single" "set/${DP_REGEN_JAHR_KUM}?value=${REGENMENGE}&ack=true"
 	  fi
 }
@@ -481,7 +479,7 @@ do_windspeed(){
      if [ "${#WINDSPEED_10M[@]}" -ge "20" ]; then WINDSPEED_10M=(${WINDSPEED_10M[@]:1}); fi
      WINDSPEED_10M[${#WINDSPEED_10M[@]}]=$1
      local SPEED=$(echo ${WINDSPEED_10M[@]}|jq -s '(sort|if length%2==1 then.[length/2|floor]else[.[length/2-1,length/2]]|add/2 end)')
-     WIND_AVGSPEED_10M=$(round $SPEED 2)
+     WIND_AVGSPEED_10M=$(round $SPEED 2 | normalize)
      SAPI "Single" "set/${DP_WIND_10MIN}?value=${WIND_AVGSPEED_10M}&ack=true"
 }
 
@@ -697,13 +695,13 @@ sonnenpuls() {
 
 	#Leistung berechnen
 	SOL_TMP=$(echo "scale=3;${SOL_TMP}/(3600/${ZEIT_DIFF})" | bc -l)
-	SOLARENERGIE_TAG=$(echo "scale=3;${SOLARENERGIE_TAG}+${SOL_TMP}" | bc -l)
-	SOLAR_WOCHE=$(echo "scale=5;(${SOLAR_WOCHE}+${SOL_TMP})" | bc -l)
-	SOLARENERGIE_WOCHE=$(echo "scale=3;${SOLAR_WOCHE}/1000" | bc -l) #Umrechnung in kWh
-	SOLAR_MONAT=$(echo "scale=5;(${SOLAR_MONAT}+${SOL_TMP})" | bc -l)
-	SOLARENERGIE_MONAT=$(echo "scale=3;${SOLAR_MONAT}/1000" | bc -l) #Umrechnung in kWh
-	SOLAR_JAHR=$(echo "scale=5;(${SOLAR_JAHR}+${SOL_TMP})" | bc -l)
-	SOLARENERGIE_JAHR=$(echo "scale=3;${SOLAR_JAHR}/1000" | bc -l)   #Umrechnung in kWh
+	SOLARENERGIE_TAG=$(echo "scale=3;${SOLARENERGIE_TAG}+${SOL_TMP}" | bc -l | normalize)
+	SOLAR_WOCHE=$(echo "scale=5;(${SOLAR_WOCHE}+${SOL_TMP})" | bc -l | normalize)
+	SOLARENERGIE_WOCHE=$(echo "scale=3;${SOLAR_WOCHE}/1000" | bc -l | normalize) #Umrechnung in kWh
+	SOLAR_MONAT=$(echo "scale=5;(${SOLAR_MONAT}+${SOL_TMP})" | bc -l | normalize)
+	SOLARENERGIE_MONAT=$(echo "scale=3;${SOLAR_MONAT}/1000" | bc -l | normalize) #Umrechnung in kWh
+	SOLAR_JAHR=$(echo "scale=5;(${SOLAR_JAHR}+${SOL_TMP})" | bc -l | normalize)
+	SOLARENERGIE_JAHR=$(echo "scale=3;${SOLAR_JAHR}/1000" | bc -l | normalize)   #Umrechnung in kWh
 
 	#Daten für ioB fertig machen
 	IOB_SOLDATA=$(cat <<-EOD
@@ -774,7 +772,7 @@ result=$(bc -l <<END_BC
         round ($1,$2)
 END_BC
 )
-    LC_NUMERIC=C printf "%.*f\n" "$2" "$result"
+    printf "%.*f\n" "$2" "$result"
 }
 
 reset_zaehler() {
@@ -815,6 +813,22 @@ reset_zaehler() {
 function MELDUNG() {
   #Meldung an den ioB schicken
   SAPI "Bulk" "setBulk" "${DP_MELDUNGEN}=${1}&ack=true"
+}
+
+normalize() {
+  awk '{
+    x = $0
+
+    # führenden Punkt behandeln (.123 → 0.123)
+    if (x ~ /^\./) x = "0" x
+
+    # in Zahl umwandeln und wieder als Dezimalzahl ausgeben
+    # %.3f = genug Präzision, ohne Exponentialschreibweise
+    printf "%.3f\n", x
+  }' | sed -E '
+    s/(\.[0-9]*[1-9])0+$/\1/;  # trailing zeros entfernen
+    s/\.0+$//                  # .0 komplett entfernen
+  '
 }
 
 setup() {
@@ -930,26 +944,31 @@ version() {
 	echo -e " Config-Version: ${CONF_V}"
 	echo -e " Sub-Version   : ${SUBVER}\n"
 
-        #Test ob bc,jq und netcat installiert sind
+        #Test ob bc,jq,dc,awk und netcat installiert sind
          if [ $(which bc) ]; then
-           echo -e " $GR'bc'$WE installiert: $WE[$GR✓$WE]"
+           echo -e " $GR'bc'$WE\tinstalliert: $WE[$GR✓$WE]"
           else
-           echo -e " $GR'bc'$WE installiert: $WE[$RE✗$WE]"
+           echo -e " $GR'bc'$WE\tinstalliert: $WE[$RE✗$WE]"
          fi
          if [ $(which jq) ]; then
-           echo -e " $GR'jq'$WE installiert: $WE[$GR✓$WE] \n"
+           echo -e " $GR'jq'$WE\tinstalliert: $WE[$GR✓$WE]"
           else
-           echo -e " $GR'jq'$WE installiert: $WE[$RE✗$WE] \n"
+           echo -e " $GR'jq'$WE\tinstalliert: $WE[$RE✗$WE]"
          fi
          if [ $(which dc) ]; then
-           echo -e " $GR'dc'$WE installiert: $WE[$GR✓$WE] \n"
+           echo -e " $GR'dc'$WE\tinstalliert: $WE[$GR✓$WE]"
           else
-           echo -e " $GR'dc'$WE installiert: $WE[$RE✗$WE] \n"
+           echo -e " $GR'dc'$WE\tinstalliert: $WE[$RE✗$WE]"
+         fi
+         if [ $(which awk) ]; then
+           echo -e " $GR'awk'$WE\tinstalliert: $WE[$GR✓$WE] \n"
+          else
+           echo -e " $GR'awk'$WE\tinstalliert: $WE[$RE✗$WE] \n"
          fi
 
          if [[ $(sudo update-alternatives --query nc|grep Value) =~ openbsd ]]; then
-              echo -e " $GR'nc'$WE in der Openbsd-Variante installiert:  $WE[$GR✓$WE]"
-              echo -e " $GR'netcat'$WE in Openbsd-Variante aktiv, alles korrekt $WE[$GR✓$WE]"
+              echo -e " $GR'nc'$WE\t\tin der Openbsd-Variante installiert:  $WE[$GR✓$WE]"
+              echo -e " $GR'netcat'$WE\tin Openbsd-Variante aktiv, alles korrekt $WE[$GR✓$WE]"
           else
            if [[ $(sudo update-alternatives --query nc|grep openbsd) ]]; then
             echo -e " $GR'nc'$WE in der Openbsd-Variante installiert aber nicht aktiviert.\n"

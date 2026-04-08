@@ -1,4 +1,4 @@
-//Wetterstation Datenpunkte anlegen V3.6.2
+//Wetterstation Datenpunkte anlegen V3.6.3
 let DP = "0_userdata.0.Wetterstation.";
 let WH31 = 0;    // Anzahl der WH31/WH25 Sensoren     (max. 1 Stück)
 let WH40H= 0;    // Anzahl der WH40H Sensoren         (max. 1 Stück)

@@ -125,6 +125,12 @@ Auszug von WeatherObservationsWebsite (WOW):
 
 ## Versionen ##
 
+  **V3.6.3 - 04.04.2026**  
+``` 
+    ~ Fix 'has to be type "number" but received type "string"' im ioB bei Solar-DPs wenn als Zahl
+      definiert ist (Simple-API ab 3.x) / Issue #90
+```
+ 
  **V3.6.2 - 28.03.2026**  
 ``` 
     ~ Fix führende "0" bei Regen-Messwerten hinzugefügt

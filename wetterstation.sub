@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V3.6.3 --------------------------------------------------------
+### Subroutinen V3.6.4 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -204,6 +204,7 @@ debuging() {
     exit 1
 }
 
+
 ###SAPI
 function SAPI()
 {
@@ -211,16 +212,19 @@ function SAPI()
   #2 SAPI-URL
   #3 DATA (setBulk)
 
-  SEP="?"
-  [[ $2 == *"?"* ]] && SEP="&"
-
+  local SAPI_AUTH=()
+  local SAPI_DATA=""
+  if [ -n "${AUTH_USER}" ] && [ -n "${AUTH_PASS}" ]; then
+   SAPI_AUTH=(--user "${AUTH_USER}:${AUTH_PASS}")
+  fi
 
   if [ "$1" == "Single" ]; then
-   retval=$(curl ${SAPI_CURL_OPTS} -s "${WEB}://${IPP}/${2}${SEP}user=${AUTH_USER}&pass=${AUTH_PASS}" 2>/dev/null)
+   retval=$(curl ${SAPI_CURL_OPTS} "${SAPI_AUTH[@]}" -s "${WEB}://${IPP}/${2}" 2>/dev/null)
   fi
 
   if [ "$1" == "Bulk" ]; then
-   curl ${SAPI_CURL_OPTS} --data "${3}" "${WEB}://${IPP}/${2}${SEP}user=${AUTH_USER}&pass=${AUTH_PASS}" >/dev/null 2>&1
+   SAPI_DATA=$(printf '%s' "${3}" | sed 's/ /%20/g')
+   curl ${SAPI_CURL_OPTS} "${SAPI_AUTH[@]}" -H 'Content-Type: text/plain' --data "${SAPI_DATA}" "${WEB}://${IPP}/${2}" >/dev/null 2>&1
   fi
 }
 
@@ -310,11 +314,15 @@ iob_send() {
     IOB_DATA=$(echo "$IOBOUT" | tr -d " " | sed -E 's/([0-9]+\.[0-9]*[1-9])0+\b/\1/g; s/([0-9]+)\.0+\b/\1/g')
     IOB_DATA=${IOB_DATA}\&${DP_REGENSTATUS}=${REGENSTATUS}\&${DP_UV_BELASTUNG}=${UV_BELASTUNG}\&${DP_WIND_DIR_TXT}=${WINDRICHTUNG}\&${DP_HITZEINDEX}=${HITZEINDEX}
    #Daten an den ioB schicken
+    IOB_DATA_SEND=$(printf '%s' "$IOB_DATA" | sed 's/ /%20/g')
     if [ $debug == "true" ]; then
-	curl ${SAPI_CURL_OPTS} --data "$IOB_DATA" "${WEB}://${IPP}/setBulk?ack=true&user=${AUTH_USER}&pass=${AUTH_PASS}&prettyPrint"
+	curl ${SAPI_CURL_OPTS} --user "${AUTH_USER}:${AUTH_PASS}" -H 'Content-Type: text/plain' \
+        --data "$IOB_DATA_SEND" "${WEB}://${IPP}/setBulk?ack=true&prettyPrint"
       else
-	curl ${SAPI_CURL_OPTS} --data "$IOB_DATA" "${WEB}://${IPP}/setBulk?ack=true&user=${AUTH_USER}&pass=${AUTH_PASS}" >/dev/null 2>&1
+	curl ${SAPI_CURL_OPTS} --user "${AUTH_USER}:${AUTH_PASS}" -H 'Content-Type: text/plain' \
+        --data "$IOB_DATA_SEND" "${WEB}://${IPP}/setBulk?ack=true" >/dev/null 2>&1
     fi
+
 }
 
 
@@ -601,7 +609,10 @@ wetterprognose() {
 	 if [ "$PNOW" -le "30" ] && [ "$PNOW" -ge "5" ]; then WETTER_TREND="lange sch%C3%B6n"; fi
 	 if [ "$PNOW" -le "50" ] && [ "$PNOW" -ge "30" ]; then WETTER_TREND="sch%C3%B6n & labil"; fi
 	 if [ "$PNOW" -gt "50" ]; then WETTER_TREND="Sturmwarnung"; fi
-	 PNOW=$(echo "scale=2;$PNOW/10" | bc -l)
+         local PNOW_tmp=$(awk "BEGIN {print ${PNOW} / 10}")
+         PNOW=$(awk "BEGIN {print sprintf(\"%.2f\", $PNOW_tmp)}" | normalize)
+        else
+         PNOW=0  #sonst wird beim Start des Skriptes "Null" in den DP geschrieben
 	fi
 
 	#Wetter erfassen und bestimmen
@@ -734,27 +745,36 @@ uv_belastung() {
 
 ###Hilfsfunktionen
 timestr() {
-	TAGE=$(echo "$(($1 /86400))")
-	STUNDEN_KPL=$(echo "$(($1 /3600))")
-	STUNDEN=$(echo "$(($1 % 86400 /3600))")
-	MINUTEN=$(echo "$(($1 % 3600 /60))")
-	SEKUNDEN=$(echo "$(($1 % 60))")
+    if [ -z "${1}" ] || [ -z "${2}" ]; then return 1; fi
+    [[ "${1}" =~ ^[0-9]+$ ]] || return 1
 
-	if [ "$TAGE" -eq "1" ]; then TAG_TXT="Tag"; else TAG_TXT="Tage"; fi
+    local OUTVAR="${2}"
+    local TAGE STUNDEN_KPL STUNDEN MINUTEN SEKUNDEN TAG_TXT
 
-	case ${SONNENSCHEIN_TXTFORMAT} in
-	   0)   printf -v $2 "%d Std. %02d Min. %02d Sek." $STUNDEN_KPL $MINUTEN $SEKUNDEN ;;
-	   1)   printf -v $2 "%d:%02d" $STUNDEN_KPL $MINUTEN ;;
-	   2)   printf -v $2 "%d $TAG_TXT %d Std." $TAGE $STUNDEN ;;
-	   3)   if [ "$TAGE" -eq "0" ]; then
-	          printf -v $2 "%d Std, %d Min" $STUNDEN $MINUTEN
-	         else
-	          printf -v $2 "%d $TAG_TXT, %d Std, %d Min" $TAGE $STUNDEN $MINUTEN
-	        fi ;;
-	   *)   printf -v $2 "unbekanntes Format"
-	esac
+    TAGE=$(( $1 / 86400 ))
+    STUNDEN_KPL=$(( $1 / 3600 ))
+    STUNDEN=$(( ($1 % 86400) / 3600 ))
+    MINUTEN=$(( ($1 % 3600) / 60 ))
+    SEKUNDEN=$(( $1 % 60 ))
+
+    if [ "${TAGE}" -eq 1 ]; then
+        TAG_TXT="Tag"
+      else
+        TAG_TXT="Tage"
+    fi
+
+    case ${SONNENSCHEIN_TXTFORMAT} in
+       0) printf -v "${OUTVAR}" "%d Std. %02d Min. %02d Sek." "${STUNDEN_KPL}" "${MINUTEN}" "${SEKUNDEN}" ;;
+       1) printf -v "${OUTVAR}" "%d:%02d" "${STUNDEN_KPL}" "${MINUTEN}" ;;
+       2) printf -v "${OUTVAR}" "%d %s %d Std." "${TAGE}" "${TAG_TXT}" "${STUNDEN}" ;;
+       3) if [ "${TAGE}" -eq 0 ]; then
+              printf -v "${OUTVAR}" "%d Std, %d Min" "${STUNDEN}" "${MINUTEN}"
+          else
+              printf -v "${OUTVAR}" "%d %s, %d Std, %d Min" "${TAGE}" "${TAG_TXT}" "${STUNDEN}" "${MINUTEN}"
+          fi ;;
+       *) printf -v "${OUTVAR}" "unbekanntes Format" ;;
+    esac
 }
-
 
 round() {
 result=$(bc -l <<END_BC
@@ -818,6 +838,12 @@ function MELDUNG() {
 normalize() {
   awk '{
     x = $0
+
+    # leere oder ungültige Werte → 0
+    if (x == "" || x !~ /^[0-9]*\.?[0-9]+$/) {
+      print "0"
+      next
+    }
 
     # führenden Punkt behandeln (.123 → 0.123)
     if (x ~ /^\./) x = "0" x

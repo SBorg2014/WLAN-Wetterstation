@@ -766,7 +766,7 @@ PATCH3063(){
 
 
 #Patch Version V3.6.3 auf V3.6.4
-PATCH3063(){
+PATCH3064(){
  backup
  echo -e "${WE}\n Patche wetterstation.conf auf V3.6.4 ..."
  sed -i 's/### Settings V3.6.3/### Settings V3.6.4/' ./wetterstation.conf

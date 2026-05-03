@@ -124,7 +124,15 @@ Auszug von WeatherObservationsWebsite (WOW):
 <br><br>
 
 ## Versionen ##
-
+ 
+  **V3.6.4 - 14.04.2026**  
+``` 
+    ~ Fix 'has to be type "number" but received type "string"' im ioB bei DP "Druck-Tendenz" wenn
+      als Zahl definiert ist (Simple-API ab 3.x)
+    ~ Fix für die User-Authentifizierung (Simple-API ab 3.x) / Issue #91 (ch33f)
+    ~ Codeoptimierungen
+```
+ 
   **V3.6.3 - 04.04.2026**  
 ``` 
     ~ Fix 'has to be type "number" but received type "string"' im ioB bei Solar-DPs wenn als Zahl

@@ -124,7 +124,13 @@ Auszug von WeatherObservationsWebsite (WOW):
 <br><br>
 
 ## Versionen ##
- 
+
+  **V3.6.5 - 08.05.2026**  
+``` 
+    ~ Fix 'has to be type "number" but received type "string"' im ioB bei DP ".Info.Letzte_Regenmenge"
+      wenn als Zahl definiert ist (Simple-API ab 3.x)
+```
+
   **V3.6.4 - 14.04.2026**  
 ``` 
     ~ Fix 'has to be type "number" but received type "string"' im ioB bei DP "Druck-Tendenz" wenn

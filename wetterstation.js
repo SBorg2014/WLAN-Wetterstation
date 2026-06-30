@@ -1,7 +1,8 @@
-//Wetterstation Datenpunkte anlegen V3.6.5
+//Wetterstation Datenpunkte anlegen V3.7.0
 let DP = "0_userdata.0.Wetterstation.";
 let WH31 = 0;    // Anzahl der WH31/WH25 Sensoren     (max. 1 Stück)
 let WH40H= 0;    // Anzahl der WH40H Sensoren         (max. 1 Stück)
+let WH52 = 0;    // Anzahl der WH52 Sensoren          (max. 16 Stück)
 let WS80 = 0;    // Anzahl der WS80 Sensoren          (max. 1 Stück)
 let WS90 = 0;    // Anzahl der WS90 Sensoren          (max. 1 Stück)
 let DP10 = 0;    // Anzahl der DP10/WN35 Sensoren     (max. 8 Stück)
@@ -111,6 +112,7 @@ async function dpAnlegen(){
 
     if (DP100 > 0 && DP100 <= 16)        { await DP100_anlegen(); console.log("Datenpunkte für DP100 angelegt..."); }
     if (WH40H > 0 && WH40H <= 1)         { await WH40H_anlegen(); console.log("Datenpunkte für WH40H angelegt..."); }
+    if (WH52 > 0 && WH52 <= 16)          { await WH52_anlegen(); console.log("Datenpunkte für WH52 angelegt..."); }
     if (WS80 > 0 && WS80 <= 1)           { await WS80_anlegen(); console.log("Datenpunkte für WS80 angelegt..."); }
     if (WS90 > 0 && WS90 <= 1)           { await WS90_anlegen(); console.log("Datenpunkte für WS90 angelegt..."); }
     if (BR7009999 > 0 && BR7009999 <= 4) { await BR7009999_anlegen(); console.log("Datenpunkte für Bresser #7009999 angelegt..."); }
@@ -143,6 +145,61 @@ async function WH40H_anlegen() {
                 type: 'number',
                 role: 'state',
                 unit: 'Volt'
+            });
+        }
+    }
+}
+
+
+//WH52 - Sensoren
+async function WH52_anlegen() {
+    if (!existsState(DP + "WH52")) { await extendObjectAsync(DP + "WH52", { type: "folder", common: { name: "WH52" }, native: {} }); }
+    for (var i = 1; i <= WH52; i++) {
+        if (!existsState(DP + 'WH52.' + i)) { await extendObjectAsync(DP + 'WH52.' + i, { type: "folder", common: { name: i + '. Kanal' }, native: {} }); }
+        if (!existsState(DP + "WH52." + i + ".Bodenfeuchtigkeit")) {
+            await createStateAsync(DP + "WH52." + i + ".Bodenfeuchtigkeit", {
+                "name": "WH52 Kanal " + i + " Bodenfeuchtigkeit",
+                "type": "number",
+                "role": "state",
+                "unit": "%"
+            });
+        }
+        if (!existsState(DP + "WH52." + i + ".Bodenfeuchte-Raw")) {
+            await createStateAsync(DP + "WH52." + i + ".Bodenfeuchte-Raw", {
+                "name": "WH52 Kanal " + i + " Bodenfeuchtigkeit Raw-Wert",
+                "type": "number",
+                "role": "state"
+            });
+        }
+        if (!existsState(DP + "WH52." + i + ".Bodentemperatur")) {
+            await createStateAsync(DP + "WH52." + i + ".Bodentemperatur", {
+                "name": "WH52 Kanal " + i + " Bodentemperatur",
+                "type": "number",
+                "role": "state",
+                "unit": "°C"
+            });
+        }
+        if (!existsState(DP + "WH52." + i + ".Bodenleitfähigkeit")) {
+            await createStateAsync(DP + "WH52." + i + ".Bodenleitfähigkeit", {
+                "name": "WH52 Kanal " + i + " Bodenleitfähigkeit",
+                "type": "number",
+                "role": "state",
+                "unit": "µS/cm"
+            });
+        }
+        if (!existsState(DP + "WH52." + i + ".Bodenleitfähigkeit-Raw")) {
+            await createStateAsync(DP + "WH52." + i + ".Bodenleitfähigkeit-Raw", {
+                "name": "WH52 Kanal " + i + " Bodenleitfähigkeit-Raw",
+                "type": "number",
+                "role": "state"
+            });
+        }
+        if (!existsState(DP + "WH52." + i + ".Batterie")) {
+            await createStateAsync(DP + "WH52." + i + ".Batterie", {
+                name: "WH52 Kanal " + i + " Batterie",
+                type: "number",
+                role: "state",
+                unit: "Volt"
             });
         }
     }

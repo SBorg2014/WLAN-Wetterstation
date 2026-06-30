@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V3.6.5
+UPDATE_VER=V3.7.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -159,8 +159,9 @@ patcher() {
            V3.6.1) PATCH3062 ;;
            V3.6.2) PATCH3063 ;;
            V3.6.3) PATCH3064 ;;
-           V3.6.4) PATCH3065 && service_restart && exit 0;;
-           V3.6.5) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
+           V3.6.4) PATCH3065 ;;
+           V3.6.5) PATCH3070 && service_restart && exit 0;;
+           V3.7.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
                 *) FEHLER
     esac
 
@@ -781,6 +782,18 @@ PATCH3065(){
  echo -e "${WE}\n Patche wetterstation.conf auf V3.6.5 ..."
  sed -i 's/### Settings V3.6.4/### Settings V3.6.5/' ./wetterstation.conf
  echo -e "\n${WE} Fertig...\n"
+}
+
+
+#Patch Version V3.6.5 auf V3.7.0
+PATCH3070(){
+ backup
+ echo -e "${WE}\n Patche wetterstation.conf auf V3.7.0 ..."
+ sed -i 's/### Settings V3.6.5/### Settings V3.7.0/' ./wetterstation.conf
+ sed -i '/^.*ANZAHL_WH40H=.*/a \  ANZAHL_WH52=0' ./wetterstation.conf
+ echo -e "\n${WE} Fertig...\n"
+ echo -e " ${GE}Sensoren des Types WH52 können nun in der 'conf' aktiviert werden.\n${WE}"
+
 }
 
 

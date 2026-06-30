@@ -2,13 +2,14 @@
 : <<'Versionsinfo'
 
 
- V3.6.5 - 08.05.2026 (c) 2019-2026 SBorg
+ V3.7.0 - 28.06.2026 (c) 2019-2026 SBorg
 
  wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
  die Daten an den ioBroker (alternativ auch an AWEKAS, OpenSenseMap, Windy, wetter.com und WeatherObservationsWebsite)
 
  benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq', 'bc', 'awk' und 'dc' unter Linux
 
+ V3.7.0 / 28.06.2026   + Unterstützung für WH52 Sensoren / Issue #94
  V3.6.5 / 08.05.2026   ~ Fix 'has to be type "number" but received type "string"' im ioB bei DP ".Info.Letzte_Regenmenge"
                          wenn als Zahl definiert ist (Simple-API ab 3.x)
  V3.6.4 / 14.04.2026   ~ Fix 'has to be type "number" but received type "string"' im ioB bei DP "Druck-Tendenz" wenn
@@ -176,9 +177,9 @@ Versionsinfo
 ### Ende Infoblock
 
  #Versionierung
-  SH_VER="V3.6.5"
-  CONF_V="V3.6.5"
-  SUBVER="V3.6.5"
+  SH_VER="V3.7.0"
+  CONF_V="V3.7.0"
+  SUBVER="V3.7.0"
 
 
  #Installationsverzeichnis feststellen
@@ -340,6 +341,7 @@ while true
      ### zusätzliche WHxxx-Sensoren ############################################################
       if [ "${ANZAHL_WH31}" -gt "0" ]; then WH31; fi
       if [ "${ANZAHL_WH40H}" -gt "0" ]; then WH40H; fi
+      if [ "${ANZAHL_WH52}" -gt "0" ]; then WH52; fi
      ### zusätzliche WHxxx-Sensoren ################################################### ENDE ###
 
      ### zusätzliche WSxxx-Sensoren ############################################################

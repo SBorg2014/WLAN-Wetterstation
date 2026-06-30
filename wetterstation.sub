@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V3.6.5 --------------------------------------------------------
+### Subroutinen V3.7.0 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -180,7 +180,7 @@ debuging() {
     esac
    echo -e "\n${WE}Zusatzsensoren:"
    echo -e " ${WE}DP10/35/40/50/60/70/100/200/250/300: $GE${ANZAHL_DP10} $WE| $GE${ANZAHL_DP35} $WE| $GE${ANZAHL_DP40} $WE| $GE${ANZAHL_DP50} $WE| $GE${ANZAHL_DP60} $WE| $GE${ANZAHL_DP70} $WE| $GE${ANZAHL_DP100} $WE| $GE${ANZAHL_DP200} $WE| $GE${ANZAHL_DP250} $WE| $GE${ANZAHL_DP300} $WE"
-   echo -e " ${WE}WH31: $GE${ANZAHL_WH31}${WE} || ${WE}WH40H: $GE${ANZAHL_WH40H}${WE} || ${WE}WS80: $GE${ANZAHL_WS80}${WE} || WS90: ${GE}${ANZAHL_WS90}${WE}"
+   echo -e " ${WE}WH31: $GE${ANZAHL_WH31}${WE} || ${WE}WH40H: $GE${ANZAHL_WH40H}${WE} || ${WE}WH52: $GE${ANZAHL_WH52}${WE} || ${WE}WS80: $GE${ANZAHL_WS80}${WE} || WS90: ${GE}${ANZAHL_WS90}${WE}"
    echo -e " ${WE}Bresser: 7009999 [$GE${ANZAHL_7009999}${WE}]"
    echo -e "\nScript-Version: ${GE}${SH_VER}${WE}\tConfig-Version: $GE${CONF_V}$WE\tSub-Version: $GE${SUBVER}$WE"
 
@@ -286,6 +286,20 @@ iob_send() {
 
         #WH40H
          if [[ "${MESSWERTE[$i]}" =~ ^wh40batt ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WH40H.1.Batterie=${MESSWERTE[$(($i+1))]}"; fi
+
+        #WH52
+         if [[ "${MESSWERTE[$i]}" =~ ^soil_ec_batt[1-9]{1}$ ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WH52.${MESSWERTE[$i]:12:1}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soil_ec_batt1[0-6]{1}$ ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WH52.1${MESSWERTE[$i]:13:1}.Batterie=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soil_ec_hum[1-9]{1}$ ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WH52.${MESSWERTE[$i]:11:1}.Bodenfeuchtigkeit=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soil_ec_hum1[0-6]{1}$ ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WH52.1${MESSWERTE[$i]:12:1}.Bodenfeuchtigkeit=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soil_ec_hum_ad[1-9]{1}$ ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WH52.${MESSWERTE[$i]:14:1}.Bodenfeuchte-Raw=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soil_ec_hum_ad1[0-6]{1}$ ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WH52.1${MESSWERTE[$i]:15:1}.Bodenfeuchte-Raw=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soil_ec_temp[1-9]{1}$ ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WH52.${MESSWERTE[$i]:12:1}.Bodentemperatur=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soil_ec_temp1[0-6]{1}$ ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WH52.1${MESSWERTE[$i]:13:1}.Bodentemperatur=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soil_ec[1-9]{1}$ ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WH52.${MESSWERTE[$i]:7:1}.Bodenleitfähigkeit=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soil_ec1[0-6]{1}$ ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WH52.1${MESSWERTE[$i]:8:1}.Bodenleitfähigkeit=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soil_ec_ad[1-9]{1}$ ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WH52.${MESSWERTE[$i]:10:1}.Bodenleitfähigkeit-Raw=${MESSWERTE[$(($i+1))]}"; fi
+         if [[ "${MESSWERTE[$i]}" =~ ^soil_ec_ad1[0-6]{1}$ ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WH52.1${MESSWERTE[$i]:11:1}.Bodenleitfähigkeit-Raw=${MESSWERTE[$(($i+1))]}"; fi
 
         #WS80 / WS90
          if [[ "${MESSWERTE[$i]}" =~ ^wh80batt ]]; then IOBOUT="${IOBOUT}&${PRE_DP}.WS80.1.Batterie=${MESSWERTE[$(($i+1))]}"; fi
@@ -889,7 +903,7 @@ setup() {
   case $WS_PROTOKOLL in
    1) MAXDEVICES=22;;
    *) MAXDEVICES=$(( 36 + $ANZAHL_DP35 * 4 + $ANZAHL_DP40 * 2 + $ANZAHL_DP50 * 6 + $ANZAHL_DP100 * 6 + $ANZAHL_DP60 * 8 + $ANZAHL_DP200 * 6 + $ANZAHL_DP70 * 4 + $ANZAHL_DP250 * 18 + $ANZAHL_DP300 *2 ))
-      MAXDEVICES+=$(( $ANZAHL_WH31 * 2 + $ANZAHL_DP10 * 4 + $ANZAHL_WS90 * 20 + $ANZAHL_WH40H * 1 + $ANZAHL_WS80 * 1 ))
+      MAXDEVICES+=$(( $ANZAHL_WH31 * 2 + $ANZAHL_DP10 * 4 + $ANZAHL_WS90 * 20 + $ANZAHL_WH40H * 1 + $ANZAHL_WS80 * 1 + $ANZAHL_WH52 * 12 ))
       MAXDEVICES+=$(( $ANZAHL_7009999 * 2 ))
   esac
 
@@ -1441,6 +1455,73 @@ WH31() {
 WH40H() {
       #WH40H-Sensoren
       if [[ ${MESSWERTERAWIN[$i]} =~ ^wh40batt= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+}
+
+
+WH52() {
+      #WH52-Sensoren
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^soil_ec_batt[1-9]= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^soil_ec_batt1[0-6]= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^soil_ec_hum[1-9]= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^soil_ec_hum1[0-6]= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^soil_ec_hum_ad[1-9]= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^soil_ec_hum_ad1[0-6]= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^soil_ec_temp[1-9]= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+         convertFtoC $j
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^soil_ec_temp1[0-6]= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+         convertFtoC $j
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^soil_ec_ad[1-9]= ]]
+         then let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
+         let "j++"
+         MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f2)
+      fi
+      if [[ ${MESSWERTERAWIN[$i]} =~ ^soil_ec_ad1[0-6]= ]]
          then let "j++"
          MESSWERTE[$j]=$(echo ${MESSWERTERAWIN[$i]}|cut -d"=" -f1)
          let "j++"

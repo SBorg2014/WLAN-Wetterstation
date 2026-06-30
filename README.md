@@ -27,6 +27,7 @@
   * Gateway GW1000
   * Gateway GW2000A
   * Gateway GW3000A
+  * HP2564
   * WS2910
   * WS3800(A)
   * WS3900

@@ -53,6 +53,7 @@ Zusatzsensoren (mittels Station oder Gateway DP1500/DP2000/GW1000/GW2000A/GW3000
 - bis zu 8 Stück DP35/WN34 Wassertemperatur-Sensoren
 - ein DP40/WH32 (bzw. WH26) Außentemperatur- und Luftfeuchtigkeitssensor
 - bis zu 8 Stück DP50/WH31A Temperatur-/Luftfeuchtigkeit-Sensoren<sup>(4)</sup>
+- bis zu 16 Stück WH52 Bodenfeuchte-/Temperatur-/EC-Sensoren<sup>(4)</sup>
 - ein DP60/WH57 Blitzsensor
 - bis zu 4 Stück DP70/WH55 Wasserleckage-Sensoren
 - bis zu 16 Stück DP100/WH51[L] Bodenfeuchte-Sensoren<sup>(4)</sup>
@@ -124,6 +125,11 @@ Auszug von WeatherObservationsWebsite (WOW):
 <br><br>
 
 ## Versionen ##
+
+   **V3.7.0 - 28.06.2026**  
+``` 
+    + Unterstützung für WH52 Sensoren / Issue #94
+```
 
   **V3.6.5 - 08.05.2026**  
 ``` 

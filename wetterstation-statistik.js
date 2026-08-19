@@ -5,7 +5,8 @@
    Wichtig: funktioniert nur mit der Default-Datenstruktur des WLAN-Wetterstation-Skriptes!
             Auch keine Aliase unter Influx nutzen!
 
-   (c)2020-2025 by SBorg
+   (c)2020-2026 by SBorg
+   V2.0.8 - 18.08.2026  ~Bugfix für neue Influx-Adapterversion 5.x
    V2.0.7 - 20.05.2025  ~Bugfix Fehler im RegEx der Update-Prüfung behoben
    v2.0.6 - 02.01.2025  ~Bugfix "Null" zum Jahreswechsel
    v2.0.5 - 14.11.2024  ~Umstellung von axios auf httpGet (fixed "Fehler: AxiosError: Request failed with status code 429")
@@ -90,7 +91,7 @@ const DP_Check ='aktueller_Monat.Regentage';
 if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 //Start des Scripts
-    const ScriptVersion = "V2.0.7";
+    const ScriptVersion = "V2.0.8";
     const dayOfYear = date => Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
     let Tiefstwert, Hoechstwert, Temp_Durchschnitt, Max_Windboee, Max_Regenmenge, Regenmenge_Monat, warme_Tage, Sommertage;
     let heisse_Tage, Frost_Tage, kalte_Tage, Eistage, sehr_kalte_Tage, Wuestentage, Tropennaechte, Trockenperiode_akt;
@@ -104,7 +105,6 @@ if (!existsState(PRE_DP+'.'+DP_Check)) { createDP(DP_Check); }
 
 //scheduler
     schedule(ZEITPLAN, main);
-
 
 // ### Funktionen ###############################################################################################
 function main() {
@@ -171,31 +171,162 @@ function main() {
 
  }//End Jobs Monatserster
 
-  //InfluxDB abfragen (Regen +1min Startverzögerung wg. ev. Ungenauigkeit der Systemzeit des Wetterstation-Displays)
-    sendTo('influxdb.'+INFLUXDB_INSTANZ, 'query', 
-            'from(bucket: "'+INFLUXDB_BUCKET+'") |> range(start: '+(start/1000)+', stop: '+(end/1000)+') |> filter(fn: (r) => r._measurement == "' + WET_DP + '.Aussentemperatur") |> filter(fn: (r) => r._field == "value"); from(bucket: "'+INFLUXDB_BUCKET+'") |> range(start: '+(start/1000)+', stop: '+(end/1000)+') |> filter(fn: (r) => r._measurement == "' + WET_DP + '.Wind_max") |> filter(fn: (r) => r._field == "value"); from(bucket: "'+INFLUXDB_BUCKET+'") |> range(start: '+((start+72000)/1000)+', stop: '+(end/1000)+') |> filter(fn: (r) => r._measurement == "' + WET_DP + '.Regen_Tag") |> filter(fn: (r) => r._field == "value")'
-  
-         , function (result) {
-             //Anlegen der Arrays + befüllen mit den relevanten Daten
-            if (result.error) {
-               console.error('Fehler beim Lesen der InfluxDB: '+result.error);
-               Statusmeldung('Fehler beim Lesen der InfluxDB: '+result.error);
-            } else {
-                //console.log('Rows: ' + JSON.stringify(result.result[0], null, 2));
-                for (let i = 0; i < result.result[0].length; i++) { temps[i] = result.result[0][i]._value; }
-                for (let i = 0; i < result.result[1].length; i++) { wind[i] = result.result[1][i]._value; }
-                for (let i = 0; i < result.result[2].length; i++) { regen[i] = result.result[2][i]._value; }
-            }
-                                   
 
-    //Temperaturen
+let influxAbfragenFertig = 0;
+let influxFehler = false;
+
+temps = [];
+wind = [];
+regen = [];
+
+const startInflux = new Date(start).toISOString();
+const endInflux = new Date(end).toISOString();
+const regenStartInflux = new Date(start + 72000).toISOString();
+
+
+// Temperatur
+sendTo(
+    'influxdb.' + INFLUXDB_INSTANZ,
+    'query',
+    'from(bucket: "' + INFLUXDB_BUCKET + '")' +
+    ' |> range(start: ' + startInflux + ', stop: ' + endInflux + ')' +
+    ' |> filter(fn: (r) => r._measurement == "' +
+    WET_DP + '.Aussentemperatur")' +
+    ' |> filter(fn: (r) => r._field == "value")',
+
+    function (result) {
+        if (result.error) {
+            console.error(
+                'Fehler Temperatur: ' + result.error
+            );
+            influxFehler = true;
+        } else if (result.result && result.result.length > 0) {
+            for (let i = 0; i < result.result[0].length; i++) {
+                temps.push(result.result[0][i]._value);
+            }
+        }
+
+        influxAbfragenFertig++;
+        pruefeInfluxFertig();
+    }
+);
+
+
+// Wind
+sendTo(
+    'influxdb.' + INFLUXDB_INSTANZ,
+    'query',
+    'from(bucket: "' + INFLUXDB_BUCKET + '")' +
+    ' |> range(start: ' + startInflux + ', stop: ' + endInflux + ')' +
+    ' |> filter(fn: (r) => r._measurement == "' +
+    WET_DP + '.Wind_max")' +
+    ' |> filter(fn: (r) => r._field == "value")',
+
+    function (result) {
+        if (result.error) {
+            console.error(
+                'Fehler Wind: ' + result.error
+            );
+            influxFehler = true;
+        } else if (result.result && result.result.length > 0) {
+            for (let i = 0; i < result.result[0].length; i++) {
+                wind.push(result.result[0][i]._value);
+            }
+        }
+
+        influxAbfragenFertig++;
+        pruefeInfluxFertig();
+    }
+);
+
+
+// Regen
+sendTo(
+    'influxdb.' + INFLUXDB_INSTANZ,
+    'query',
+    'from(bucket: "' + INFLUXDB_BUCKET + '")' +
+    ' |> range(start: ' + regenStartInflux + ', stop: ' + endInflux + ')' +
+    ' |> filter(fn: (r) => r._measurement == "' +
+    WET_DP + '.Regen_Tag")' +
+    ' |> filter(fn: (r) => r._field == "value")',
+
+    function (result) {
+        if (result.error) {
+            console.error(
+                'Fehler Regen: ' + result.error
+            );
+            influxFehler = true;
+        } else if (result.result && result.result.length > 0) {
+            for (let i = 0; i < result.result[0].length; i++) {
+                regen.push(result.result[0][i]._value);
+            }
+        }
+
+        influxAbfragenFertig++;
+        pruefeInfluxFertig();
+    }
+);
+
+
+// Wird erst ausgeführt, wenn ALLE 3 Influx-Abfragen fertig sind
+function pruefeInfluxFertig() {
+
+    if (influxAbfragenFertig < 3) {
+        return;
+    }
+
+    console.log(
+        'InfluxDB: Temperatur=' + temps.length +
+        ', Wind=' + wind.length +
+        ', Regen=' + regen.length
+    );
+
+
+    if (influxFehler) {
+        console.error(
+            'Mindestens eine InfluxDB-Abfrage ist fehlgeschlagen.'
+        );
+        Statusmeldung(
+            'Mindestens eine InfluxDB-Abfrage ist fehlgeschlagen.'
+        );
+        return;
+    }
+
+
+    if (temps.length === 0) {
+        console.error(
+            'Keine Temperaturwerte aus der InfluxDB erhalten.'
+        );
+        Statusmeldung(
+            'Keine Temperaturwerte aus der InfluxDB erhalten.'
+        );
+        return;
+    }
+
+
+    // ============================================================
+    // AB HIER AUSWERTUNGSCODE
+    // ============================================================
+
     Tiefstwert = Math.min(...temps);
     Hoechstwert = Math.max(...temps);
-    //Math.sum = (...temps) => Array.prototype.reduce.call(temps,(a,b) => a+b);
+
     const reducer = (accumulator, curr) => accumulator + curr;
-    //Temp_Durchschnitt = Number((Math.sum(...temps)/temps.length).toFixed(2));
-    let Temp_Durchschnitt = Number((temps.reduce(reducer)/temps.length).toFixed(2));
-    let MonatsTemp_Durchschnitt = Math.round(((((getState(PRE_DP+'.aktueller_Monat.Temperatur_Durchschnitt').val)*(zeitstempel.getDate()-1))+Temp_Durchschnitt)/zeitstempel.getDate())*100)/100;
+
+    let Temp_Durchschnitt =
+        Number(
+            (temps.reduce(reducer) / temps.length).toFixed(2)
+        );
+
+    let MonatsTemp_Durchschnitt =
+        Math.round(
+            (
+                ( getState( PRE_DP + '.aktueller_Monat.Temperatur_Durchschnitt' ).val * (zeitstempel.getDate() - 1)
+                ) + Temp_Durchschnitt
+            ) / zeitstempel.getDate() * 100 
+        ) / 100;
+
+
     if (Hoechstwert >= 35) { Wuestentage = 1; } else { Wuestentage = 0; }
     if (Hoechstwert > 20) { warme_Tage = 1; } else { warme_Tage = 0; }
     if (Hoechstwert > 25) { Sommertage = 1; } else { Sommertage = 0; } 
@@ -206,14 +337,29 @@ function main() {
     if (Hoechstwert < 0) { Eistage = 1; } else { Eistage = 0; }
     if (Tiefstwert < -10) { sehr_kalte_Tage = 1; } else { sehr_kalte_Tage = 0; }
 
-  //Wind
-    if (wind.length == 0) { Max_Windboee = 0; } else { Max_Windboee = Math.max(...wind); }     
+    // Wind
+    if (wind.length === 0) {
+        Max_Windboee = 0;
+    } else {
+        Max_Windboee = Math.max(...wind);
+    }
 
-  //Regen (Regentag = Mindestmenge größer oder gleich 0.1mm)
-    if (regen.length == 0) { Max_Regenmenge = 0; } 
-      else { 
+
+    // Regen
+    if (regen.length === 0) {
+
+        Max_Regenmenge = 0;
+        Regentage = 0;
+
+    } else {
+
         Max_Regenmenge = Math.max(...regen);
-        if (Max_Regenmenge >= 0.1) { Regentage = 1; } else { Regentage = 0; }
+
+        if (Max_Regenmenge >= 0.1) {
+            Regentage = 1;
+        } else {
+            Regentage = 0;
+        }
     }
 
 
@@ -327,13 +473,12 @@ function main() {
    }
     //Rekordwerte 
     Rekordwerte();
-
-  }); //end sendTo
+    console.log('Auswertung durchgeführt...');
+    Statusmeldung('erfolgreich');
+  } //end pruefeInfluxFertig
  if (getState(PRE_DP+'.Control.Reset_Jahresstatistik').val === true) { Reset_Jahresstatistik(); }
- console.log('Auswertung durchgeführt...');
  if (getState(PRE_DP+'.Control.ScriptVersion_UpdateCheck').val) { check_update(); } // neue Script-Version vorhanden?
- Statusmeldung('erfolgreich');
-} //end function main
+ } //end function main
 
 function Reset_Jahresstatistik() {
         setState(PRE_DP + '.Jahreswerte.Temperatur_Tiefstwert',   100,  true);
@@ -384,7 +529,7 @@ function AutoDelete_Data() {
 
 function speichern_Monat() {
     let zeitstempel = new Date();
-    let datum = new Date(zeitstempel.getFullYear(),zeitstempel.getMonth(),zeitstempel.getDate()-2);
+    let datum = new Date(zeitstempel.getFullYear(),zeitstempel.getMonth(),0);
     let monatsdatenpunkt = '.Data.'+datum.getFullYear()+'.'+pad(datum.getMonth()+1); 
     let initialTemp=getState(WET_DP+'.Aussentemperatur').val;
     let jsonSummary = [];

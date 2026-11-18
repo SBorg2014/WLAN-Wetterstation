@@ -2,13 +2,16 @@
 : <<'Versionsinfo'
 
 
- V3.7.0 - 28.06.2026 (c) 2019-2026 SBorg
+ V3.8.0 - 18.10.2026 (c) 2019-2026 SBorg
 
  wertet ein Datenpaket einer WLAN-Wetterstation im Wunderground-/Ecowitt-Format aus, konvertiert dieses und überträgt
  die Daten an den ioBroker (alternativ auch an AWEKAS, OpenSenseMap, Windy, wetter.com und WeatherObservationsWebsite)
 
  benötigt den 'Simple RESTful API'-Adapter im ioBroker, 'jq', 'bc', 'awk' und 'dc' unter Linux
 
+ V3.8.0 / 18.10.2026   + Weiterleitung der Wetterdaten (RAW) / Issue #96
+                       ~ Umstellung windy auf API V2 / Issue #87
+                       ~ Fix im Oktober fehlt beim Zeitstempel die "0" (Beispiel 18.1.2026) / Issue #97
  V3.7.0 / 28.06.2026   + Unterstützung für WH52 Sensoren / Issue #94
  V3.6.5 / 08.05.2026   ~ Fix 'has to be type "number" but received type "string"' im ioB bei DP ".Info.Letzte_Regenmenge"
                          wenn als Zahl definiert ist (Simple-API ab 3.x)
@@ -177,9 +180,9 @@ Versionsinfo
 ### Ende Infoblock
 
  #Versionierung
-  SH_VER="V3.7.0"
-  CONF_V="V3.7.0"
-  SUBVER="V3.7.0"
+  SH_VER="V3.8.0"
+  CONF_V="V3.8.0"
+  SUBVER="V3.8.0"
 
 
  #Installationsverzeichnis feststellen
@@ -450,7 +453,7 @@ while true
       if [ ${use_wow} == "true" ]; then wow_update; fi
 
      #run_onlyonce
-      block_6minjobs=3;
+      block_6minjobs=4;
 
     else
      let block_6minjobs--
@@ -494,6 +497,8 @@ while true
   #AWEKAS
    if [ ${use_awekas} == "true" ]; then awekas_update; fi
 
+  #Weiterleitung der Wetterdaten?
+   if [ -f ./wetterdata_forward.sh ]; then ./wetterdata_forward.sh "${DATA}"; fi
 
   #Logging eingeschaltet?
    if [ $logging == "true" ]; then logging; fi

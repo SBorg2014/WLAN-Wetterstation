@@ -1,5 +1,5 @@
 #!/bin/bash
-### Subroutinen V3.7.0 --------------------------------------------------------
+### Subroutinen V3.8.0 --------------------------------------------------------
 
 
  #Bezeichnung der Datenpunkte
@@ -326,6 +326,9 @@ iob_send() {
 
    #Leerzeichen und anhängende Nullen entfernen + Zeitstempel/Regenstatus/UV-Belastung wg. Leerzeichen erst hier anhängen
     IOB_DATA=$(echo "$IOBOUT" | tr -d " " | sed -E 's/([0-9]+\.[0-9]*[1-9])0+\b/\1/g; s/([0-9]+)\.0+\b/\1/g')
+       #Datumfix (sonst wird im Oktober von der "10" die "0" beim Zeitstempel abgeschnitten)
+       IOB_DATA=$(echo "$IOB_DATA" | sed "s|&${PRE_DP}\.Zeitstempel=[^&]*||")
+       IOB_DATA=${IOB_DATA}\&${DP_ZEITSTEMPEL}="${MESSWERTE[18]}"
     IOB_DATA=${IOB_DATA}\&${DP_REGENSTATUS}=${REGENSTATUS}\&${DP_UV_BELASTUNG}=${UV_BELASTUNG}\&${DP_WIND_DIR_TXT}=${WINDRICHTUNG}\&${DP_HITZEINDEX}=${HITZEINDEX}
    #Daten an den ioB schicken
     IOB_DATA_SEND=$(printf '%s' "$IOB_DATA" | sed 's/ /%20/g')
@@ -473,6 +476,7 @@ convertTime() {
         else
                 MESSWERTE[$1]=$(date --date="${MESSWERTE[$1]} UTC" +'%d.%m.%Y %H:%M:%S')
         fi
+
         MESSWERTE[$1]=$(echo ${MESSWERTE[$1]}|sed -e 's/ /%20/')
 	#MESSWERTE[$i]=$(echo ${MESSWERTE[$1]}|awk -F'-|%20' '{printf "%02s.%02s.%s %s", $3, $2, $1, $4}')
 }
@@ -2038,32 +2042,71 @@ do_windchill(){
 
 windy_update(){
         #Daten an die Windy-Cloud senden
+         local winddir
+         local wind
+         local retval
+         local http_code
          windy_mph=$(echo "scale=2;(${MESSWERTE[6]}*10/36)" | bc -l)
          windy_boe_mph=$(echo "scale=2;(${MESSWERTE[7]}*10/36)" | bc -l)
-         windy_DATA="station=${windy_Station}&ts=$(date +%s)&temp=${MESSWERTE[1]}&mbar=${MESSWERTE[9]}"
-         windy_DATA+="&gust=${windy_boe_mph}&humidity=${MESSWERTE[5]}&dewpoint=${MESSWERTE[2]}&precip=${MESSWERTE[23]}&uv=${MESSWERTE[17]}"
+
 
         #Windgeschwindigkeit und -richtung aktuell oder per 10 Minuten-Durchschnitt
         if [ ${USE_AVG_WIND} == "true" ]; then
            if [ ! -z ${WIND_AVGSPEED_10M} ] && [ ! -z ${WIND_AVGANGEL_10M} ]; then
-              windy_DATA+="&winddir=${WIND_AVGANGEL_10M}&wind=${WIND_AVGSPEED_10M}"
+              winddir="${WIND_AVGANGEL_10M}"
+              wind="${WIND_AVGSPEED_10M}"
             elif [ ! -z ${MESSWERTE[26]} ] && [ ! -z ${MESSWERTE[27]} ]; then
-              windy_DATA+="&winddir=${MESSWERTE[26]}&wind=${MESSWERTE[27]}"
+              winddir="${MESSWERTE[26]}"
+              wind="${MESSWERTE[27]}"
             else
-              windy_DATA+="&winddir=${MESSWERTE[8]}&wind=${windy_mph}"
+              winddir="${MESSWERTE[8]}"
+              wind="${windy_mph}"
            fi
          else
-           windy_DATA+="&winddir=${MESSWERTE[8]}&wind=${windy_mph}"
+           winddir="${MESSWERTE[8]}"
+           wind="${windy_mph}"
         fi
 
          if [ $debug == "true" ]; then
            echo -e "${BL}Datenübertragung an windy.com:${NO}"
-            curl https://stations.windy.com/pws/update/${windy_APIKey}?${windy_DATA}
+
+	curl -G 'https://stations.windy.com/api/v2/observation/update' \
+  	-H "Authorization: Bearer ${windy_StationPW}" \
+  	--data-urlencode "id=${windy_StationID}" \
+  	--data-urlencode "ts=$(date +%s)" \
+  	--data-urlencode "temp=${MESSWERTE[1]}" \
+  	--data-urlencode "humidity=${MESSWERTE[5]}" \
+  	--data-urlencode "wind=${wind}" \
+  	--data-urlencode "gust=${windy_boe_mph}" \
+  	--data-urlencode "winddir=${winddir}" \
+  	--data-urlencode "mbar=${MESSWERTE[9]}" \
+  	--data-urlencode "dewpoint=${MESSWERTE[2]}" \
+  	--data-urlencode "uv=${MESSWERTE[17]}" \
+  	--data-urlencode "solarradiation=${MESSWERTE[16]}"
+
            return 0 #Ausgang
           else
-            local retval=$(curl -s https://stations.windy.com/pws/update/${windy_APIKey}?${windy_DATA})
+            retval=$(curl -sS -G \
+             -w '\n%{http_code}' \
+             'https://stations.windy.com/api/v2/observation/update' \
+             -H "Authorization: Bearer ${windy_StationPW}" \
+              --data-urlencode "id=${windy_StationID}" \
+              --data-urlencode "ts=$(date +%s)" \
+              --data-urlencode "temp=${MESSWERTE[1]}" \
+              --data-urlencode "humidity=${MESSWERTE[5]}" \
+              --data-urlencode "wind=${wind}" \
+              --data-urlencode "gust=${windy_boe_mph}" \
+              --data-urlencode "winddir=${winddir}" \
+              --data-urlencode "mbar=${MESSWERTE[9]}" \
+              --data-urlencode "dewpoint=${MESSWERTE[2]}" \
+              --data-urlencode "uv=${MESSWERTE[17]}" \
+              --data-urlencode "solarradiation=${MESSWERTE[16]}")
+
+              http_code="${retval##*$'\n'}"
+              retval="${retval%$'\n'*}"
+
           fi
-         if echo ${retval}|grep -iq '"success":true'; then
+         if [[ "$http_code" == "200" ]]; then
              SAPI "Single" "set/${DP_WINDY_TRANSMIT}?value=true&ack=true"
            else
              SAPI "Single" "set/${DP_WINDY_TRANSMIT}?value=false&ack=true"

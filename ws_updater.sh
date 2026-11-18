@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UPDATE_VER=V3.7.0
+UPDATE_VER=V3.8.0
 
 ###  Farbdefinition
       GR='\e[1;32m'
@@ -160,8 +160,9 @@ patcher() {
            V3.6.2) PATCH3063 ;;
            V3.6.3) PATCH3064 ;;
            V3.6.4) PATCH3065 ;;
-           V3.6.5) PATCH3070 && service_restart && exit 0;;
-           V3.7.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
+           V3.6.5) PATCH3070 ;;
+           V3.7.0) PATCH3080 && service_restart && exit 0;;
+           V3.8.0) echo -e "$GE Version ist bereits aktuell...\n" && exit 0;;
                 *) FEHLER
     esac
 
@@ -793,6 +794,30 @@ PATCH3070(){
  sed -i '/^.*ANZAHL_WH40H=.*/a \  ANZAHL_WH52=0' ./wetterstation.conf
  echo -e "\n${WE} Fertig...\n"
  echo -e " ${GE}Sensoren des Types WH52 können nun in der 'conf' aktiviert werden.\n${WE}"
+
+}
+
+
+#Patch Version V3.7.0 auf V3.8.0
+PATCH3080(){
+ backup
+ echo -e "${WE}\n Patche wetterstation.conf auf V3.8.0 ..."
+ sed -i 's/### Settings V3.7.0/### Settings V3.8.0/' ./wetterstation.conf
+ sed -i '/#Windy API-Key/,/#Name der Station \[Text\]/{
+    /#Windy API-Key/{
+        c\
+  #Windy-Station (aus https://stations.windy.com/stations unter "Connection")\
+   windy_StationID=\
+   windy_StationPW=
+    }
+    /#Windy API-Key/!{
+        /#Name der Station \[Text\]/!d
+    }
+    /#Name der Station \[Text\]/i\
+
+}' ./wetterstation.conf
+ echo -e "\n${WE} Fertig...\n"
+ echo -e " ${GE}Bei Nutzung von 'windy' nun bitte das Stationspasswort und die Stations-ID in der 'conf' eintragen!\n${WE}"
 
 }
 

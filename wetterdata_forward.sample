@@ -1,0 +1,13 @@
+#!/bin/bash
+
+URL="http://demo.url/pfad/"
+
+#Abbruch falls keine Daten
+if [ -z "$1" ]; then exit 0; fi
+
+#Daten senden
+curl -sS --max-time 10 \
+     -X POST \
+     --data "$1" \
+     "$URL" \
+     > /dev/null 2>&1 &

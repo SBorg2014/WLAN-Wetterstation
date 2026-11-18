@@ -127,6 +127,13 @@ Auszug von WeatherObservationsWebsite (WOW):
 
 ## Versionen ##
 
+   **V3.8.0 - 18.10.2026**  
+``` 
+    + Weiterleitung der Wetterdaten (RAW) / Issue #96
+    ~ Umstellung windy auf API V2 / Issue #87
+    ~ Fix im Oktober fehlt beim Zeitstempel die "0" (Beispiel 18.1.2026) / Issue #97
+```
+  
    **V3.7.0 - 28.06.2026**  
 ``` 
     + Unterstützung für WH52 Sensoren / Issue #94
